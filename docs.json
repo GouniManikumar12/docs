@@ -17,8 +17,7 @@
             "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "api-keys"
+              "quickstart"
             ]
           },
           {
@@ -26,6 +25,14 @@
             "pages": [
               "api/authentication",
               "api/recommendations"
+            ]
+          },
+          {
+            "group": "Frontend Integration",
+            "pages": [
+              "ui-sdk/installation",
+              "ui-sdk/layout-component",
+              "ui-sdk/customization"
             ]
           },
           {
@@ -40,41 +47,12 @@
               "examples/integration-examples",
               "examples/ai-assistant"
             ]
-          },
-          {
-            "group": "Frontend Integration",
-            "pages": [
-              "ui-sdk/installation",
-              "ui-sdk/layout-component",
-              "ui-sdk/customization"
-            ]
           }
         ]
       }
     ],
     "global": {
-      "anchors": [
-        {
-          "anchor": "Live Examples",
-          "href": "https://storybook.useadmesh.com",
-          "icon": "code"
-        },
-        {
-          "anchor": "Dashboard",
-          "href": "https://useadmesh.com",
-          "icon": "chart-line"
-        },
-        {
-          "anchor": "Earnings Calculator",
-          "href": "https://useadmesh.com/agents#earnings-calculator",
-          "icon": "calculator"
-        },
-        {
-          "anchor": "Support",
-          "href": "mailto:mani@useadmesh.com",
-          "icon": "envelope"
-        }
-      ]
+      "anchors": []
     }
   },
   "logo": {
@@ -84,13 +62,13 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:mani@useadmesh.com"
+        "label": "Playground",
+        "href": "https://docs.useadmesh.com/api-playground"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Get API Key",
+      "label": "Dashboard",
       "href": "https://useadmesh.com"
     }
   },
@@ -107,8 +85,42 @@
    ]
   },
   "footer": {
-    "socials": {
-      "linkedin": "https://linkedin.com/in/manikumargouni"
-    }
+    "links": [
+      {
+        "title": "Resources",
+        "items": [
+          {
+            "label": "Try AdPlex",
+            "href": "https://tryadplex.com"
+          },
+          {
+            "label": "Storybook",
+            "href": "https://storybook.useadmesh.com"
+          }
+        ]
+      },
+      {
+        "title": "Platform",
+        "items": [
+          {
+            "label": "Dashboard",
+            "href": "https://useadmesh.com"
+          },
+          {
+            "label": "Earnings Calculator",
+            "href": "https://useadmesh.com/agents#earnings-calculator"
+          }
+        ]
+      },
+      {
+        "title": "Support",
+        "items": [
+          {
+            "label": "Contact Us",
+            "href": "mailto:mani@useadmesh.com"
+          }
+        ]
+      }
+    ]
   }
 }

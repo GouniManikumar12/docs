@@ -1,0 +1,146 @@
+---
+title: "API Keys"
+description: "Get and manage your AdMesh API keys"
+---
+
+# API Keys
+
+Learn how to get and manage your AdMesh API keys for authentication.
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Sign Up">
+    Visit [dashboard.useadmesh.com](https://dashboard.useadmesh.com) and create your free account.
+  </Step>
+  <Step title="Access Dashboard">
+    Once logged in, navigate to your dashboard to find your API key.
+  </Step>
+  <Step title="Copy API Key">
+    Your API key will be displayed in the format: `admesh_prod_abc123xyz789`
+  </Step>
+</Steps>
+
+## API Key Format
+
+AdMesh API keys follow this format:
+
+```
+admesh_[environment]_[random_string]
+```
+
+**Examples:**
+- `admesh_prod_abc123xyz789` - Production key
+- `admesh_dev_def456uvw012` - Development key
+
+## Using Your API Key
+
+### Environment Variables (Recommended)
+
+Store your API key securely using environment variables:
+
+<CodeGroup>
+
+```bash .env
+ADMESH_API_KEY=admesh_prod_abc123xyz789
+```
+
+```javascript JavaScript
+// Access in your code
+const apiKey = process.env.ADMESH_API_KEY;
+```
+
+```python Python
+import os
+api_key = os.environ.get('ADMESH_API_KEY')
+```
+
+</CodeGroup>
+
+### HTTP Headers
+
+Include your API key in the Authorization header:
+
+```http
+Authorization: Bearer admesh_prod_abc123xyz789
+Content-Type: application/json
+```
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="✅ Do's" icon="check">
+    - Store keys in environment variables
+    - Use different keys for different environments
+    - Keep API keys on the server side
+    - Rotate keys regularly
+  </Card>
+  <Card title="❌ Don'ts" icon="x">
+    - Never commit keys to version control
+    - Don't expose keys in client-side code
+    - Don't share keys in chat or email
+    - Don't use production keys in development
+  </Card>
+</CardGroup>
+
+## Testing Your API Key
+
+Verify your API key works correctly:
+
+```bash
+curl -X POST "https://api.useadmesh.com/recommend" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test query", "format": "auto"}'
+```
+
+<Accordion title="Expected Success Response">
+```json
+{
+  "response": {
+    "recommendations": [
+      {
+        "title": "Example Product",
+        "reason": "Relevant to your test query",
+        "admesh_link": "https://useadmesh.com/track?ad_id=example-123"
+      }
+    ]
+  }
+}
+```
+</Accordion>
+
+## Error Responses
+
+### Invalid API Key
+```json
+{
+  "detail": "Invalid API key"
+}
+```
+
+### Missing API Key
+```json
+{
+  "detail": "Authorization header required"
+}
+```
+
+## Rate Limits
+
+AdMesh API keys have the following limits:
+
+- **Free Tier**: 1,000 requests per month
+- **Pro Tier**: 10,000 requests per month
+- **Enterprise**: Custom limits
+
+## Need Help?
+
+<CardGroup cols={2}>
+  <Card title="Contact Support" icon="envelope" href="mailto:mani@useadmesh.com">
+    Get help with API key issues
+  </Card>
+  <Card title="Dashboard" icon="chart-line" href="https://dashboard.useadmesh.com">
+    Manage your API keys
+  </Card>
+</CardGroup>

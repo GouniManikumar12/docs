@@ -1,0 +1,703 @@
+---
+title: "Customization"
+description: "Styling and theming guide for AdMesh UI components"
+---
+
+# Customization
+
+Styling and theming guide for AdMesh UI components.
+
+## Overview
+
+AdMesh UI components are designed to be highly customizable while maintaining consistency and accessibility. You can customize components using CSS variables, custom classes, or inline styles.
+
+## CSS Variables
+
+The easiest way to customize AdMesh components is through CSS variables:
+
+```css
+:root {
+  /* Colors */
+  --admesh-primary-color: #007bff;
+  --admesh-secondary-color: #6c757d;
+  --admesh-success-color: #28a745;
+  --admesh-warning-color: #ffc107;
+  --admesh-danger-color: #dc3545;
+  
+  /* Background colors */
+  --admesh-bg-primary: #ffffff;
+  --admesh-bg-secondary: #f8f9fa;
+  --admesh-bg-dark: #343a40;
+  
+  /* Text colors */
+  --admesh-text-primary: #212529;
+  --admesh-text-secondary: #6c757d;
+  --admesh-text-muted: #868e96;
+  
+  /* Spacing */
+  --admesh-spacing-xs: 4px;
+  --admesh-spacing-sm: 8px;
+  --admesh-spacing-md: 16px;
+  --admesh-spacing-lg: 24px;
+  --admesh-spacing-xl: 32px;
+  
+  /* Border radius */
+  --admesh-border-radius-sm: 4px;
+  --admesh-border-radius-md: 8px;
+  --admesh-border-radius-lg: 12px;
+  
+  /* Shadows */
+  --admesh-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --admesh-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --admesh-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Typography */
+  --admesh-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --admesh-font-size-sm: 0.875rem;
+  --admesh-font-size-md: 1rem;
+  --admesh-font-size-lg: 1.125rem;
+  --admesh-font-size-xl: 1.25rem;
+  
+  /* Transitions */
+  --admesh-transition: all 0.2s ease-in-out;
+}
+```
+
+## Theme Presets
+
+<AccordionGroup>
+  <Accordion title="🌙 Dark Theme">
+
+```css
+/* Dark theme */
+.admesh-dark-theme {
+  --admesh-primary-color: #0d6efd;
+  --admesh-bg-primary: #1a1a1a;
+  --admesh-bg-secondary: #2d2d2d;
+  --admesh-text-primary: #ffffff;
+  --admesh-text-secondary: #b3b3b3;
+  --admesh-text-muted: #808080;
+  --admesh-shadow-sm: 0 1px 3px rgba(255, 255, 255, 0.1);
+  --admesh-shadow-md: 0 4px 6px rgba(255, 255, 255, 0.1);
+  --admesh-shadow-lg: 0 10px 15px rgba(255, 255, 255, 0.1);
+}
+```
+
+```tsx
+<div className="admesh-dark-theme">
+  <AdMeshLayout recommendations={recommendations} />
+</div>
+```
+
+  </Accordion>
+
+  <Accordion title="🎨 Brand Colors">
+
+```css
+/* Custom brand theme */
+.admesh-brand-theme {
+  --admesh-primary-color: #6366f1; /* Indigo */
+  --admesh-secondary-color: #8b5cf6; /* Purple */
+  --admesh-success-color: #10b981; /* Emerald */
+  --admesh-bg-primary: #fefefe;
+  --admesh-bg-secondary: #f9fafb;
+  --admesh-border-radius-md: 12px;
+  --admesh-shadow-md: 0 4px 6px rgba(99, 102, 241, 0.1);
+}
+```
+
+```tsx
+<div className="admesh-brand-theme">
+  <AdMeshLayout recommendations={recommendations} />
+</div>
+```
+
+  </Accordion>
+
+  <Accordion title="📱 Minimal Theme">
+
+```css
+/* Minimal theme */
+.admesh-minimal-theme {
+  --admesh-primary-color: #000000;
+  --admesh-secondary-color: #666666;
+  --admesh-bg-primary: #ffffff;
+  --admesh-bg-secondary: #ffffff;
+  --admesh-border-radius-md: 0px;
+  --admesh-shadow-md: none;
+  --admesh-spacing-md: 12px;
+}
+
+.admesh-minimal-theme .admesh-card {
+  border: 1px solid #e5e5e5;
+}
+```
+
+```tsx
+<div className="admesh-minimal-theme">
+  <AdMeshLayout recommendations={recommendations} />
+</div>
+```
+
+  </Accordion>
+</AccordionGroup>
+
+## Component-Specific Styling
+
+### Grid Layout Customization
+
+```css
+/* Grid layout customization */
+.admesh-grid {
+  gap: var(--admesh-spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.admesh-grid .admesh-card {
+  background: var(--admesh-bg-primary);
+  border-radius: var(--admesh-border-radius-lg);
+  box-shadow: var(--admesh-shadow-md);
+  transition: var(--admesh-transition);
+  overflow: hidden;
+}
+
+.admesh-grid .admesh-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--admesh-shadow-lg);
+}
+
+.admesh-card-header {
+  padding: var(--admesh-spacing-md);
+  border-bottom: 1px solid var(--admesh-bg-secondary);
+}
+
+.admesh-card-title {
+  font-size: var(--admesh-font-size-lg);
+  font-weight: 600;
+  color: var(--admesh-text-primary);
+  margin: 0 0 var(--admesh-spacing-sm) 0;
+}
+
+.admesh-card-reason {
+  font-size: var(--admesh-font-size-sm);
+  color: var(--admesh-text-secondary);
+  margin: 0;
+}
+
+.admesh-card-body {
+  padding: var(--admesh-spacing-md);
+}
+
+.admesh-card-footer {
+  padding: var(--admesh-spacing-md);
+  background: var(--admesh-bg-secondary);
+  border-top: 1px solid var(--admesh-bg-secondary);
+}
+```
+
+### List Layout Customization
+
+```css
+/* List layout customization */
+.admesh-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admesh-spacing-md);
+}
+
+.admesh-list .admesh-item {
+  display: flex;
+  align-items: center;
+  padding: var(--admesh-spacing-md);
+  background: var(--admesh-bg-primary);
+  border-radius: var(--admesh-border-radius-md);
+  border: 1px solid var(--admesh-bg-secondary);
+  transition: var(--admesh-transition);
+}
+
+.admesh-list .admesh-item:hover {
+  border-color: var(--admesh-primary-color);
+  box-shadow: var(--admesh-shadow-sm);
+}
+
+.admesh-item-content {
+  flex: 1;
+  margin-left: var(--admesh-spacing-md);
+}
+
+.admesh-item-title {
+  font-size: var(--admesh-font-size-md);
+  font-weight: 600;
+  color: var(--admesh-text-primary);
+  margin: 0 0 var(--admesh-spacing-xs) 0;
+}
+
+.admesh-item-reason {
+  font-size: var(--admesh-font-size-sm);
+  color: var(--admesh-text-secondary);
+  margin: 0;
+}
+```
+
+### Citation Layout Customization
+
+```css
+/* Citation layout customization */
+.admesh-citation {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--admesh-spacing-sm);
+  margin: var(--admesh-spacing-sm) 0;
+}
+
+.admesh-citation-item {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--admesh-spacing-xs) var(--admesh-spacing-sm);
+  background: var(--admesh-bg-secondary);
+  border-radius: var(--admesh-border-radius-sm);
+  font-size: var(--admesh-font-size-sm);
+  color: var(--admesh-text-primary);
+  text-decoration: none;
+  transition: var(--admesh-transition);
+}
+
+.admesh-citation-item:hover {
+  background: var(--admesh-primary-color);
+  color: white;
+}
+
+.admesh-citation-number {
+  background: var(--admesh-primary-color);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: var(--admesh-spacing-xs);
+}
+```
+
+## Custom Components
+
+### Creating Custom Card Components
+
+```tsx
+import React from 'react';
+import { Recommendation } from 'admesh-ui-sdk';
+
+interface CustomCardProps {
+  recommendation: Recommendation;
+  onClick: (adId: string, admeshLink: string) => void;
+}
+
+const CustomRecommendationCard: React.FC<CustomCardProps> = ({ 
+  recommendation, 
+  onClick 
+}) => {
+  return (
+    <div 
+      className="custom-recommendation-card"
+      onClick={() => onClick(recommendation.ad_id, recommendation.admesh_link)}
+    >
+      <div className="card-header">
+        <h3 className="card-title">{recommendation.title}</h3>
+        {recommendation.intent_match_score && (
+          <div className="match-score">
+            {Math.round(recommendation.intent_match_score * 100)}% match
+          </div>
+        )}
+      </div>
+      
+      <div className="card-body">
+        <p className="card-reason">{recommendation.reason}</p>
+        
+        {recommendation.features && (
+          <ul className="features-list">
+            {recommendation.features.slice(0, 3).map((feature, index) => (
+              <li key={index}>{feature}</li>
+            ))}
+          </ul>
+        )}
+        
+        {recommendation.pricing && (
+          <div className="pricing-info">
+            <span className="pricing-label">Pricing:</span>
+            <span className="pricing-value">{recommendation.pricing}</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="card-footer">
+        <button className="cta-button">
+          Learn More
+        </button>
+        
+        {recommendation.has_free_tier && (
+          <span className="free-tier-badge">Free Tier Available</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Usage
+const CustomRecommendationGrid: React.FC<{ recommendations: Recommendation[] }> = ({ 
+  recommendations 
+}) => {
+  return (
+    <div className="custom-grid">
+      {recommendations.map((rec) => (
+        <CustomRecommendationCard
+          key={rec.ad_id}
+          recommendation={rec}
+          onClick={(adId, admeshLink) => {
+            window.open(admeshLink, '_blank');
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
+### Custom CSS for the above component
+
+```css
+.custom-recommendation-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.custom-recommendation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  padding: 20px 20px 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  flex: 1;
+}
+
+.match-score {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 12px;
+}
+
+.card-body {
+  padding: 16px 20px;
+}
+
+.card-reason {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.features-list li {
+  padding: 4px 0;
+  font-size: 0.85rem;
+  color: #555;
+  position: relative;
+  padding-left: 16px;
+}
+
+.features-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.pricing-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pricing-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.pricing-value {
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.card-footer {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cta-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cta-button:hover {
+  background: #0056b3;
+}
+
+.free-tier-badge {
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .custom-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .match-score {
+    margin-left: 0;
+  }
+}
+```
+
+## Responsive Design
+
+### Breakpoint System
+
+```css
+/* AdMesh responsive breakpoints */
+:root {
+  --admesh-breakpoint-sm: 576px;
+  --admesh-breakpoint-md: 768px;
+  --admesh-breakpoint-lg: 992px;
+  --admesh-breakpoint-xl: 1200px;
+}
+
+/* Mobile-first responsive design */
+.admesh-responsive {
+  /* Mobile styles (default) */
+  --admesh-grid-columns: 1;
+  --admesh-spacing: var(--admesh-spacing-sm);
+  --admesh-font-size: var(--admesh-font-size-sm);
+}
+
+@media (min-width: 576px) {
+  .admesh-responsive {
+    --admesh-grid-columns: 2;
+    --admesh-spacing: var(--admesh-spacing-md);
+  }
+}
+
+@media (min-width: 768px) {
+  .admesh-responsive {
+    --admesh-grid-columns: 2;
+    --admesh-font-size: var(--admesh-font-size-md);
+  }
+}
+
+@media (min-width: 992px) {
+  .admesh-responsive {
+    --admesh-grid-columns: 3;
+    --admesh-spacing: var(--admesh-spacing-lg);
+  }
+}
+
+@media (min-width: 1200px) {
+  .admesh-responsive {
+    --admesh-grid-columns: 4;
+  }
+}
+```
+
+### Responsive Component Usage
+
+```tsx
+function ResponsiveRecommendations({ recommendations }) {
+  return (
+    <div className="admesh-responsive">
+      <AdMeshLayout
+        recommendations={recommendations}
+        layout="grid"
+        className="responsive-grid"
+      />
+    </div>
+  );
+}
+```
+
+## Animation and Transitions
+
+### Hover Effects
+
+```css
+/* Smooth hover animations */
+.admesh-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admesh-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Staggered animation for grid items */
+.admesh-grid .admesh-card {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.admesh-grid .admesh-card:nth-child(1) { animation-delay: 0.1s; }
+.admesh-grid .admesh-card:nth-child(2) { animation-delay: 0.2s; }
+.admesh-grid .admesh-card:nth-child(3) { animation-delay: 0.3s; }
+.admesh-grid .admesh-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+### Loading Animations
+
+```css
+/* Loading skeleton animation */
+.admesh-loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-card {
+  height: 200px;
+  border-radius: var(--admesh-border-radius-md);
+  margin-bottom: var(--admesh-spacing-md);
+}
+```
+
+## Accessibility Customization
+
+### High Contrast Mode
+
+```css
+/* High contrast theme for accessibility */
+@media (prefers-contrast: high) {
+  .admesh-layout {
+    --admesh-primary-color: #000000;
+    --admesh-bg-primary: #ffffff;
+    --admesh-text-primary: #000000;
+    --admesh-shadow-md: 0 0 0 2px #000000;
+  }
+  
+  .admesh-card {
+    border: 2px solid #000000;
+  }
+  
+  .admesh-card:hover {
+    background: #000000;
+    color: #ffffff;
+  }
+}
+```
+
+### Reduced Motion
+
+```css
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .admesh-card {
+    transition: none;
+  }
+  
+  .admesh-card:hover {
+    transform: none;
+  }
+  
+  .admesh-grid .admesh-card {
+    animation: none;
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Layout Component" icon="layout" href="/ui-sdk/layout-component">
+    Detailed component documentation
+  </Card>
+  <Card title="Live Examples" icon="code" href="https://storybook.useadmesh.com">
+    Interactive component examples
+  </Card>
+  <Card title="Integration Examples" icon="puzzle" href="/examples/integration-examples">
+    Framework-specific examples
+  </Card>
+</CardGroup>

@@ -1,0 +1,513 @@
+---
+title: "Layout Component"
+description: "Detailed documentation for the AdMeshLayout component"
+---
+
+# Layout Component
+
+Detailed documentation for the AdMeshLayout component and its various layout options.
+
+## Component Overview
+
+The `AdMeshLayout` component is the main UI component for displaying AdMesh recommendations. It automatically adapts to different content types and provides multiple layout options.
+
+## Basic Usage
+
+```tsx
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+<AdMeshLayout
+  recommendations={recommendations}
+  layout="auto"
+  onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
+/>
+```
+
+## Layout Types
+
+<AccordionGroup>
+  <Accordion title="🔄 Auto Layout">
+    
+Automatically selects the best layout based on content and context.
+
+```tsx
+<AdMeshLayout 
+  recommendations={recommendations}
+  layout="auto"
+/>
+```
+
+**When to use:**
+- Default choice for most applications
+- When you want the component to decide the best presentation
+- For dynamic content where recommendation types may vary
+
+**Behavior:**
+- 1-2 recommendations: Uses list layout
+- 3-4 recommendations: Uses grid layout
+- 5+ recommendations: Uses grid with pagination
+- Citation context: Uses citation layout
+
+  </Accordion>
+
+  <Accordion title="📋 Grid Layout">
+    
+Displays recommendations in a responsive card grid.
+
+```tsx
+<AdMeshLayout 
+  recommendations={recommendations}
+  layout="grid"
+  maxItems={6}
+/>
+```
+
+**Features:**
+- Responsive grid (1-4 columns based on screen size)
+- Card-based design with hover effects
+- Shows pricing, features, and ratings
+- Perfect for product showcases
+
+**Best for:**
+- E-commerce recommendations
+- Product comparison pages
+- Landing pages with multiple options
+- When you have 3+ recommendations
+
+  </Accordion>
+
+  <Accordion title="📝 List Layout">
+    
+Displays recommendations in a vertical list format.
+
+```tsx
+<AdMeshLayout 
+  recommendations={recommendations}
+  layout="list"
+  showFeatures={true}
+/>
+```
+
+**Features:**
+- Compact vertical layout
+- Detailed information display
+- Easy scanning and comparison
+- Mobile-friendly design
+
+**Best for:**
+- Detailed product comparisons
+- Mobile applications
+- Sidebar recommendations
+- When space is limited
+
+  </Accordion>
+
+  <Accordion title="📖 Citation Layout">
+    
+Inline citations perfect for AI assistants and conversational interfaces.
+
+```tsx
+<AdMeshLayout 
+  recommendations={recommendations}
+  layout="citation"
+  maxItems={3}
+/>
+```
+
+**Features:**
+- Inline text-based format
+- Minimal visual footprint
+- Contextual integration
+- Natural conversation flow
+
+**Best for:**
+- AI chatbots and assistants
+- Conversational interfaces
+- Inline content recommendations
+- Text-heavy applications
+
+  </Accordion>
+</AccordionGroup>
+
+## Props Reference
+
+### Required Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `recommendations` | `Recommendation[]` | Array of recommendation objects from AdMesh API |
+
+### Optional Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `layout` | `'auto' \| 'grid' \| 'list' \| 'citation'` | `'auto'` | Layout type to use |
+| `onRecommendationClick` | `(adId: string, admeshLink: string) => void` | `undefined` | Click handler for recommendations |
+| `className` | `string` | `undefined` | Custom CSS class name |
+| `style` | `React.CSSProperties` | `undefined` | Inline styles object |
+| `maxItems` | `number` | `undefined` | Maximum number of recommendations to display |
+| `showPricing` | `boolean` | `true` | Whether to show pricing information |
+| `showFeatures` | `boolean` | `true` | Whether to show features list |
+| `showRatings` | `boolean` | `true` | Whether to show trust scores |
+| `showDescription` | `boolean` | `true` | Whether to show product descriptions |
+| `compact` | `boolean` | `false` | Use compact mode for smaller displays |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color theme |
+
+## Recommendation Object
+
+The component expects recommendation objects with this structure:
+
+```typescript
+interface Recommendation {
+  // Required fields
+  title: string;
+  reason: string;
+  admesh_link: string;
+  ad_id: string;
+  
+  // Optional fields
+  product_id?: string;
+  description?: string;
+  pricing?: string;
+  features?: string[];
+  categories?: string[];
+  keywords?: string[];
+  
+  // Metadata
+  has_free_tier?: boolean;
+  trial_days?: number;
+  intent_match_score?: number;
+  offer_trust_score?: number;
+  brand_trust_score?: number;
+  
+  // Display options
+  image_url?: string;
+  brand_logo?: string;
+  rating?: number;
+  review_count?: number;
+}
+```
+
+## Event Handling
+
+### Click Events
+
+```tsx
+const handleRecommendationClick = (adId: string, admeshLink: string) => {
+  // Track analytics
+  analytics.track('recommendation_clicked', {
+    ad_id: adId,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Custom behavior
+  console.log('Recommendation clicked:', adId);
+  
+  // Open link
+  window.open(admeshLink, '_blank');
+};
+
+<AdMeshLayout
+  recommendations={recommendations}
+  onRecommendationClick={handleRecommendationClick}
+/>
+```
+
+### Hover Events
+
+```tsx
+const handleRecommendationHover = (adId: string) => {
+  // Track hover for analytics
+  analytics.track('recommendation_hovered', { ad_id: adId });
+};
+
+// Note: Hover events are handled internally by the component
+// but you can track them using CSS or custom wrapper components
+```
+
+## Customization Examples
+
+<AccordionGroup>
+  <Accordion title="🎨 Custom Styling">
+
+```tsx
+// Custom styles
+const customStyles = {
+  backgroundColor: '#f8f9fa',
+  borderRadius: '12px',
+  padding: '20px',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+};
+
+<AdMeshLayout
+  recommendations={recommendations}
+  style={customStyles}
+  className="my-recommendations"
+/>
+```
+
+```css
+/* Custom CSS */
+.my-recommendations {
+  --admesh-primary-color: #007bff;
+  --admesh-border-radius: 8px;
+  --admesh-spacing: 16px;
+}
+
+.my-recommendations .admesh-card {
+  transition: transform 0.2s ease;
+}
+
+.my-recommendations .admesh-card:hover {
+  transform: translateY(-2px);
+}
+```
+
+  </Accordion>
+
+  <Accordion title="📱 Responsive Configuration">
+
+```tsx
+function ResponsiveRecommendations({ recommendations }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout={isMobile ? 'list' : 'grid'}
+      maxItems={isMobile ? 3 : 6}
+      compact={isMobile}
+      showFeatures={!isMobile}
+    />
+  );
+}
+```
+
+  </Accordion>
+
+  <Accordion title="🔧 Conditional Features">
+
+```tsx
+function ConditionalRecommendations({ recommendations, userType }) {
+  const showPricing = userType === 'premium';
+  const maxItems = userType === 'free' ? 3 : 10;
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="grid"
+      maxItems={maxItems}
+      showPricing={showPricing}
+      showFeatures={true}
+      onRecommendationClick={(adId, admeshLink) => {
+        // Track user type in analytics
+        analytics.track('recommendation_clicked', {
+          ad_id: adId,
+          user_type: userType
+        });
+        
+        window.open(admeshLink, '_blank');
+      }}
+    />
+  );
+}
+```
+
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Usage
+
+### Loading States
+
+```tsx
+function RecommendationsWithLoading({ query }) {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchRecommendations = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const recs = await response.json();
+      setRecommendations(recs);
+    } catch (error) {
+      console.error('Failed to fetch recommendations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="recommendations-loading">
+        <div className="loading-skeleton">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="skeleton-card" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto"
+      onRecommendationClick={(adId, admeshLink) => {
+        window.open(admeshLink, '_blank');
+      }}
+    />
+  );
+}
+```
+
+### Error Handling
+
+```tsx
+function RecommendationsWithErrorHandling({ recommendations }) {
+  if (!recommendations || recommendations.length === 0) {
+    return (
+      <div className="no-recommendations">
+        <p>No recommendations found. Try a different search query.</p>
+      </div>
+    );
+  }
+
+  // Validate recommendation objects
+  const validRecommendations = recommendations.filter(rec => 
+    rec.title && rec.reason && rec.admesh_link && rec.ad_id
+  );
+
+  if (validRecommendations.length === 0) {
+    return (
+      <div className="invalid-recommendations">
+        <p>Unable to display recommendations. Please try again.</p>
+      </div>
+    );
+  }
+
+  return (
+    <AdMeshLayout
+      recommendations={validRecommendations}
+      layout="auto"
+      onRecommendationClick={(adId, admeshLink) => {
+        try {
+          window.open(admeshLink, '_blank');
+        } catch (error) {
+          console.error('Failed to open recommendation link:', error);
+          // Fallback behavior
+          window.location.href = admeshLink;
+        }
+      }}
+    />
+  );
+}
+```
+
+### Performance Optimization
+
+```tsx
+import { memo, useMemo } from 'react';
+
+const OptimizedRecommendations = memo(({ recommendations, layout }) => {
+  // Memoize processed recommendations
+  const processedRecommendations = useMemo(() => {
+    return recommendations.map(rec => ({
+      ...rec,
+      // Add any processing logic here
+      displayTitle: rec.title.length > 50 ? 
+        rec.title.substring(0, 47) + '...' : 
+        rec.title
+    }));
+  }, [recommendations]);
+
+  return (
+    <AdMeshLayout
+      recommendations={processedRecommendations}
+      layout={layout}
+      onRecommendationClick={(adId, admeshLink) => {
+        window.open(admeshLink, '_blank');
+      }}
+    />
+  );
+});
+```
+
+## Accessibility
+
+The AdMeshLayout component includes built-in accessibility features:
+
+- **Keyboard Navigation**: Full keyboard support with tab navigation
+- **Screen Reader Support**: Proper ARIA labels and descriptions
+- **Focus Management**: Clear focus indicators and logical tab order
+- **Color Contrast**: Meets WCAG 2.1 AA standards
+- **Responsive Design**: Works with screen readers on all devices
+
+### Custom Accessibility
+
+```tsx
+<AdMeshLayout
+  recommendations={recommendations}
+  layout="grid"
+  aria-label="Product recommendations"
+  role="region"
+  onRecommendationClick={(adId, admeshLink) => {
+    // Announce to screen readers
+    const announcement = `Opening recommendation: ${recommendations.find(r => r.ad_id === adId)?.title}`;
+    
+    // Create temporary element for screen reader announcement
+    const announcer = document.createElement('div');
+    announcer.setAttribute('aria-live', 'polite');
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.style.position = 'absolute';
+    announcer.style.left = '-10000px';
+    announcer.textContent = announcement;
+    
+    document.body.appendChild(announcer);
+    setTimeout(() => document.body.removeChild(announcer), 1000);
+    
+    window.open(admeshLink, '_blank');
+  }}
+/>
+```
+
+## Browser Support
+
+The AdMeshLayout component supports:
+
+- **Chrome**: 70+
+- **Firefox**: 65+
+- **Safari**: 12+
+- **Edge**: 79+
+- **Mobile Safari**: 12+
+- **Chrome Mobile**: 70+
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Customization" icon="palette" href="/ui-sdk/customization">
+    Styling and theming guide
+  </Card>
+  <Card title="Live Examples" icon="code" href="https://storybook.useadmesh.com">
+    Interactive component examples
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/recommendations">
+    Complete API documentation
+  </Card>
+</CardGroup>

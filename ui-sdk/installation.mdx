@@ -1,0 +1,456 @@
+---
+title: "UI SDK Installation"
+description: "Install and set up AdMesh UI components for React applications"
+---
+
+# UI SDK Installation
+
+Install and set up AdMesh UI components for React applications.
+
+## Quick Installation
+
+<Steps>
+  <Step title="Install the Package">
+    ```bash
+    npm install admesh-ui-sdk
+    ```
+  </Step>
+  <Step title="Import Components">
+    ```tsx
+    import { AdMeshLayout } from 'admesh-ui-sdk';
+    ```
+  </Step>
+  <Step title="Use in Your App">
+    ```tsx
+    <AdMeshLayout 
+      recommendations={recommendations}
+      layout="auto"
+      onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
+    />
+    ```
+  </Step>
+</Steps>
+
+## Package Requirements
+
+<CardGroup cols={2}>
+  <Card title="React Version" icon="react">
+    React 16.8+ (Hooks support required)
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Full TypeScript support included
+  </Card>
+</CardGroup>
+
+## Installation Methods
+
+<AccordionGroup>
+  <Accordion title="📦 npm">
+    ```bash
+    npm install admesh-ui-sdk
+    ```
+  </Accordion>
+  
+  <Accordion title="🧶 Yarn">
+    ```bash
+    yarn add admesh-ui-sdk
+    ```
+  </Accordion>
+  
+  <Accordion title="📦 pnpm">
+    ```bash
+    pnpm add admesh-ui-sdk
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Basic Setup
+
+### 1. Import Styles (Optional)
+
+The UI SDK includes default styles, but you can customize them:
+
+```tsx
+// Import default styles (optional)
+import 'admesh-ui-sdk/dist/styles.css';
+```
+
+### 2. Basic Component Usage
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+function MyApp() {
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    // Fetch recommendations from your backend
+    fetchRecommendations();
+  }, []);
+
+  const fetchRecommendations = async () => {
+    try {
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: 'best CRM software' })
+      });
+      
+      const recs = await response.json();
+      setRecommendations(recs);
+    } catch (error) {
+      console.error('Failed to fetch recommendations:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Product Recommendations</h1>
+      <AdMeshLayout
+        recommendations={recommendations}
+        layout="auto"
+        onRecommendationClick={(adId, admeshLink) => {
+          // Handle click tracking
+          console.log('Recommendation clicked:', adId);
+          window.open(admeshLink, '_blank');
+        }}
+      />
+    </div>
+  );
+}
+
+export default MyApp;
+```
+
+## Component Props
+
+### AdMeshLayout Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `recommendations` | `Recommendation[]` | ✅ | Array of recommendation objects |
+| `layout` | `string` | ❌ | Layout type: `auto`, `grid`, `list`, `citation` |
+| `onRecommendationClick` | `function` | ❌ | Click handler: `(adId, admeshLink) => void` |
+| `className` | `string` | ❌ | Custom CSS class |
+| `style` | `object` | ❌ | Inline styles |
+| `showPricing` | `boolean` | ❌ | Show pricing information (default: true) |
+| `showFeatures` | `boolean` | ❌ | Show features list (default: true) |
+| `maxItems` | `number` | ❌ | Maximum recommendations to display |
+
+### Recommendation Object Type
+
+```typescript
+interface Recommendation {
+  title: string;
+  reason: string;
+  admesh_link: string;
+  ad_id: string;
+  product_id?: string;
+  pricing?: string;
+  features?: string[];
+  description?: string;
+  has_free_tier?: boolean;
+  trial_days?: number;
+  intent_match_score?: number;
+}
+```
+
+## Layout Types
+
+<AccordionGroup>
+  <Accordion title="🔄 Auto Layout">
+    Automatically chooses the best layout based on content:
+    ```tsx
+    <AdMeshLayout 
+      recommendations={recommendations}
+      layout="auto"
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="📋 Grid Layout">
+    Displays recommendations in a responsive grid:
+    ```tsx
+    <AdMeshLayout 
+      recommendations={recommendations}
+      layout="grid"
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="📝 List Layout">
+    Displays recommendations in a vertical list:
+    ```tsx
+    <AdMeshLayout 
+      recommendations={recommendations}
+      layout="list"
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="📖 Citation Layout">
+    Inline citations perfect for AI assistants:
+    ```tsx
+    <AdMeshLayout 
+      recommendations={recommendations}
+      layout="citation"
+    />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Configuration
+
+### Custom Styling
+
+```tsx
+// Custom styles
+const customStyles = {
+  container: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: '8px',
+    padding: '16px'
+  }
+};
+
+<AdMeshLayout
+  recommendations={recommendations}
+  style={customStyles.container}
+  className="my-custom-recommendations"
+/>
+```
+
+### Event Handling
+
+```tsx
+const handleRecommendationClick = (adId: string, admeshLink: string) => {
+  // Track analytics
+  analytics.track('recommendation_clicked', { adId });
+  
+  // Custom behavior
+  if (window.confirm('Open this recommendation?')) {
+    window.open(admeshLink, '_blank');
+  }
+};
+
+<AdMeshLayout
+  recommendations={recommendations}
+  onRecommendationClick={handleRecommendationClick}
+/>
+```
+
+### Conditional Rendering
+
+```tsx
+function RecommendationSection({ query }) {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return <div>Loading recommendations...</div>;
+  }
+
+  if (recommendations.length === 0) {
+    return <div>No recommendations found.</div>;
+  }
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto"
+      maxItems={5}
+      onRecommendationClick={(adId, admeshLink) => {
+        window.open(admeshLink, '_blank');
+      }}
+    />
+  );
+}
+```
+
+## Integration with Backend
+
+### Complete Example with API Integration
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+function SearchWithRecommendations() {
+  const [query, setQuery] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const searchRecommendations = async () => {
+    if (!query.trim()) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch recommendations');
+      }
+
+      const recs = await response.json();
+      setRecommendations(recs);
+    } catch (err) {
+      setError(err.message);
+      setRecommendations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="search-container">
+      <div className="search-input">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && searchRecommendations()}
+          placeholder="Search for products or services..."
+          disabled={loading}
+        />
+        <button 
+          onClick={searchRecommendations}
+          disabled={loading || !query.trim()}
+        >
+          {loading ? 'Searching...' : 'Search'}
+        </button>
+      </div>
+
+      {error && (
+        <div className="error-message">
+          Error: {error}
+        </div>
+      )}
+
+      {recommendations.length > 0 && (
+        <div className="recommendations-section">
+          <h3>Recommendations for "{query}"</h3>
+          <AdMeshLayout
+            recommendations={recommendations}
+            layout="grid"
+            onRecommendationClick={(adId, admeshLink) => {
+              // Track the click
+              console.log('Clicked recommendation:', adId);
+              
+              // Open the link
+              window.open(admeshLink, '_blank');
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default SearchWithRecommendations;
+```
+
+## TypeScript Support
+
+The UI SDK includes full TypeScript definitions:
+
+```typescript
+import { AdMeshLayout, Recommendation } from 'admesh-ui-sdk';
+
+interface Props {
+  recommendations: Recommendation[];
+  onRecommendationClick?: (adId: string, admeshLink: string) => void;
+}
+
+const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }) => {
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto"
+      onRecommendationClick={onRecommendationClick}
+    />
+  );
+};
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="🚫 Component Not Rendering">
+    **Common causes:**
+    - Empty recommendations array
+    - Missing required props
+    - CSS conflicts
+
+    **Solutions:**
+    ```tsx
+    // Check if recommendations exist
+    {recommendations.length > 0 && (
+      <AdMeshLayout recommendations={recommendations} />
+    )}
+    
+    // Add debug logging
+    console.log('Recommendations:', recommendations);
+    ```
+  </Accordion>
+  
+  <Accordion title="🎨 Styling Issues">
+    **Common causes:**
+    - CSS conflicts with existing styles
+    - Missing default styles import
+
+    **Solutions:**
+    ```tsx
+    // Import default styles
+    import 'admesh-ui-sdk/dist/styles.css';
+    
+    // Use custom className
+    <AdMeshLayout 
+      recommendations={recommendations}
+      className="my-custom-class"
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="🔗 Click Handling Not Working">
+    **Common causes:**
+    - Missing onRecommendationClick prop
+    - Event propagation issues
+
+    **Solutions:**
+    ```tsx
+    const handleClick = (adId: string, admeshLink: string) => {
+      console.log('Click handler called:', adId);
+      window.open(admeshLink, '_blank');
+    };
+    
+    <AdMeshLayout 
+      recommendations={recommendations}
+      onRecommendationClick={handleClick}
+    />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Layout Component" icon="layout" href="/ui-sdk/layout-component">
+    Detailed component documentation
+  </Card>
+  <Card title="Customization" icon="palette" href="/ui-sdk/customization">
+    Styling and theming guide
+  </Card>
+  <Card title="Live Examples" icon="code" href="https://storybook.useadmesh.com">
+    Interactive component examples
+  </Card>
+</CardGroup>

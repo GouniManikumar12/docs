@@ -10,16 +10,16 @@ Get intelligent product recommendations with a simple API call.
 ## Quick Start
 
 ```bash
-curl -X POST "https://api.useadmesh.com/recommend" \
+curl -X POST "https://api.useadmesh.com/agent/recommendations" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"query": "best CRM for startups", "format": "auto"}'
+  -d '{"query": "best CRM for startups", "agent_id": "your_agent_id"}'
 ```
 
 <AccordionGroup>
-  <Accordion title="📋 Basic Request Format">
+  <Accordion title="Basic Request Format">
 
-**Endpoint:** `POST https://api.useadmesh.com/recommend`
+**Endpoint:** `POST https://api.useadmesh.com/agent/recommendations`
 
 **Required Headers:**
 ```http
@@ -31,22 +31,23 @@ Content-Type: application/json
 ```json
 {
   "query": "best CRM for startups",
-  "format": "auto"
+  "agent_id": "your_agent_id"
 }
 ```
 
   </Accordion>
 
-  <Accordion title="⚙️ Advanced Parameters (Optional)">
+  <Accordion title="Advanced Parameters (Optional)">
 
 ```json
 {
   "query": "best CRM for startups",
-  "format": "auto",
+  "agent_id": "your_agent_id",
   "previous_query": "project management tools",
   "previous_summary": "We discussed project management solutions",
   "session_id": "user_session_123",
-  "is_fallback_allowed": true
+  "is_fallback_allowed": true,
+  "format": "auto"
 }
 ```
 
@@ -56,7 +57,7 @@ Content-Type: application/json
 ## Response Format
 
 <AccordionGroup>
-  <Accordion title="📄 Example Response">
+  <Accordion title="Example Response">
 
 ```json
 {
@@ -78,7 +79,7 @@ Content-Type: application/json
 
   </Accordion>
 
-  <Accordion title="📊 Complete Response Structure">
+  <Accordion title="Complete Response Structure">
 
 ```json
 {
@@ -122,11 +123,12 @@ Content-Type: application/json
 
   </Accordion>
 
-  <Accordion title="🔧 Request Parameters Reference">
+  <Accordion title="Request Parameters Reference">
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | ✅ | User's search query or question |
+| `agent_id` | string | ✅ | Your agent identifier |
 | `format` | string | ❌ | Format type: `auto` (default), `product`, `conversation` |
 | `previous_query` | string | ❌ | Previous query in conversation |
 | `session_id` | string | ❌ | Session identifier for tracking |
@@ -138,17 +140,20 @@ Content-Type: application/json
 ## Code Examples
 
 <AccordionGroup>
-  <Accordion title="🟨 JavaScript">
+  <Accordion title="JavaScript">
 
 ```javascript
-const getRecommendations = async (query) => {
-  const response = await fetch('https://api.useadmesh.com/recommend', {
+const getRecommendations = async (query, agentId) => {
+  const response = await fetch('https://api.useadmesh.com/agent/recommendations', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer YOUR_API_KEY',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ query, format: 'auto' })
+    body: JSON.stringify({
+      query: query,
+      agent_id: agentId
+    })
   });
 
   if (!response.ok) {
@@ -156,44 +161,50 @@ const getRecommendations = async (query) => {
   }
 
   const data = await response.json();
-  return data.response.recommendations;
+  return data.recommendations;
 };
 
 // Usage
-const recommendations = await getRecommendations('best CRM for startups');
+const recommendations = await getRecommendations('best CRM for startups', 'your_agent_id');
 ```
 
   </Accordion>
 
-  <Accordion title="🐍 Python">
+  <Accordion title="Python">
 
 ```python
 import requests
 
-def get_recommendations(query):
+def get_recommendations(query, agent_id):
     response = requests.post(
-        'https://api.useadmesh.com/recommend',
+        'https://api.useadmesh.com/agent/recommendations',
         headers={'Authorization': 'Bearer YOUR_API_KEY'},
-        json={'query': query, 'format': 'auto'}
+        json={
+            'query': query,
+            'agent_id': agent_id
+        }
     )
-    
+
     response.raise_for_status()
     data = response.json()
-    return data['response']['recommendations']
+    return data['recommendations']
 
 # Usage
-recommendations = get_recommendations('best CRM for startups')
+recommendations = get_recommendations('best CRM for startups', 'your_agent_id')
 ```
 
   </Accordion>
 
-  <Accordion title="🐘 PHP">
+  <Accordion title="PHP">
 
 ```php
 <?php
-function getRecommendations($query) {
-    $data = json_encode(['query' => $query, 'format' => 'auto']);
-    
+function getRecommendations($query, $agentId) {
+    $data = json_encode([
+        'query' => $query,
+        'agent_id' => $agentId
+    ]);
+
     $context = stream_context_create([
         'http' => [
             'method' => 'POST',
@@ -204,20 +215,20 @@ function getRecommendations($query) {
             'content' => $data
         ]
     ]);
-    
-    $response = file_get_contents('https://api.useadmesh.com/recommend', false, $context);
+
+    $response = file_get_contents('https://api.useadmesh.com/agent/recommendations', false, $context);
     $result = json_decode($response, true);
-    return $result['response']['recommendations'];
+    return $result['recommendations'];
 }
 
 // Usage
-$recommendations = getRecommendations('best CRM for startups');
+$recommendations = getRecommendations('best CRM for startups', 'your_agent_id');
 ?>
 ```
 
   </Accordion>
 
-  <Accordion title="⚠️ Error Handling">
+  <Accordion title="Error Handling">
 
 **Common Error Responses:**
 
@@ -247,7 +258,7 @@ Each recommendation includes:
 - **`pricing`** - Cost information
 - **`features`** - Key features list
 
-<Accordion title="📋 Complete Field Reference">
+<Accordion title="Complete Field Reference">
 
 **Core Fields (Always Present):**
 - `title`, `reason`, `intent_match_score`, `admesh_link`, `ad_id`, `product_id`

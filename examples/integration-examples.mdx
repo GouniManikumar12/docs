@@ -10,18 +10,21 @@ Ready-to-use code examples for different languages and frameworks.
 ## Quick Examples
 
 <AccordionGroup>
-  <Accordion title="🟨 JavaScript/Node.js">
+  <Accordion title="JavaScript/Node.js">
 
 ### Basic Function
 ```javascript
-async function getRecommendations(query) {
-  const response = await fetch('https://api.useadmesh.com/recommend', {
+async function getRecommendations(query, agentId) {
+  const response = await fetch('https://api.useadmesh.com/agent/recommendations', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ query, format: 'auto' })
+    body: JSON.stringify({
+      query: query,
+      agent_id: agentId
+    })
   });
 
   if (!response.ok) {
@@ -29,29 +32,32 @@ async function getRecommendations(query) {
   }
 
   const data = await response.json();
-  return data.response.recommendations;
+  return data.recommendations;
 }
 
 // Usage
-const recommendations = await getRecommendations('best CRM for startups');
+const recommendations = await getRecommendations('best CRM for startups', 'your_agent_id');
 ```
 
 ### Express.js API Route
 ```javascript
 app.post('/api/recommendations', async (req, res) => {
   const { query } = req.body;
-  
-  const response = await fetch('https://api.useadmesh.com/recommend', {
+
+  const response = await fetch('https://api.useadmesh.com/agent/recommendations', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ query, format: 'auto' })
+    body: JSON.stringify({
+      query: query,
+      agent_id: process.env.ADMESH_AGENT_ID
+    })
   });
-  
+
   const data = await response.json();
-  res.json(data.response.recommendations);
+  res.json(data.recommendations);
 });
 ```
 
@@ -60,18 +66,21 @@ app.post('/api/recommendations', async (req, res) => {
 // pages/api/recommendations.js
 export default async function handler(req, res) {
   const { query } = req.body;
-  
-  const response = await fetch('https://api.useadmesh.com/recommend', {
+
+  const response = await fetch('https://api.useadmesh.com/agent/recommendations', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ query, format: 'auto' })
+    body: JSON.stringify({
+      query: query,
+      agent_id: process.env.ADMESH_AGENT_ID
+    })
   });
-  
+
   const data = await response.json();
-  res.json(data.response.recommendations);
+  res.json(data.recommendations);
 }
 ```
 
@@ -115,26 +124,29 @@ function RecommendationSearch() {
 
   </Accordion>
 
-  <Accordion title="🐍 Python">
+  <Accordion title="Python">
 
 ### Basic Function
 ```python
 import requests
 import os
 
-def get_recommendations(query):
+def get_recommendations(query, agent_id):
     response = requests.post(
-        'https://api.useadmesh.com/recommend',
+        'https://api.useadmesh.com/agent/recommendations',
         headers={'Authorization': f'Bearer {os.environ.get("ADMESH_API_KEY")}'},
-        json={'query': query, 'format': 'auto'}
+        json={
+            'query': query,
+            'agent_id': agent_id
+        }
     )
-    
+
     response.raise_for_status()
     data = response.json()
-    return data['response']['recommendations']
+    return data['recommendations']
 
 # Usage
-recommendations = get_recommendations('best CRM for startups')
+recommendations = get_recommendations('best CRM for startups', 'your_agent_id')
 for rec in recommendations:
     print(f"{rec['title']}: {rec['reason']}")
 ```
@@ -149,14 +161,17 @@ import os
 def get_recommendations():
     data = request.get_json()
     query = data.get('query')
-    
+
     response = requests.post(
-        'https://api.useadmesh.com/recommend',
+        'https://api.useadmesh.com/agent/recommendations',
         headers={'Authorization': f'Bearer {os.environ.get("ADMESH_API_KEY")}'},
-        json={'query': query, 'format': 'auto'}
+        json={
+            'query': query,
+            'agent_id': os.environ.get("ADMESH_AGENT_ID")
+        }
     )
-    
-    return jsonify(response.json()['response']['recommendations'])
+
+    return jsonify(response.json()['recommendations'])
 ```
 
 ### Django View
@@ -170,26 +185,32 @@ import os
 def get_recommendations(request):
     data = json.loads(request.body)
     query = data.get('query')
-    
+
     response = requests.post(
-        'https://api.useadmesh.com/recommend',
+        'https://api.useadmesh.com/agent/recommendations',
         headers={'Authorization': f'Bearer {os.environ.get("ADMESH_API_KEY")}'},
-        json={'query': query, 'format': 'auto'}
+        json={
+            'query': query,
+            'agent_id': os.environ.get("ADMESH_AGENT_ID")
+        }
     )
-    
-    return JsonResponse(response.json()['response']['recommendations'], safe=False)
+
+    return JsonResponse(response.json()['recommendations'], safe=False)
 ```
 
   </Accordion>
 
-  <Accordion title="🐘 PHP">
+  <Accordion title="PHP">
 
 ### Basic Function
 ```php
 <?php
-function getRecommendations($query) {
-    $data = json_encode(['query' => $query, 'format' => 'auto']);
-    
+function getRecommendations($query, $agentId) {
+    $data = json_encode([
+        'query' => $query,
+        'agent_id' => $agentId
+    ]);
+
     $context = stream_context_create([
         'http' => [
             'method' => 'POST',
@@ -200,14 +221,14 @@ function getRecommendations($query) {
             'content' => $data
         ]
     ]);
-    
-    $response = file_get_contents('https://api.useadmesh.com/recommend', false, $context);
+
+    $response = file_get_contents('https://api.useadmesh.com/agent/recommendations', false, $context);
     $result = json_decode($response, true);
-    return $result['response']['recommendations'];
+    return $result['recommendations'];
 }
 
 // Usage
-$recommendations = getRecommendations('best CRM for startups');
+$recommendations = getRecommendations('best CRM for startups', 'your_agent_id');
 foreach ($recommendations as $rec) {
     echo $rec['title'] . ": " . $rec['reason'] . "\n";
 }
@@ -226,13 +247,13 @@ class RecommendationController extends Controller
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . env('ADMESH_API_KEY')
-        ])->post('https://api.useadmesh.com/recommend', [
+        ])->post('https://api.useadmesh.com/agent/recommendations', [
             'query' => $request->query,
-            'format' => 'auto'
+            'agent_id' => env('ADMESH_AGENT_ID')
         ]);
 
         $data = $response->json();
-        return response()->json($data['response']['recommendations']);
+        return response()->json($data['recommendations']);
     }
 }
 ```
@@ -243,20 +264,23 @@ class RecommendationController extends Controller
 ## Framework Examples
 
 <AccordionGroup>
-  <Accordion title="🔧 Error Handling">
+  <Accordion title="Error Handling">
 
 ### JavaScript with Retry Logic
 ```javascript
 async function getRecommendationsWithRetry(query, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch('https://api.useadmesh.com/recommend', {
+      const response = await fetch('https://api.useadmesh.com/agent/recommendations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ query, format: 'auto' })
+        body: JSON.stringify({
+          query: query,
+          agent_id: process.env.ADMESH_AGENT_ID
+        })
       });
 
       if (!response.ok) {
@@ -271,7 +295,7 @@ async function getRecommendationsWithRetry(query, maxRetries = 3) {
       }
 
       const data = await response.json();
-      return data.response.recommendations;
+      return data.recommendations;
     } catch (error) {
       if (attempt === maxRetries) {
         console.error('Failed after retries:', error);
@@ -293,9 +317,12 @@ def get_recommendations_with_retry(query: str, max_retries: int = 3) -> List[Dic
     for attempt in range(1, max_retries + 1):
         try:
             response = requests.post(
-                'https://api.useadmesh.com/recommend',
+                'https://api.useadmesh.com/agent/recommendations',
                 headers={'Authorization': f'Bearer {os.environ.get("ADMESH_API_KEY")}'},
-                json={'query': query, 'format': 'auto'},
+                json={
+                    'query': query,
+                    'agent_id': os.environ.get("ADMESH_AGENT_ID")
+                },
                 timeout=30
             )
             
@@ -308,7 +335,7 @@ def get_recommendations_with_retry(query: str, max_retries: int = 3) -> List[Dic
                 
             response.raise_for_status()
             data = response.json()
-            return data['response']['recommendations']
+            return data['recommendations']
             
         except requests.exceptions.RequestException as e:
             if attempt == max_retries:
@@ -321,7 +348,7 @@ def get_recommendations_with_retry(query: str, max_retries: int = 3) -> List[Dic
 
   </Accordion>
 
-  <Accordion title="🎨 Frontend Integration Patterns">
+  <Accordion title="Frontend Integration Patterns">
 
 ### Vue.js Component
 ```vue
@@ -415,6 +442,7 @@ export class SearchComponent {
 ```bash .env
 # Environment variables
 ADMESH_API_KEY=admesh_prod_abc123xyz789
+ADMESH_AGENT_ID=your_agent_id
 ADMESH_BASE_URL=https://api.useadmesh.com
 ```
 
@@ -422,6 +450,7 @@ ADMESH_BASE_URL=https://api.useadmesh.com
 // Environment configuration
 const config = {
   apiKey: process.env.ADMESH_API_KEY,
+  agentId: process.env.ADMESH_AGENT_ID,
   baseUrl: process.env.ADMESH_BASE_URL || 'https://api.useadmesh.com'
 };
 ```
@@ -431,6 +460,7 @@ import os
 
 # Environment configuration
 API_KEY = os.environ.get('ADMESH_API_KEY')
+AGENT_ID = os.environ.get('ADMESH_AGENT_ID')
 BASE_URL = os.environ.get('ADMESH_BASE_URL', 'https://api.useadmesh.com')
 ```
 

@@ -29,6 +29,12 @@
             ]
           },
           {
+            "group": "API Playground",
+            "pages": [
+              "api-playground"
+            ]
+          },
+          {
             "group": "Integration Examples",
             "pages": [
               "examples/integration-examples",
@@ -55,8 +61,13 @@
         },
         {
           "anchor": "Dashboard",
-          "href": "https://dashboard.useadmesh.com",
+          "href": "https://useadmesh.com",
           "icon": "chart-line"
+        },
+        {
+          "anchor": "Earnings Calculator",
+          "href": "https://useadmesh.com/agents#earnings-calculator",
+          "icon": "calculator"
         },
         {
           "anchor": "Support",
@@ -80,7 +91,7 @@
     "primary": {
       "type": "button",
       "label": "Get API Key",
-      "href": "https://dashboard.useadmesh.com"
+      "href": "https://useadmesh.com"
     }
   },
   "contextual": {
@@ -97,8 +108,7 @@
   },
   "footer": {
     "socials": {
-      "linkedin": "https://linkedin.com/in/manikumargouni",
-      "github": "https://github.com/GouniManikumar12"
+      "linkedin": "https://linkedin.com/in/manikumargouni"
     }
   }
 }

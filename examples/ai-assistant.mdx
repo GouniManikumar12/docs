@@ -19,7 +19,7 @@ This implementation includes:
 ## Complete AI Assistant Example
 
 <AccordionGroup>
-  <Accordion title="🐍 Backend (Python + FastAPI)">
+  <Accordion title="Backend (Python + FastAPI)">
 
 ```python
 # ai_assistant.py
@@ -55,13 +55,16 @@ async def get_admesh_recommendations(query: str) -> List[RecommendationResponse]
     """Get recommendations from AdMesh API"""
     try:
         response = requests.post(
-            'https://api.useadmesh.com/recommend',
+            'https://api.useadmesh.com/agent/recommendations',
             headers={'Authorization': f'Bearer {ADMESH_API_KEY}'},
-            json={'query': query, 'format': 'auto'}
+            json={
+                'query': query,
+                'agent_id': 'your_agent_id'
+            }
         )
         
         data = response.json()
-        recommendations = data['response']['recommendations']
+        recommendations = data['recommendations']
         
         return [
             RecommendationResponse(
@@ -126,7 +129,7 @@ if __name__ == "__main__":
 
   </Accordion>
 
-  <Accordion title="⚛️ Frontend (React)">
+  <Accordion title="Frontend (React)">
 
 ```tsx
 // AIAssistant.tsx
@@ -239,7 +242,7 @@ export default AIAssistant;
 
   </Accordion>
 
-  <Accordion title="🎨 Styling (CSS)">
+  <Accordion title="Styling (CSS)">
 
 ```css
 /* AIAssistant.css */
@@ -350,7 +353,7 @@ export default AIAssistant;
 ## Advanced Features
 
 <AccordionGroup>
-  <Accordion title="🧠 Intent Detection">
+  <Accordion title="Intent Detection">
 
 ```python
 def analyze_user_intent(message: str) -> dict:
@@ -392,7 +395,7 @@ def analyze_user_intent(message: str) -> dict:
 
   </Accordion>
 
-  <Accordion title="📊 Analytics Integration">
+  <Accordion title="Analytics Integration">
 
 ```python
 import asyncio
@@ -457,7 +460,7 @@ async def chat_with_assistant(request: ChatRequest):
 
   </Accordion>
 
-  <Accordion title="🔄 Conversation Context">
+  <Accordion title="Conversation Context">
 
 ```python
 class ConversationContext:

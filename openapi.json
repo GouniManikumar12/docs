@@ -1,0 +1,389 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AdMesh API",
+    "description": "Get intelligent product recommendations with a simple API call",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AdMesh Support",
+      "email": "mani@useadmesh.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.useadmesh.com",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/agent/recommendations": {
+      "post": {
+        "summary": "Get Recommendations",
+        "description": "Get intelligent product recommendations based on user queries",
+        "operationId": "getRecommendations",
+        "tags": ["Recommendations"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic recommendation request",
+                  "value": {
+                    "query": "best CRM for startups",
+                    "agent_id": "your_agent_id"
+                  }
+                },
+                "advanced": {
+                  "summary": "Advanced request with context",
+                  "value": {
+                    "query": "project management tools with time tracking",
+                    "agent_id": "your_agent_id",
+                    "previous_query": "CRM software recommendations",
+                    "previous_summary": "We discussed CRM solutions for small businesses",
+                    "session_id": "user_session_123",
+                    "is_fallback_allowed": true,
+                    "format": "auto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful recommendation response",
+                    "value": {
+                      "recommendations": [
+                        {
+                          "title": "HubSpot CRM",
+                          "reason": "Perfect for startups with its free tier and comprehensive features including contact management, deal tracking, and email integration.",
+                          "admesh_link": "https://useadmesh.com/r/hubspot-crm-abc123",
+                          "ad_id": "ad_123456789",
+                          "product_id": "hubspot_crm",
+                          "pricing": "Free tier available, paid plans from $45/month",
+                          "features": [
+                            "Contact management",
+                            "Deal pipeline tracking",
+                            "Email integration",
+                            "Reporting dashboard"
+                          ],
+                          "description": "A comprehensive CRM platform designed for growing businesses",
+                          "has_free_tier": true,
+                          "trial_days": 14,
+                          "intent_match_score": 0.92,
+                          "offer_trust_score": 0.88,
+                          "brand_trust_score": 0.95
+                        }
+                      ],
+                      "query_processed": "best CRM for startups",
+                      "total_recommendations": 1,
+                      "processing_time_ms": 245
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missing_query": {
+                    "summary": "Missing query parameter",
+                    "value": {
+                      "error": "Missing required parameter: query",
+                      "code": "MISSING_PARAMETER",
+                      "details": "The 'query' field is required in the request body"
+                    }
+                  },
+                  "missing_agent_id": {
+                    "summary": "Missing agent_id parameter",
+                    "value": {
+                      "error": "Missing required parameter: agent_id",
+                      "code": "MISSING_PARAMETER",
+                      "details": "The 'agent_id' field is required in the request body"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "invalid_token": {
+                    "summary": "Invalid API key",
+                    "value": {
+                      "error": "Invalid API key",
+                      "code": "UNAUTHORIZED",
+                      "details": "Please check your API key and try again"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "rate_limit": {
+                    "summary": "Rate limit exceeded",
+                    "value": {
+                      "error": "Rate limit exceeded",
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "details": "You have exceeded the rate limit. Please try again later."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "server_error": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "error": "Internal server error",
+                      "code": "INTERNAL_ERROR",
+                      "details": "An unexpected error occurred. Please try again later."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Enter your AdMesh API key (format: admesh_prod_abc123xyz789)"
+      }
+    },
+    "schemas": {
+      "RecommendationRequest": {
+        "type": "object",
+        "required": ["query", "agent_id"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "User's search query or question",
+            "example": "best CRM for startups",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Your agent identifier",
+            "example": "your_agent_id",
+            "minLength": 1
+          },
+          "previous_query": {
+            "type": "string",
+            "description": "Previous query in conversation for context",
+            "example": "project management tools",
+            "maxLength": 500
+          },
+          "previous_summary": {
+            "type": "string",
+            "description": "Summary of previous conversation",
+            "example": "We discussed project management solutions",
+            "maxLength": 1000
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Session identifier for tracking",
+            "example": "user_session_123",
+            "maxLength": 100
+          },
+          "is_fallback_allowed": {
+            "type": "boolean",
+            "description": "Allow fallback recommendations if no exact matches",
+            "default": true
+          },
+          "format": {
+            "type": "string",
+            "description": "Response format type",
+            "enum": ["auto", "product", "conversation"],
+            "default": "auto"
+          }
+        }
+      },
+      "RecommendationResponse": {
+        "type": "object",
+        "properties": {
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recommendation"
+            },
+            "description": "Array of recommendation objects"
+          },
+          "query_processed": {
+            "type": "string",
+            "description": "The processed query that was used for recommendations"
+          },
+          "total_recommendations": {
+            "type": "integer",
+            "description": "Total number of recommendations returned"
+          },
+          "processing_time_ms": {
+            "type": "integer",
+            "description": "Processing time in milliseconds"
+          }
+        }
+      },
+      "Recommendation": {
+        "type": "object",
+        "required": ["title", "reason", "admesh_link", "ad_id"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Product or service name",
+            "example": "HubSpot CRM"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this product is recommended for the query",
+            "example": "Perfect for startups with its free tier and comprehensive features"
+          },
+          "admesh_link": {
+            "type": "string",
+            "format": "uri",
+            "description": "Tracking URL for the recommendation (use this for clicks)",
+            "example": "https://useadmesh.com/r/hubspot-crm-abc123"
+          },
+          "ad_id": {
+            "type": "string",
+            "description": "Unique identifier for the advertisement",
+            "example": "ad_123456789"
+          },
+          "product_id": {
+            "type": "string",
+            "description": "Product identifier",
+            "example": "hubspot_crm"
+          },
+          "pricing": {
+            "type": "string",
+            "description": "Pricing information",
+            "example": "Free tier available, paid plans from $45/month"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Key features of the product",
+            "example": ["Contact management", "Deal tracking", "Email integration"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Product description",
+            "example": "A comprehensive CRM platform designed for growing businesses"
+          },
+          "has_free_tier": {
+            "type": "boolean",
+            "description": "Whether the product offers a free tier"
+          },
+          "trial_days": {
+            "type": "integer",
+            "description": "Number of free trial days available",
+            "minimum": 0
+          },
+          "intent_match_score": {
+            "type": "number",
+            "format": "float",
+            "description": "How well the product matches the user's intent (0-1)",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.92
+          },
+          "offer_trust_score": {
+            "type": "number",
+            "format": "float",
+            "description": "Trust score for the specific offer (0-1)",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.88
+          },
+          "brand_trust_score": {
+            "type": "number",
+            "format": "float",
+            "description": "Trust score for the brand (0-1)",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.95
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "code"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Missing required parameter: query"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code",
+            "example": "MISSING_PARAMETER"
+          },
+          "details": {
+            "type": "string",
+            "description": "Additional error details",
+            "example": "The 'query' field is required in the request body"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Recommendations",
+      "description": "Get intelligent product recommendations"
+    }
+  ]
+}

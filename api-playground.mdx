@@ -1,0 +1,86 @@
+---
+title: "API Playground"
+description: "Test the AdMesh Recommendations API interactively"
+openapi: "openapi.json POST /agent/recommendations"
+---
+
+# API Playground
+
+Test the AdMesh Recommendations API interactively with real requests and responses.
+
+## Quick Test
+
+Use the interactive playground above to test the recommendations endpoint with your API key.
+
+### Example Requests
+
+Try these example queries to see how AdMesh works:
+
+**Basic CRM Query:**
+```json
+{
+  "query": "best CRM for startups",
+  "agent_id": "your_agent_id"
+}
+```
+
+**Project Management Query:**
+```json
+{
+  "query": "project management tools with time tracking",
+  "agent_id": "your_agent_id"
+}
+```
+
+**E-commerce Query:**
+```json
+{
+  "query": "email marketing software for online stores",
+  "agent_id": "your_agent_id"
+}
+```
+
+### Advanced Features
+
+**With Conversation Context:**
+```json
+{
+  "query": "what about integrations with Slack?",
+  "agent_id": "your_agent_id",
+  "previous_query": "project management tools",
+  "previous_summary": "We discussed project management solutions with time tracking features",
+  "session_id": "user_session_123"
+}
+```
+
+## Authentication
+
+To use the playground:
+
+1. Get your API key from [useadmesh.com](https://useadmesh.com)
+2. Click the "Authorize" button above
+3. Enter your API key in the format: `admesh_prod_abc123xyz789`
+4. Test the endpoint with your queries
+
+## Response Format
+
+Each recommendation includes:
+
+- **title** - Product/service name
+- **reason** - Why it's recommended for your query
+- **admesh_link** - Tracking URL (use this for clicks)
+- **pricing** - Cost information
+- **features** - Key features list
+- **trust scores** - Quality and reliability metrics
+
+## Rate Limits
+
+- **Free Tier**: 1,000 requests per month
+- **Pro Tier**: 10,000 requests per month
+- **Enterprise**: Custom limits
+
+## Need Help?
+
+- **Documentation**: [Quick Start Guide](/quickstart)
+- **Support**: [mani@useadmesh.com](mailto:mani@useadmesh.com)
+- **Examples**: [Integration Examples](/examples/integration-examples)

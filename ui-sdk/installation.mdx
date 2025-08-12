@@ -45,19 +45,19 @@ Install and set up AdMesh UI components for React applications.
 ## Installation Methods
 
 <AccordionGroup>
-  <Accordion title="📦 npm">
+  <Accordion title="npm">
     ```bash
     npm install admesh-ui-sdk
     ```
   </Accordion>
-  
-  <Accordion title="🧶 Yarn">
+
+  <Accordion title="Yarn">
     ```bash
     yarn add admesh-ui-sdk
     ```
   </Accordion>
-  
-  <Accordion title="📦 pnpm">
+
+  <Accordion title="pnpm">
     ```bash
     pnpm add admesh-ui-sdk
     ```
@@ -159,40 +159,40 @@ interface Recommendation {
 ## Layout Types
 
 <AccordionGroup>
-  <Accordion title="🔄 Auto Layout">
+  <Accordion title="Auto Layout">
     Automatically chooses the best layout based on content:
     ```tsx
-    <AdMeshLayout 
+    <AdMeshLayout
       recommendations={recommendations}
       layout="auto"
     />
     ```
   </Accordion>
-  
-  <Accordion title="📋 Grid Layout">
+
+  <Accordion title="Grid Layout">
     Displays recommendations in a responsive grid:
     ```tsx
-    <AdMeshLayout 
+    <AdMeshLayout
       recommendations={recommendations}
       layout="grid"
     />
     ```
   </Accordion>
-  
-  <Accordion title="📝 List Layout">
+
+  <Accordion title="List Layout">
     Displays recommendations in a vertical list:
     ```tsx
-    <AdMeshLayout 
+    <AdMeshLayout
       recommendations={recommendations}
       layout="list"
     />
     ```
   </Accordion>
-  
-  <Accordion title="📖 Citation Layout">
+
+  <Accordion title="Citation Layout">
     Inline citations perfect for AI assistants:
     ```tsx
-    <AdMeshLayout 
+    <AdMeshLayout
       recommendations={recommendations}
       layout="citation"
     />
@@ -385,7 +385,7 @@ const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="🚫 Component Not Rendering">
+  <Accordion title="Component Not Rendering">
     **Common causes:**
     - Empty recommendations array
     - Missing required props
@@ -397,13 +397,13 @@ const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }
     {recommendations.length > 0 && (
       <AdMeshLayout recommendations={recommendations} />
     )}
-    
+
     // Add debug logging
     console.log('Recommendations:', recommendations);
     ```
   </Accordion>
-  
-  <Accordion title="🎨 Styling Issues">
+
+  <Accordion title="Styling Issues">
     **Common causes:**
     - CSS conflicts with existing styles
     - Missing default styles import
@@ -412,16 +412,16 @@ const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }
     ```tsx
     // Import default styles
     import 'admesh-ui-sdk/dist/styles.css';
-    
+
     // Use custom className
-    <AdMeshLayout 
+    <AdMeshLayout
       recommendations={recommendations}
       className="my-custom-class"
     />
     ```
   </Accordion>
-  
-  <Accordion title="🔗 Click Handling Not Working">
+
+  <Accordion title="Click Handling Not Working">
     **Common causes:**
     - Missing onRecommendationClick prop
     - Event propagation issues
@@ -432,8 +432,8 @@ const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }
       console.log('Click handler called:', adId);
       window.open(admeshLink, '_blank');
     };
-    
-    <AdMeshLayout 
+
+    <AdMeshLayout
       recommendations={recommendations}
       onRecommendationClick={handleClick}
     />

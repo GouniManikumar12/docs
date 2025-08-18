@@ -20,13 +20,7 @@
               "quickstart"
             ]
           },
-          {
-            "group": "API Reference",
-            "pages": [
-              "api/authentication",
-              "api/recommendations"
-            ]
-          },
+
           {
             "group": "Frontend Integration",
             "pages": [

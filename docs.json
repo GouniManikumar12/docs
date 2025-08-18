@@ -64,6 +64,10 @@
       {
         "label": "Playground",
         "href": "https://docs.useadmesh.com/api-playground"
+      },
+      {
+        "label": "Try AdPlex",
+        "href": "https://tryadplex.com"
       }
     ],
     "primary": {

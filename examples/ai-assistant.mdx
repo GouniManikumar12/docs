@@ -51,7 +51,7 @@ async def get_admesh_recommendations(query: str) -> List[RecommendationResponse]
     """Get recommendations from AdMesh API"""
     try:
         response = requests.post(
-            'https://api.useadmesh.com/agent/recommendations',
+            'https://api.useadmesh.com/agent/recommend',
             headers={'Authorization': f'Bearer {ADMESH_API_KEY}'},
             json={
                 'query': query,

@@ -21,7 +21,7 @@
     }
   ],
   "paths": {
-    "/agent/recommendations": {
+    "/agent/recommend": {
       "post": {
         "summary": "Get Recommendations",
         "description": "Get intelligent product recommendations based on user queries",

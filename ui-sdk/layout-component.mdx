@@ -39,62 +39,88 @@ Automatically selects the best layout based on content and context.
 - For dynamic content where recommendation types may vary
 
 **Behavior:**
-- 1-2 recommendations: Uses list layout
-- 3-4 recommendations: Uses grid layout
-- 5+ recommendations: Uses grid with pagination
-- Citation context: Uses citation layout
+- Citation context: Uses citation layout with inline links
+- Ecommerce products (Walmart): Uses ecommerce layout
+- Software/SaaS products: Uses product card layout
+- Chat/inline context: Uses inline layout
 
 </Accordion>
 
-<Accordion title="Grid Layout">
-    
-Displays recommendations in a responsive card grid.
+<Accordion title="Product Layout">
+
+Displays software/SaaS recommendations as detailed product cards.
 
 ```tsx
-<AdMeshLayout 
+<AdMeshLayout
   recommendations={recommendations}
-  layout="grid"
+  layout="product"
+  maxItems={3}
+/>
+```
+
+**Features:**
+- Detailed product information cards
+- Trust scores and quality badges
+- Feature lists and pricing
+- Call-to-action buttons
+
+**Best for:**
+- Software and SaaS recommendations
+- B2B product recommendations
+- When you want detailed product info
+- Professional service recommendations
+
+</Accordion>
+
+  <Accordion title="Ecommerce Layout">
+
+Displays physical product recommendations optimized for shopping.
+
+```tsx
+<AdMeshLayout
+  recommendations={recommendations}
+  layout="ecommerce"
   maxItems={6}
 />
 ```
 
 **Features:**
-- Responsive grid (1-4 columns based on screen size)
-- Card-based design with hover effects
-- Shows pricing, features, and ratings
-- Perfect for product showcases
+- Product images and pricing
+- Ratings and review scores
+- Shipping information
+- Brand and source details
 
 **Best for:**
-- E-commerce recommendations
-- Product comparison pages
-- Landing pages with multiple options
-- When you have 3+ recommendations
+- Physical product recommendations
+- Walmart/Amazon product results
+- E-commerce search results
+- Shopping-focused applications
 
 </Accordion>
 
-  <Accordion title="List Layout">
-    
-Displays recommendations in a vertical list format.
+  <Accordion title="Inline Layout">
+
+Displays compact recommendations for chat and messaging interfaces.
 
 ```tsx
-<AdMeshLayout 
+<AdMeshLayout
   recommendations={recommendations}
-  layout="list"
-  showFeatures={true}
+  layout="inline"
+  maxItems={1}
 />
 ```
 
 **Features:**
-- Compact vertical layout
-- Detailed information display
-- Easy scanning and comparison
-- Mobile-friendly design
+- Compact card design
+- Essential information only
+- Minimal vertical space
+- Mobile-optimized
 
 **Best for:**
-- Detailed product comparisons
-- Mobile applications
+- Chat interfaces
+- Messaging applications
 - Sidebar recommendations
-- When space is limited
+- When space is very limited
 
 </Accordion>
 

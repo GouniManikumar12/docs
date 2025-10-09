@@ -510,7 +510,7 @@ async def get_contextual_recommendations(query: str, user_id: str) -> List[dict]
     }
     
     response = requests.post(
-        'https://api.useadmesh.com/recommend',
+        'https://api.useadmesh.com/agent/recommend',
         headers={'Authorization': f'Bearer {ADMESH_API_KEY}'},
         json=request_data
     )

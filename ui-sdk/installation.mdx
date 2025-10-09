@@ -67,10 +67,10 @@ description: "Install and set up AdMesh UI components for React applications"
 The UI SDK automatically injects all necessary styles - no CSS imports required:
 
 ```tsx
-// ✅ No CSS imports needed - styles are automatically injected
+// No CSS imports needed - styles are automatically injected
 import { AdMeshLayout } from 'admesh-ui-sdk';
 
-// ❌ No longer needed:
+// No longer needed:
 // import 'admesh-ui-sdk/dist/styles.css';
 ```
 
@@ -128,14 +128,14 @@ export default MyApp;
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `recommendations` | `Recommendation[]` | ✅ | Array of recommendation objects |
-| `layout` | `string` | ❌ | Layout type: `auto`, `grid`, `list`, `citation` |
-| `onRecommendationClick` | `function` | ❌ | Click handler: `(adId, admeshLink) => void` |
-| `className` | `string` | ❌ | Custom CSS class |
-| `style` | `object` | ❌ | Inline styles |
-| `showPricing` | `boolean` | ❌ | Show pricing information (default: true) |
-| `showFeatures` | `boolean` | ❌ | Show features list (default: true) |
-| `maxItems` | `number` | ❌ | Maximum recommendations to display |
+| `recommendations` | `Recommendation[]` | Yes | Array of recommendation objects |
+| `layout` | `string` | No | Layout type: `auto`, `grid`, `list`, `citation` |
+| `onRecommendationClick` | `function` | No | Click handler: `(adId, admeshLink) => void` |
+| `className` | `string` | No | Custom CSS class |
+| `style` | `object` | No | Inline styles |
+| `showPricing` | `boolean` | No | Show pricing information (default: true) |
+| `showFeatures` | `boolean` | No | Show features list (default: true) |
+| `maxItems` | `number` | No | Maximum recommendations to display |
 
 ### Recommendation Object Type
 

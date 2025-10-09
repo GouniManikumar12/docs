@@ -155,28 +155,39 @@ The component expects recommendation objects with this structure:
 
 ```typescript
 interface Recommendation {
-  // Required fields
+  // Required fields (new format)
+  product_id: string;
   title: string;
-  reason: string;
+  recommendation_description: string;
   admesh_link: string;
-  ad_id: string;
-  
-  // Optional fields
-  product_id?: string;
+  categories: string[];
+  integrations: string[];
+  trust_score: number;
+  reward_note: string;
+  meta: {
+    ad_id: string;
+    offer_trust_score: number;
+    brand_trust_score: number;
+    intent_match_score: number;
+    reason: string;
+    description: string;
+    keywords: string[];
+    url: string;
+    redirect_url: string;
+  };
+
+  // Legacy fields (for backward compatibility)
+  ad_id?: string;
+  reason?: string;
   description?: string;
   pricing?: string;
   features?: string[];
-  categories?: string[];
   keywords?: string[];
-  
-  // Metadata
   has_free_tier?: boolean;
   trial_days?: number;
   intent_match_score?: number;
   offer_trust_score?: number;
   brand_trust_score?: number;
-  
-  // Display options
   image_url?: string;
   brand_logo?: string;
   rating?: number;
@@ -480,6 +491,55 @@ The AdMeshLayout component includes built-in accessibility features:
     
     window.open(admeshLink, '_blank');
   }}
+/>
+```
+
+## Working with API Response
+
+The component automatically handles the latest API response format:
+
+```tsx
+// API response structure (handled automatically)
+const apiResponse = {
+  session_id: "sess_1760022990_w8RkKA",
+  intent: {
+    goal: "The user wants to find and evaluate leading ad networks for potential use.",
+    purchase_intent: "research",
+    intent_type: "product_discovery",
+    categories: ["ad_networks", "digital_marketing", "advertising_platforms"],
+    intent_group: "commercial",
+    layout_type: "citation"
+  },
+  response: {
+    summary: "Here are ad_networks tools that match your goal...",
+    recommendations: [
+      {
+        product_id: "0c9521fb-e60a-443d-84c7-14ce37b1063e",
+        title: "AdMesh",
+        recommendation_description: "Website not provided, assuming as a developer tool...",
+        admesh_link: "https://api.useadmesh.com/click/r/...",
+        categories: ["Marketing", "Development Tools", "SaaS"],
+        trust_score: 100.0,
+        meta: {
+          ad_id: "b1e5d17f-4f76-4669-800c-163398db0cc5",
+          intent_match_score: 69.19,
+          reason: "This offer matches your category interest..."
+        }
+      }
+    ],
+    followup_suggestions: [
+      {
+        label: "What features does AdMesh offer?",
+        query: "AdMesh key features and benefits"
+      }
+    ]
+  }
+};
+
+// Use with AdMeshLayout
+<AdMeshLayout
+  recommendations={apiResponse.response.recommendations}
+  layout={apiResponse.intent.layout_type}
 />
 ```
 

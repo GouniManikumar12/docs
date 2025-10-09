@@ -38,16 +38,50 @@ curl -X POST "https://api.useadmesh.com/recommend" \
 <Accordion title="See response format">
 ```json
 {
+  "session_id": "string",
+  "intent": {
+    "goal": "The user wants to find and learn about the best CRM platforms for startups.",
+    "intent_group": "informational",
+    "purchase_intent": "research",
+    "intent_type": "product_discovery",
+    "layout_type": "citation",
+    "categories": ["crm", "business_software", "saas"]
+  },
   "response": {
+    "summary": "Here are CRM tools that match your goal: The user wants to find and learn about the best CRM platforms for startups.",
     "recommendations": [
       {
+        "product_id": "hubspot_crm_001",
         "title": "HubSpot CRM",
-        "reason": "Perfect for startups with excellent free tier",
-        "admesh_link": "https://useadmesh.com/track?ad_id=hubspot-123",
-        "pricing": "Free tier available, paid plans from $45/month"
+        "recommendation_description": "Perfect for startups with excellent free tier and comprehensive features",
+        "admesh_link": "https://api.useadmesh.com/click/r/hubspot_001?utm_product=hubspot_crm_001&utm_redirect=https%3A%2F%2Fhubspot.com",
+        "categories": ["crm", "marketing", "sales"],
+        "integrations": ["Gmail", "Outlook", "Slack", "Zapier"],
+        "trust_score": 95,
+        "reward_note": "$50.00 per signup (Free Trial - 10 max conversions)",
+        "meta": {
+          "ad_id": "hubspot_001",
+          "offer_trust_score": 95,
+          "brand_trust_score": 98,
+          "intent_match_score": 92,
+          "reason": "Perfect for startups with excellent free tier and comprehensive features",
+          "description": "All-in-one CRM platform with marketing, sales, and service tools",
+          "keywords": ["CRM", "Free", "Startup", "Marketing", "Sales"],
+          "url": "https://hubspot.com",
+          "redirect_url": "https://hubspot.com"
+        }
       }
-    ]
-  }
+    ],
+    "followup_suggestions": [
+      {
+        "label": "What features does HubSpot offer?",
+        "query": "HubSpot CRM key features and benefits"
+      }
+    ],
+    "layout_type": "citation"
+  },
+  "tokens_used": 500,
+  "model_used": "openai/gpt-4o"
 }
 ```
 </Accordion>

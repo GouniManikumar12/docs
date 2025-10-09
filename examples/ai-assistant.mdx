@@ -60,15 +60,15 @@ async def get_admesh_recommendations(query: str) -> List[RecommendationResponse]
         )
         
         data = response.json()
-        recommendations = data['recommendations']
-        
+        recommendations = data['response']['recommendations']
+
         return [
             RecommendationResponse(
                 title=rec['title'],
-                reason=rec['reason'],
-                intent_match_score=rec.get('intent_match_score', 0.0),
+                reason=rec.get('meta', {}).get('reason', rec.get('reason', '')),
+                intent_match_score=rec.get('meta', {}).get('intent_match_score', 0.0),
                 admesh_link=rec['admesh_link'],
-                ad_id=rec['ad_id']
+                ad_id=rec.get('meta', {}).get('ad_id', rec.get('ad_id', ''))
             )
             for rec in recommendations
         ]

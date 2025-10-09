@@ -27,7 +27,7 @@ async function getRecommendations(query, agentId) {
   }
 
   const data = await response.json();
-  return data.recommendations;
+  return data.response.recommendations;
 }
 
 // Usage
@@ -52,7 +52,7 @@ app.post('/api/recommendations', async (req, res) => {
   });
 
   const data = await response.json();
-  res.json(data.recommendations);
+  res.json(data.response.recommendations);
 });
 ```
 
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
   });
 
   const data = await response.json();
-  res.json(data.recommendations);
+  res.json(data.response.recommendations);
 }
 ```
 
@@ -138,7 +138,7 @@ def get_recommendations(query, agent_id):
 
     response.raise_for_status()
     data = response.json()
-    return data['recommendations']
+    return data['response']['recommendations']
 
 # Usage
 recommendations = get_recommendations('best CRM for startups', 'your_agent_id')
@@ -219,7 +219,7 @@ function getRecommendations($query, $agentId) {
 
     $response = file_get_contents('https://api.useadmesh.com/agent/recommend', false, $context);
     $result = json_decode($response, true);
-    return $result['recommendations'];
+    return $result['response']['recommendations'];
 }
 
 // Usage

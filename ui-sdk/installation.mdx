@@ -62,13 +62,16 @@ description: "Install and set up AdMesh UI components for React applications"
 
 ## Basic Setup
 
-### 1. Import Styles (Optional)
+### 1. Self-Contained Styling
 
-The UI SDK includes default styles, but you can customize them:
+The UI SDK automatically injects all necessary styles - no CSS imports required:
 
 ```tsx
-// Import default styles (optional)
-import 'admesh-ui-sdk/dist/styles.css';
+// ✅ No CSS imports needed - styles are automatically injected
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+// ❌ No longer needed:
+// import 'admesh-ui-sdk/dist/styles.css';
 ```
 
 ### 2. Basic Component Usage
@@ -138,11 +141,30 @@ export default MyApp;
 
 ```typescript
 interface Recommendation {
+  // New format (required)
+  product_id: string;
   title: string;
-  reason: string;
+  recommendation_description: string;
   admesh_link: string;
-  ad_id: string;
-  product_id?: string;
+  categories: string[];
+  integrations: string[];
+  trust_score: number;
+  reward_note: string;
+  meta: {
+    ad_id: string;
+    offer_trust_score: number;
+    brand_trust_score: number;
+    intent_match_score: number;
+    reason: string;
+    description: string;
+    keywords: string[];
+    url: string;
+    redirect_url: string;
+  };
+
+  // Legacy fields (for backward compatibility)
+  ad_id?: string;
+  reason?: string;
   pricing?: string;
   features?: string[];
   description?: string;
@@ -433,6 +455,62 @@ const MyComponent: React.FC<Props> = ({ recommendations, onRecommendationClick }
       recommendations={recommendations}
       onRecommendationClick={handleClick}
     />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Available Components
+
+The UI SDK includes the following components:
+
+<AccordionGroup>
+  <Accordion title="AdMeshLayout (Recommended)">
+    Main layout component that automatically adapts to different content types:
+    ```tsx
+    import { AdMeshLayout } from 'admesh-ui-sdk';
+
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto" // 'auto' | 'grid' | 'list' | 'citation'
+      onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="AdMeshProductCard">
+    Individual product recommendation cards:
+    ```tsx
+    import { AdMeshProductCard } from 'admesh-ui-sdk';
+
+    <AdMeshProductCard
+      recommendation={recommendation}
+      onClick={(adId, admeshLink) => window.open(admeshLink)}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="AdMeshEcommerceCards">
+    Horizontal scrolling product carousels:
+    ```tsx
+    import { AdMeshEcommerceCards } from 'admesh-ui-sdk';
+
+    <AdMeshEcommerceCards
+      recommendations={recommendations}
+      showPricing={true}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Utility Components">
+    Additional components for advanced use cases:
+    ```tsx
+    import {
+      AdMeshInlineCard,
+      AdMeshSummaryUnit,
+      AdMeshSummaryLayout,
+      AdMeshBadge,
+      AdMeshLinkTracker
+    } from 'admesh-ui-sdk';
     ```
   </Accordion>
 </AccordionGroup>

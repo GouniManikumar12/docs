@@ -13,9 +13,10 @@ The `AdMeshLayout` component is the main UI component for displaying AdMesh reco
 import { AdMeshLayout } from 'admesh-ui-sdk';
 
 <AdMeshLayout
-  recommendations={recommendations}
-  layout="auto"
-  onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
+  response={apiResponse.response}
+  onRecommendationClick={(recommendation) => {
+    window.open(recommendation.admesh_link, '_blank');
+  }}
 />
 ```
 
@@ -27,9 +28,11 @@ import { AdMeshLayout } from 'admesh-ui-sdk';
 Automatically selects the best layout based on content and context.
 
 ```tsx
-<AdMeshLayout 
-  recommendations={recommendations}
-  layout="auto"
+<AdMeshLayout
+  response={{
+    layout_type: "auto",
+    recommendations: recommendations
+  }}
 />
 ```
 
@@ -52,9 +55,10 @@ Displays software/SaaS recommendations as detailed product cards.
 
 ```tsx
 <AdMeshLayout
-  recommendations={recommendations}
-  layout="product"
-  maxItems={3}
+  response={{
+    layout_type: "product",
+    recommendations: recommendations
+  }}
 />
 ```
 
@@ -78,9 +82,10 @@ Displays physical product recommendations optimized for shopping.
 
 ```tsx
 <AdMeshLayout
-  recommendations={recommendations}
-  layout="ecommerce"
-  maxItems={6}
+  response={{
+    layout_type: "ecommerce",
+    recommendations: recommendations
+  }}
 />
 ```
 
@@ -104,9 +109,10 @@ Displays compact recommendations for chat and messaging interfaces.
 
 ```tsx
 <AdMeshLayout
-  recommendations={recommendations}
-  layout="inline"
-  maxItems={1}
+  response={{
+    layout_type: "inline",
+    recommendations: recommendations
+  }}
 />
 ```
 
@@ -129,10 +135,13 @@ Displays compact recommendations for chat and messaging interfaces.
 Inline citations perfect for AI assistants and conversational interfaces.
 
 ```tsx
-<AdMeshLayout 
-  recommendations={recommendations}
-  layout="citation"
-  maxItems={3}
+<AdMeshLayout
+  response={{
+    layout_type: "citation",
+    citation_summary: "Based on your needs, I recommend [HubSpot CRM](tracking-link) for startups...",
+    recommendations: recommendations,
+    requires_summary: true
+  }}
 />
 ```
 
@@ -564,8 +573,7 @@ const apiResponse = {
 
 // Use with AdMeshLayout
 <AdMeshLayout
-  recommendations={apiResponse.response.recommendations}
-  layout={apiResponse.intent.layout_type}
+  response={apiResponse.response}
 />
 ```
 

@@ -41,6 +41,12 @@
               "examples/integration-examples",
               "examples/ai-assistant"
             ]
+          },
+          {
+            "group": "Policies",
+            "pages": [
+              "content-policy"
+            ]
           }
         ]
       }

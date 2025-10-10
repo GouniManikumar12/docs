@@ -21,17 +21,17 @@
             ]
           },
           {
-            "group": "Policies",
-            "pages": [
-              "content-policy"
-            ]
-          },
-          {
             "group": "Frontend Integration",
             "pages": [
               "ui-sdk/installation",
               "ui-sdk/layout-component",
               "ui-sdk/customization"
+            ]
+          },
+          {
+            "group": "Policies",
+            "pages": [
+              "content-policy"
             ]
           },
           {

@@ -20,7 +20,12 @@
               "quickstart"
             ]
           },
-
+          {
+            "group": "Policies",
+            "pages": [
+              "content-policy"
+            ]
+          },
           {
             "group": "Frontend Integration",
             "pages": [
@@ -40,12 +45,6 @@
             "pages": [
               "examples/integration-examples",
               "examples/ai-assistant"
-            ]
-          },
-          {
-            "group": "Policies",
-            "pages": [
-              "content-policy"
             ]
           }
         ]

@@ -21,6 +21,30 @@
             ]
           },
           {
+            "group": "Core Concepts",
+            "pages": [
+              "contextual-relevance-score"
+            ]
+          },
+          {
+            "group": "For Advertisers",
+            "pages": [
+              "advertisers/getting-started",
+              "advertisers/billing-models",
+              "advertisers/tracking-overview",
+              "advertisers/dashboard-analytics",
+              "advertisers/optimization"
+            ]
+          },
+          {
+            "group": "For AI Platforms",
+            "pages": [
+              "ai-platforms/getting-started",
+              "ai-platforms/best-practices",
+              "ai-platforms/earnings"
+            ]
+          },
+          {
             "group": "Frontend Integration",
             "pages": [
               "ui-sdk/installation",

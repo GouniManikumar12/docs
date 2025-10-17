@@ -1,0 +1,479 @@
+---
+title: "Getting Started as an AI Platform"
+description: "Complete guide to integrating AdMesh recommendations into your AI agent or platform"
+---
+
+# Getting Started as an AI Platform
+
+Welcome to AdMesh! This guide will help you integrate intelligent product recommendations into your AI agent, chatbot, or AI-powered platform.
+
+---
+
+## What is AdMesh?
+
+AdMesh is an **AI-native advertising protocol** that provides contextually relevant product recommendations for AI agents. When users ask questions, AdMesh returns products that match their intent, and you earn revenue when users engage.
+
+**Example**: User asks "What's the best CRM for startups?" → AdMesh returns relevant CRM products → User clicks/converts → You earn commission
+
+---
+
+## Quick Start Overview
+
+<Steps>
+  <Step title="Create Account">
+    Sign up at [useadmesh.com](https://useadmesh.com) as an AI Platform
+  </Step>
+  <Step title="Get API Key">
+    Generate your API key from the dashboard
+  </Step>
+  <Step title="Make API Call">
+    Send user queries to `/agent/recommend` endpoint
+  </Step>
+  <Step title="Display Recommendations">
+    Show recommendations in your UI (use our SDK or custom implementation)
+  </Step>
+  <Step title="Track Clicks">
+    Use AdMesh tracking links for all clicks
+  </Step>
+  <Step title="Earn Revenue">
+    Get paid when users click or convert
+  </Step>
+</Steps>
+
+**Time to integrate**: 30-60 minutes
+
+---
+
+## Account Setup
+
+### 1. Sign Up
+
+Visit [useadmesh.com](https://useadmesh.com) and click "Sign Up as AI Platform".
+
+**Required Information**:
+- Email address
+- Password
+- Platform name
+- Platform type (AI Assistant, Chatbot, Search Engine, etc.)
+- Platform category (select from dropdown)
+- Platform URL (optional)
+
+<Note>
+  You must confirm that your platform has an AI conversation interface capable of displaying ads/recommendations before account creation.
+</Note>
+
+### 2. Email Verification
+
+Check your inbox for a verification email and click the confirmation link.
+
+### 3. Dashboard Access
+
+Once verified, you'll have access to:
+- **API Keys**: Generate and manage API keys
+- **Analytics**: Track queries, clicks, conversions, and earnings
+- **Queries Page**: See what users are searching for
+- **Earnings**: View revenue breakdown and payment history
+
+---
+
+## Generate API Key
+
+<Steps>
+  <Step title="Navigate to API Keys">
+    Dashboard → Settings → API Keys
+  </Step>
+  
+  <Step title="Create New Key">
+    Click "Generate New API Key"
+  </Step>
+  
+  <Step title="Copy Key">
+    Copy your API key (format: `admesh_prod_abc123xyz789`)
+  </Step>
+  
+  <Step title="Store Securely">
+    Store in environment variables (never commit to version control)
+  </Step>
+</Steps>
+
+<Warning>
+  API keys are shown only once. Store them securely - you won't be able to see them again.
+</Warning>
+
+---
+
+## Make Your First API Call
+
+### Basic Request
+
+```bash cURL
+curl -X POST "https://api.useadmesh.com/agent/recommend" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "best CRM for startups",
+    "format": "auto"
+  }'
+```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | ✅ | User's search query or question |
+| `format` | string | ❌ | Response format (`auto`, `product`, `sidebar`, `conversation`) |
+| `previous_query` | string | ❌ | Previous query for conversation context |
+| `previous_summary` | string | ❌ | Summary of previous conversation |
+| `session_id` | string | ❌ | Session identifier for tracking |
+| `is_fallback_allowed` | boolean | ❌ | Allow fallback recommendations (default: true) |
+
+### Response Structure
+
+```json
+{
+  "session_id": "sess_1760022990_w8RkKA",
+  "intent": {
+    "goal": "Find and evaluate CRM solutions for startups",
+    "purchase_intent": "research",
+    "intent_type": "product_discovery",
+    "categories": ["crm", "sales", "productivity"],
+    "intent_group": "commercial"
+  },
+  "response": {
+    "summary": "Here are CRM tools that match your goal...",
+    "citation_summary": "For startups, consider [HubSpot](https://api.useadmesh.com/click/...)...",
+    "recommendations": [
+      {
+        "product_id": "abc-123",
+        "title": "HubSpot CRM",
+        "recommendation_description": "Free CRM with powerful features for startups",
+        "admesh_link": "https://api.useadmesh.com/click/r/...",
+        "categories": ["CRM", "Sales", "Marketing"],
+        "trust_score": 95.0,
+        "reward_note": "$50 per signup",
+        "meta": {
+          "ad_id": "offer-xyz",
+          "contextual_relevance_score": 87.5,
+          "reason": "Perfect match for startup CRM needs",
+          "pricing": "$0/month (Free tier available)",
+          "features": ["Contact management", "Email tracking", "Pipeline management"],
+          "has_free_tier": true,
+          "trial_days": 14
+        }
+      }
+    ],
+    "followup_suggestions": [
+      {
+        "label": "What features does HubSpot offer?",
+        "query": "HubSpot CRM key features"
+      }
+    ]
+  },
+  "tokens_used": 500,
+  "model_used": "openai/gpt-4o"
+}
+```
+
+---
+
+## Integration Examples
+
+### JavaScript/Node.js
+
+```javascript
+async function getRecommendations(query) {
+  const response = await fetch('https://api.useadmesh.com/agent/recommend', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: query,
+      format: 'auto'
+    })
+  });
+
+  const data = await response.json();
+  return data.response.recommendations;
+}
+
+// Usage
+const recommendations = await getRecommendations('best CRM for startups');
+```
+
+### Python
+
+```python
+import requests
+import os
+
+def get_recommendations(query: str):
+    response = requests.post(
+        'https://api.useadmesh.com/agent/recommend',
+        headers={'Authorization': f'Bearer {os.environ.get("ADMESH_API_KEY")}'},
+        json={
+            'query': query,
+            'format': 'auto'
+        }
+    )
+    data = response.json()
+    return data['response']['recommendations']
+
+# Usage
+recommendations = get_recommendations('best CRM for startups')
+```
+
+### React Component
+
+```tsx
+import React, { useState } from 'react';
+
+function RecommendationSearch() {
+  const [recommendations, setRecommendations] = useState([]);
+
+  const searchRecommendations = async (query) => {
+    const response = await fetch('/api/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    
+    const recs = await response.json();
+    setRecommendations(recs);
+  };
+
+  return (
+    <div>
+      <input 
+        placeholder="Ask anything..."
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') searchRecommendations(e.target.value);
+        }}
+      />
+      
+      {recommendations.map(rec => (
+        <div key={rec.ad_id}>
+          <h3>{rec.title}</h3>
+          <p>{rec.meta.reason}</p>
+          <a href={rec.admesh_link} target="_blank">Learn More</a>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## Displaying Recommendations
+
+### Option 1: Use AdMesh UI SDK (Recommended)
+
+Install the UI SDK for pre-built components:
+
+```bash
+npm install admesh-ui-sdk
+```
+
+```tsx
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+function MyApp() {
+  const [recommendations, setRecommendations] = useState([]);
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto"
+      onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
+    />
+  );
+}
+```
+
+[Learn more about UI SDK →](/ui-sdk/installation)
+
+### Option 2: Custom Implementation
+
+Build your own UI using the recommendation data:
+
+**Key Requirements**:
+- ✅ Use `admesh_link` for all clicks (required for tracking)
+- ✅ Display `title` and `reason` prominently
+- ✅ Show `trust_score` or `contextual_relevance_score` for quality signals
+- ✅ Include disclosure labels ("Ad", "Sponsored", "Partner Recommendation")
+
+**Example Custom Card**:
+```tsx
+function RecommendationCard({ rec }) {
+  return (
+    <div className="recommendation-card">
+      <span className="badge">Partner Recommendation</span>
+      <h3>{rec.title}</h3>
+      <p>{rec.meta.reason}</p>
+      
+      {rec.meta.pricing && <p className="pricing">{rec.meta.pricing}</p>}
+      {rec.meta.has_free_tier && <span className="badge">Free Tier</span>}
+      
+      <a href={rec.admesh_link} target="_blank" className="cta-button">
+        Learn More
+      </a>
+      
+      <div className="metadata">
+        <span>Trust Score: {rec.trust_score}%</span>
+        <span>Relevance: {rec.meta.contextual_relevance_score}%</span>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Earnings Model
+
+### How You Get Paid
+
+You earn revenue when users engage with recommendations:
+
+| Engagement | You Earn | Example |
+|------------|----------|---------|
+| **Exposure** | Share of CPX | ~$0.004 per exposure |
+| **Click** | Share of CPC | ~$0.25 per click |
+| **Conversion** | Share of CPA | ~$5.00 per conversion |
+
+### Revenue Share
+
+- **Default Split**: 50% to AI platform, 50% to AdMesh
+- **Custom Splits**: Available for high-volume partners
+- **Minimum Payout**: $50
+- **Payment Schedule**: Monthly via Stripe
+
+### Earnings Calculation
+
+```
+Your Earnings = (CPX + CPC + CPA) × Revenue Share %
+```
+
+**Example**:
+- User sees recommendation (CPX: $0.008)
+- User clicks (CPC: $0.50)
+- User converts (CPA: $10.00)
+- **Total**: $10.508 (only CPA is billed due to single billing)
+- **Your Earnings**: $10.508 × 50% = **$5.25**
+
+---
+
+## Best Practices
+
+### Query Handling
+
+<CardGroup cols={2}>
+  <Card title="Do's" icon="check">
+    - Send natural language queries
+    - Include conversation context
+    - Use session IDs for tracking
+    - Handle fallback gracefully
+  </Card>
+  
+  <Card title="Don'ts" icon="x">
+    - Don't send keyword-stuffed queries
+    - Don't manipulate intent detection
+    - Don't cache recommendations > 5 min
+    - Don't modify tracking links
+  </Card>
+</CardGroup>
+
+### Recommendation Display
+
+- **Filter by CRS**: Only show recommendations with Contextual Relevance Score > 60
+- **Rank by Score**: Display highest-scoring recommendations first
+- **Limit Count**: Show 3-5 recommendations maximum
+- **Clear Disclosure**: Label as "Ad", "Sponsored", or "Partner Recommendation"
+
+### User Experience
+
+- **Relevance First**: Only show recommendations when truly relevant
+- **Non-intrusive**: Don't interrupt user flow
+- **Clear CTAs**: Make it obvious what happens when user clicks
+- **Fast Loading**: Recommendations should load in < 500ms
+
+---
+
+## Testing
+
+### Test Mode
+
+Use test mode to verify integration without affecting production metrics:
+
+```json
+{
+  "query": "test query",
+  "format": "auto",
+  "is_test": true
+}
+```
+
+Test recommendations will:
+- ✅ Appear in dashboard with "Test" label
+- ✅ Not count toward earnings
+- ✅ Not deduct from brand budgets
+
+### Verification Checklist
+
+<Steps>
+  <Step title="API Integration">
+    - [ ] API key works correctly
+    - [ ] Requests return 200 status
+    - [ ] Response structure is correct
+  </Step>
+  
+  <Step title="Recommendation Display">
+    - [ ] Recommendations render properly
+    - [ ] AdMesh links are used for clicks
+    - [ ] Disclosure labels are visible
+  </Step>
+  
+  <Step title="Click Tracking">
+    - [ ] Clicks redirect correctly
+    - [ ] Clicks appear in dashboard
+    - [ ] Session tracking works
+  </Step>
+  
+  <Step title="Earnings">
+    - [ ] Test earnings appear in dashboard
+    - [ ] Production earnings accumulate correctly
+  </Step>
+</Steps>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api-playground">
+    Complete API documentation and playground
+  </Card>
+  
+  <Card title="UI SDK" icon="palette" href="/ui-sdk/installation">
+    Pre-built React components
+  </Card>
+  
+  <Card title="Earnings Model" icon="dollar-sign" href="/ai-platforms/earnings">
+    Detailed revenue share breakdown
+  </Card>
+  
+  <Card title="Best Practices" icon="lightbulb" href="/ai-platforms/best-practices">
+    Optimize user experience and earnings
+  </Card>
+</CardGroup>
+
+---
+
+## Need Help?
+
+<Card title="Contact Support" icon="envelope" href="mailto:mani@useadmesh.com">
+  Questions about integration? Our team is here to help.
+</Card>
+

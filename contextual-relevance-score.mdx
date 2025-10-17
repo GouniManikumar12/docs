@@ -1,0 +1,302 @@
+---
+title: "Contextual Relevance Score"
+description: "Understanding how AdMesh measures recommendation quality and calculates CPX billing"
+---
+
+# Contextual Relevance Score (CRS)
+
+The **Contextual Relevance Score (CRS)** is a 0-100 metric that measures how well a product recommendation matches a user's query. It directly impacts CPX costs and recommendation ranking.
+
+---
+
+## What is CRS?
+
+CRS combines multiple signals to determine recommendation quality:
+
+- **Semantic Similarity**: How closely the product matches the query meaning (60% weight)
+- **Category Match**: Whether product categories align with query intent (15% weight)
+- **LLM Confidence**: AI model's confidence in the match (5% weight)
+- **Payout Score**: Advertiser's CPA amount (15% weight)
+- **Trust Scores**: Product and brand trust metrics (5% weight)
+
+### Score Ranges
+
+| Score Range | Quality | Meaning |
+|-------------|---------|---------|
+| **90-100** | Excellent | Perfect match for user's query |
+| **75-89** | Good | Strong relevance, likely to convert |
+| **60-74** | Fair | Moderate relevance, may convert |
+| **45-59** | Poor | Weak relevance, unlikely to convert |
+| **0-44** | Very Poor | Not recommended (filtered out) |
+
+---
+
+## How CRS Affects CPX
+
+CRS directly determines your CPX cost using this formula:
+
+```
+CPX = CPA × 0.001 × (CRS / 100)
+```
+
+### Example Calculations
+
+<AccordionGroup>
+  <Accordion title="High CRS (90) - Excellent Match">
+    **Scenario**: SaaS CRM perfectly matches "best CRM for startups"
+    
+    - CPA: $10.00 (1000 cents)
+    - CRS: 90.0
+    - **CPX = 1000 × 0.001 × (90.0 / 100) = 0.90 cents ($0.009)**
+    
+    **Result**: Higher cost, but much more likely to convert
+  </Accordion>
+
+  <Accordion title="Medium CRS (70) - Good Match">
+    **Scenario**: Project management tool for "team collaboration software"
+    
+    - CPA: $15.00 (1500 cents)
+    - CRS: 70.0
+    - **CPX = 1500 × 0.001 × (70.0 / 100) = 1.05 cents ($0.0105)**
+    
+    **Result**: Moderate cost, decent conversion potential
+  </Accordion>
+
+  <Accordion title="Low CRS (50) - Weak Match">
+    **Scenario**: Generic productivity tool for specific query
+    
+    - CPA: $5.00 (500 cents)
+    - CRS: 50.0
+    - **CPX = 500 × 0.001 × (50.0 / 100) = 0.25 cents ($0.0025)**
+    
+    **Result**: Low cost, but unlikely to convert
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Improving Your CRS
+
+### 1. Optimize Product Descriptions
+
+<CardGroup cols={2}>
+  <Card title="Do's" icon="check">
+    - Write detailed, keyword-rich descriptions
+    - Include use cases and benefits
+    - Mention target audience
+    - Add technical specifications
+  </Card>
+  
+  <Card title="Don'ts" icon="x">
+    - Generic marketing copy
+    - Keyword stuffing
+    - Vague descriptions
+    - Missing key details
+  </Card>
+</CardGroup>
+
+**Example - Poor Description**:
+```
+Great CRM software for businesses. Easy to use and affordable.
+```
+
+**Example - Good Description**:
+```
+HubSpot CRM is a free customer relationship management platform designed 
+for startups and small businesses. Features include contact management, 
+email tracking, pipeline visualization, and sales automation. Integrates 
+with Gmail, Outlook, and 500+ apps. Perfect for teams of 1-50 people 
+looking to scale their sales process without upfront costs.
+```
+
+### 2. Choose Accurate Categories
+
+Select categories that precisely match your product:
+
+- ✅ **Specific**: "CRM Software" > "Business Software"
+- ✅ **Multiple**: Add 3-5 relevant categories
+- ✅ **Accurate**: Only categories that truly apply
+
+### 3. Add Relevant Keywords
+
+Include terms users would search for:
+
+- ✅ **User Language**: "customer management" not "CRM solution"
+- ✅ **Long-tail**: "free CRM for startups" not just "CRM"
+- ✅ **Synonyms**: "client database", "contact manager", "sales tracker"
+
+### 4. Define Target Audience
+
+Be specific about who your product is for:
+
+- ✅ **Company Size**: "Startups with 1-10 employees"
+- ✅ **Industry**: "SaaS companies", "E-commerce brands"
+- ✅ **Use Case**: "Sales teams needing pipeline visibility"
+
+### 5. Set Competitive CPA
+
+Higher CPA can improve CRS (15% weight):
+
+- ✅ **Market Rate**: Research competitor CPAs
+- ✅ **Value-based**: Price based on customer lifetime value
+- ✅ **Test & Adjust**: Start higher, optimize over time
+
+---
+
+## Monitoring CRS
+
+### Dashboard Analytics
+
+Track CRS performance in your dashboard:
+
+1. **Queries Page**: See CRS for each individual query
+2. **Offer Analytics**: View average CRS per offer
+3. **Product Performance**: Compare CRS across products
+
+### Key Metrics to Watch
+
+| Metric | What It Means | Action |
+|--------|---------------|--------|
+| **Average CRS** | Overall match quality | Aim for 70+ |
+| **CRS Distribution** | Range of scores | Reduce low-scoring matches |
+| **CRS vs CTR** | Correlation | Higher CRS should = higher CTR |
+| **CRS vs CVR** | Conversion correlation | Optimize for high-CRS conversions |
+
+---
+
+## CRS in API Responses
+
+### For AI Platforms
+
+CRS is included in every recommendation:
+
+```json
+{
+  "recommendations": [
+    {
+      "product_id": "abc-123",
+      "title": "HubSpot CRM",
+      "meta": {
+        "contextual_relevance_score": 87.5,
+        "reason": "Perfect match for startup CRM needs"
+      }
+    }
+  ]
+}
+```
+
+**Best Practices**:
+- Filter recommendations with CRS < 60
+- Rank by CRS (highest first)
+- Display CRS to users as quality indicator
+
+### For Advertisers
+
+View CRS in dashboard queries:
+
+- **Individual Queries**: See exact CRS for each exposure
+- **Aggregate Stats**: Average CRS per offer/product
+- **Trends**: Track CRS changes over time
+
+---
+
+## CRS vs Other Metrics
+
+### CRS vs Trust Score
+
+| Metric | What It Measures | Impact |
+|--------|------------------|--------|
+| **CRS** | Query-product match quality | CPX cost, ranking |
+| **Trust Score** | Brand/product credibility | User confidence, CTR |
+
+Both are important, but serve different purposes.
+
+### CRS vs Click-Through Rate
+
+- **High CRS + High CTR**: Excellent performance ✅
+- **High CRS + Low CTR**: Poor ad copy or positioning ⚠️
+- **Low CRS + High CTR**: Misleading recommendations ❌
+- **Low CRS + Low CTR**: Poor match, optimize or pause ❌
+
+---
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="What's a good CRS?">
+    - **Excellent**: 75+ (aim for this)
+    - **Acceptable**: 60-74 (room for improvement)
+    - **Poor**: Below 60 (optimize or pause)
+  </Accordion>
+  
+  <Accordion title="Can I see CRS before paying?">
+    Yes! CRS is calculated before billing. You can see it in your dashboard queries page for every exposure.
+  </Accordion>
+  
+  <Accordion title="Does higher CRS guarantee conversions?">
+    No, but it significantly increases the likelihood. CRS measures relevance, not conversion certainty.
+  </Accordion>
+  
+  <Accordion title="How often is CRS recalculated?">
+    CRS is calculated in real-time for each query. Product updates (description, categories, keywords) immediately affect future CRS calculations.
+  </Accordion>
+  
+  <Accordion title="Can I filter by minimum CRS?">
+    AI platforms can filter recommendations by CRS. Advertisers cannot set minimum CRS thresholds, but can optimize products to improve scores.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Optimization Checklist
+
+<Steps>
+  <Step title="Audit Product Data">
+    - [ ] Review product descriptions for detail and keywords
+    - [ ] Verify categories are accurate and specific
+    - [ ] Add relevant keywords users would search
+    - [ ] Define clear target audience
+  </Step>
+  
+  <Step title="Monitor Performance">
+    - [ ] Track average CRS in dashboard
+    - [ ] Identify low-performing products (CRS < 60)
+    - [ ] Compare CRS to CTR and conversion rate
+  </Step>
+  
+  <Step title="Optimize & Test">
+    - [ ] Update descriptions with more detail
+    - [ ] Add missing categories and keywords
+    - [ ] Test different CPA amounts
+    - [ ] Monitor CRS changes over 7 days
+  </Step>
+  
+  <Step title="Scale Winners">
+    - [ ] Increase budget for high-CRS offers
+    - [ ] Pause or optimize low-CRS offers
+    - [ ] Replicate successful patterns across products
+  </Step>
+</Steps>
+
+---
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Billing Models" icon="dollar-sign" href="/advertisers/billing-models">
+    How CRS affects CPX costs
+  </Card>
+  
+  <Card title="Optimization Guide" icon="lightbulb" href="/advertisers/optimization">
+    Detailed tips to improve CRS
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api-playground">
+    CRS in API responses
+  </Card>
+  
+  <Card title="Dashboard Analytics" icon="chart-bar" href="/advertisers/dashboard-analytics">
+    Tracking CRS performance
+  </Card>
+</CardGroup>
+

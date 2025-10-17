@@ -1,0 +1,618 @@
+---
+title: "Best Practices for AI Platforms"
+description: "Optimize user experience, maximize earnings, and build trust with intelligent recommendation strategies"
+---
+
+# Best Practices for AI Platforms
+
+This guide provides proven strategies to integrate AdMesh recommendations effectively, maintain excellent user experience, and maximize revenue.
+
+---
+
+## Core Principles
+
+### 1. Relevance First
+
+**Always prioritize user value over revenue**
+
+<CardGroup cols={2}>
+  <Card title="✅ Do This" icon="check">
+    - Only show recommendations when truly relevant
+    - Filter by Contextual Relevance Score (CRS > 60)
+    - Rank by quality, not just payout
+    - Limit to 3-5 recommendations maximum
+  </Card>
+  
+  <Card title="❌ Avoid This" icon="x">
+    - Showing recommendations for every query
+    - Displaying low-quality matches (CRS < 60)
+    - Prioritizing high-payout over relevance
+    - Overwhelming users with too many ads
+  </Card>
+</CardGroup>
+
+### 2. Transparency
+
+**Be clear about sponsored content**
+
+- ✅ Label recommendations as "Ad", "Sponsored", or "Partner Recommendation"
+- ✅ Make labels visible and clear
+- ✅ Distinguish from organic content
+- ✅ Explain how recommendations work (optional)
+
+### 3. User Experience
+
+**Don't interrupt the conversation flow**
+
+- ✅ Integrate recommendations naturally
+- ✅ Maintain conversation context
+- ✅ Allow users to dismiss or skip
+- ✅ Provide value alongside recommendations
+
+---
+
+## Filtering Recommendations
+
+### By Contextual Relevance Score
+
+**Recommended Thresholds**:
+
+| CRS Range | Action | Reasoning |
+|-----------|--------|-----------|
+| **90-100** | Always show | Excellent match, high conversion potential |
+| **75-89** | Show | Good match, likely relevant |
+| **60-74** | Show with caution | Fair match, may be relevant |
+| **45-59** | Filter out | Poor match, unlikely to convert |
+| **0-44** | Never show | Very poor match, bad UX |
+
+**Implementation**:
+```javascript
+const recommendations = response.recommendations.filter(
+  rec => rec.meta.contextual_relevance_score >= 60
+);
+```
+
+### By Trust Score
+
+Filter out low-trust products:
+
+```javascript
+const trustedRecommendations = recommendations.filter(
+  rec => rec.trust_score >= 70
+);
+```
+
+### By Intent Type
+
+Only show recommendations for commercial intent:
+
+```javascript
+const commercialIntents = ['product_discovery', 'comparison', 'purchase_intent'];
+
+if (commercialIntents.includes(response.intent.intent_type)) {
+  // Show recommendations
+} else {
+  // Skip recommendations for informational queries
+}
+```
+
+---
+
+## Ranking Recommendations
+
+### Multi-Factor Ranking
+
+**Recommended Formula**:
+```javascript
+function calculateRankingScore(rec) {
+  const crsWeight = 0.6;
+  const trustWeight = 0.2;
+  const payoutWeight = 0.2;
+  
+  return (
+    rec.meta.contextual_relevance_score * crsWeight +
+    rec.trust_score * trustWeight +
+    (rec.meta.payout_score || 0) * payoutWeight
+  );
+}
+
+recommendations.sort((a, b) => 
+  calculateRankingScore(b) - calculateRankingScore(a)
+);
+```
+
+**Weights Explained**:
+- **CRS (60%)**: Primary factor - ensures relevance
+- **Trust Score (20%)**: Builds user confidence
+- **Payout (20%)**: Balances revenue optimization
+
+### Alternative Strategies
+
+<AccordionGroup>
+  <Accordion title="Pure Relevance (Best UX)">
+    ```javascript
+    recommendations.sort((a, b) => 
+      b.meta.contextual_relevance_score - a.meta.contextual_relevance_score
+    );
+    ```
+    
+    **Pros**: Best user experience, highest trust
+    **Cons**: May not maximize revenue
+  </Accordion>
+
+  <Accordion title="Balanced (Recommended)">
+    ```javascript
+    // 70% relevance, 30% payout
+    recommendations.sort((a, b) => {
+      const scoreA = a.meta.contextual_relevance_score * 0.7 + 
+                     (a.meta.payout_score || 0) * 0.3;
+      const scoreB = b.meta.contextual_relevance_score * 0.7 + 
+                     (b.meta.payout_score || 0) * 0.3;
+      return scoreB - scoreA;
+    });
+    ```
+    
+    **Pros**: Good balance of UX and revenue
+    **Cons**: Slightly favors higher-paying ads
+  </Accordion>
+
+  <Accordion title="Revenue-Focused (Use Carefully)">
+    ```javascript
+    // 50% relevance, 50% payout
+    recommendations.sort((a, b) => {
+      const scoreA = a.meta.contextual_relevance_score * 0.5 + 
+                     (a.meta.payout_score || 0) * 0.5;
+      const scoreB = b.meta.contextual_relevance_score * 0.5 + 
+                     (b.meta.payout_score || 0) * 0.5;
+      return scoreB - scoreA;
+    });
+    ```
+    
+    **Pros**: Maximizes revenue
+    **Cons**: May show less relevant ads, hurts UX
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Display Strategies
+
+### 1. Inline Recommendations (Best for Conversational AI)
+
+**When to Use**: AI assistants, chatbots, conversational search
+
+**Implementation**:
+```tsx
+function ConversationalResponse({ response }) {
+  return (
+    <div>
+      {/* Main AI response */}
+      <p>{response.summary}</p>
+      
+      {/* Inline recommendations */}
+      {response.recommendations.length > 0 && (
+        <div className="recommendations">
+          <span className="label">Partner Recommendations:</span>
+          {response.recommendations.slice(0, 3).map(rec => (
+            <a key={rec.ad_id} href={rec.admesh_link} target="_blank">
+              {rec.title}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Pros**: Natural, non-intrusive, maintains flow
+**Cons**: Less visual prominence
+
+### 2. Card Layout (Best for Product Discovery)
+
+**When to Use**: Product search, comparison tools, shopping assistants
+
+**Implementation**:
+```tsx
+function ProductCards({ recommendations }) {
+  return (
+    <div className="product-grid">
+      {recommendations.slice(0, 4).map(rec => (
+        <div key={rec.ad_id} className="product-card">
+          <span className="badge">Sponsored</span>
+          <h3>{rec.title}</h3>
+          <p>{rec.meta.reason}</p>
+          {rec.meta.pricing && <p className="price">{rec.meta.pricing}</p>}
+          <a href={rec.admesh_link} className="cta">Learn More</a>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**Pros**: Visual, clear value proposition, high CTR
+**Cons**: More intrusive, requires more space
+
+### 3. Sidebar (Best for Research Tools)
+
+**When to Use**: Search engines, research platforms, knowledge bases
+
+**Implementation**:
+```tsx
+function SidebarRecommendations({ recommendations }) {
+  return (
+    <aside className="sidebar">
+      <h4>Related Products</h4>
+      {recommendations.slice(0, 3).map(rec => (
+        <div key={rec.ad_id} className="sidebar-item">
+          <span className="ad-label">Ad</span>
+          <a href={rec.admesh_link}>{rec.title}</a>
+          <p className="small">{rec.meta.reason}</p>
+        </div>
+      ))}
+    </aside>
+  );
+}
+```
+
+**Pros**: Non-intrusive, doesn't interrupt main content
+**Cons**: Lower visibility, may be ignored
+
+---
+
+## Handling Edge Cases
+
+### No Recommendations Available
+
+**Graceful Fallback**:
+```javascript
+if (!response.recommendations || response.recommendations.length === 0) {
+  // Don't show empty recommendation section
+  // Continue with normal response
+  return <div>{response.summary}</div>;
+}
+```
+
+**Don't**:
+- ❌ Show "No recommendations found" message
+- ❌ Display empty recommendation containers
+- ❌ Force recommendations for every query
+
+### Low-Quality Recommendations
+
+**Filter Aggressively**:
+```javascript
+const qualityRecommendations = response.recommendations.filter(
+  rec => rec.meta.contextual_relevance_score >= 70 && rec.trust_score >= 75
+);
+
+if (qualityRecommendations.length === 0) {
+  // Skip recommendations entirely
+  return <div>{response.summary}</div>;
+}
+```
+
+### Informational Queries
+
+**Detect Intent**:
+```javascript
+const commercialIntents = [
+  'product_discovery',
+  'comparison',
+  'purchase_intent',
+  'research'
+];
+
+const shouldShowRecommendations = 
+  commercialIntents.includes(response.intent.intent_type) &&
+  response.intent.purchase_intent !== 'none';
+```
+
+---
+
+## Click Tracking Best Practices
+
+### Always Use AdMesh Links
+
+**Critical**: Use `admesh_link` for all clicks
+
+```tsx
+// ✅ Correct
+<a href={recommendation.admesh_link} target="_blank">
+  {recommendation.title}
+</a>
+
+// ❌ Wrong - bypasses tracking
+<a href={recommendation.meta.url} target="_blank">
+  {recommendation.title}
+</a>
+```
+
+### Open in New Tab
+
+**Recommended**: Use `target="_blank"` to keep users on your platform
+
+```tsx
+<a 
+  href={recommendation.admesh_link} 
+  target="_blank" 
+  rel="noopener noreferrer"
+>
+  {recommendation.title}
+</a>
+```
+
+### Track Click Events (Optional)
+
+**For Analytics**:
+```javascript
+function handleRecommendationClick(recommendation) {
+  // Your analytics
+  analytics.track('Recommendation Clicked', {
+    ad_id: recommendation.ad_id,
+    product_id: recommendation.product_id,
+    crs: recommendation.meta.contextual_relevance_score
+  });
+  
+  // Open AdMesh link
+  window.open(recommendation.admesh_link, '_blank');
+}
+```
+
+---
+
+## Session Management
+
+### Use Session IDs
+
+**Maintain Context Across Queries**:
+```javascript
+let sessionId = null;
+
+async function getRecommendations(query) {
+  const response = await fetch('/agent/recommend', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${API_KEY}` },
+    body: JSON.stringify({
+      query,
+      session_id: sessionId,
+      previous_query: previousQuery,
+      previous_summary: previousSummary
+    })
+  });
+  
+  const data = await response.json();
+  sessionId = data.session_id; // Store for next query
+  return data;
+}
+```
+
+**Benefits**:
+- Better attribution tracking
+- Improved recommendation quality
+- Conversation context awareness
+
+---
+
+## Performance Optimization
+
+### Cache Recommendations (Carefully)
+
+**Short-term Caching Only**:
+```javascript
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes max
+
+function getCachedRecommendations(query) {
+  const cached = cache.get(query);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  return null;
+}
+```
+
+**Don't**:
+- ❌ Cache for > 5 minutes (recommendations may change)
+- ❌ Cache across different users
+- ❌ Cache without TTL
+
+### Lazy Loading
+
+**Load Recommendations After Main Content**:
+```tsx
+function AIResponse({ query }) {
+  const [response, setResponse] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    // Load main response first
+    getMainResponse(query).then(setResponse);
+    
+    // Load recommendations after
+    getRecommendations(query).then(setRecommendations);
+  }, [query]);
+
+  return (
+    <div>
+      {response && <p>{response.summary}</p>}
+      {recommendations.length > 0 && (
+        <RecommendationCards recommendations={recommendations} />
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Compliance & Disclosure
+
+### Required Disclosures
+
+<Steps>
+  <Step title="Label All Recommendations">
+    Use "Ad", "Sponsored", "Partner Recommendation", or similar
+  </Step>
+  
+  <Step title="Make Labels Visible">
+    Don't hide labels in fine print or tooltips
+  </Step>
+  
+  <Step title="Distinguish from Organic">
+    Use visual cues (badges, borders, background colors)
+  </Step>
+  
+  <Step title="Explain (Optional)">
+    Provide link to "How recommendations work" page
+  </Step>
+</Steps>
+
+### Example Disclosure
+
+```tsx
+<div className="recommendation-card">
+  <span className="ad-badge">Partner Recommendation</span>
+  <h3>{recommendation.title}</h3>
+  <p>{recommendation.meta.reason}</p>
+  <a href={recommendation.admesh_link}>Learn More</a>
+  
+  <small className="disclosure">
+    We may earn a commission if you click or purchase. 
+    <a href="/how-it-works">Learn more</a>
+  </small>
+</div>
+```
+
+---
+
+## Testing & Quality Assurance
+
+### Test Mode
+
+**Use for Development**:
+```javascript
+const response = await fetch('/agent/recommend', {
+  method: 'POST',
+  headers: { 'Authorization': `Bearer ${API_KEY}` },
+  body: JSON.stringify({
+    query: 'test query',
+    is_test: true // Test mode
+  })
+});
+```
+
+**Benefits**:
+- Doesn't affect production metrics
+- Doesn't count toward earnings
+- Appears in dashboard with "Test" label
+
+### Quality Checks
+
+<Steps>
+  <Step title="Verify Relevance">
+    Manually review recommendations for sample queries
+  </Step>
+  
+  <Step title="Check Disclosure Labels">
+    Ensure all recommendations are clearly labeled
+  </Step>
+  
+  <Step title="Test Click Tracking">
+    Verify clicks redirect correctly and appear in dashboard
+  </Step>
+  
+  <Step title="Monitor User Feedback">
+    Track user complaints or negative feedback
+  </Step>
+</Steps>
+
+---
+
+## Maximizing Earnings
+
+### 1. Optimize Query Quality
+
+**Send Natural Language Queries**:
+```javascript
+// ✅ Good - natural language
+"What's the best CRM for startups?"
+
+// ❌ Poor - keyword stuffing
+"CRM software tool startup best cheap free"
+```
+
+### 2. Increase Recommendation Visibility
+
+**Strategies**:
+- Place recommendations above the fold
+- Use eye-catching design (but not misleading)
+- Highlight value propositions
+- Add trust signals (ratings, reviews)
+
+### 3. Improve Click-Through Rate
+
+**Tactics**:
+- Show only high-CRS recommendations (70+)
+- Rank by relevance first
+- Write compelling CTAs
+- Add social proof
+
+### 4. Track Performance
+
+**Monitor**:
+- CTR by recommendation position
+- Conversion rate by CRS range
+- Earnings by query type
+- User engagement metrics
+
+---
+
+## Common Mistakes to Avoid
+
+<AccordionGroup>
+  <Accordion title="Showing Too Many Recommendations">
+    **Problem**: Overwhelming users, reducing quality
+    
+    **Solution**: Limit to 3-5 recommendations maximum
+  </Accordion>
+
+  <Accordion title="Ignoring Contextual Relevance Score">
+    **Problem**: Showing irrelevant ads, poor UX
+    
+    **Solution**: Filter by CRS >= 60, rank by CRS
+  </Accordion>
+
+  <Accordion title="Modifying Tracking Links">
+    **Problem**: Breaks attribution, no earnings
+    
+    **Solution**: Always use `admesh_link` exactly as provided
+  </Accordion>
+
+  <Accordion title="Caching Too Long">
+    **Problem**: Stale recommendations, missed opportunities
+    
+    **Solution**: Cache for max 5 minutes
+  </Accordion>
+
+  <Accordion title="Poor Disclosure">
+    **Problem**: Violates FTC guidelines, erodes trust
+    
+    **Solution**: Clear, visible "Ad" or "Sponsored" labels
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Earnings Model" icon="dollar-sign" href="/ai-platforms/earnings">
+    Understand revenue share and payouts
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api-playground">
+    Complete API documentation
+  </Card>
+</CardGroup>
+

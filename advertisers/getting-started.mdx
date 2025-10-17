@@ -1,0 +1,302 @@
+---
+title: "Getting Started as an Advertiser"
+description: "Complete guide to setting up your brand account and creating your first offer on AdMesh"
+---
+
+# Getting Started as an Advertiser
+
+Welcome to AdMesh! This guide will walk you through setting up your brand account and creating your first product offer.
+
+## What is AdMesh?
+
+AdMesh is an **AI-native advertising protocol** that enables your products to be recommended by AI agents (ChatGPT, Claude, Perplexity, etc.) when users ask relevant questions.
+
+**Example**: When a user asks "What's the best CRM for startups?", AI agents can recommend your product, and you only pay when users engage.
+
+---
+
+## Quick Start Overview
+
+<Steps>
+  <Step title="Create Account">
+    Sign up at [useadmesh.com](https://useadmesh.com) with your business email and website
+  </Step>
+  <Step title="Add Products">
+    Import or manually add products you want to promote
+  </Step>
+  <Step title="Create Offers">
+    Set pricing (CPA/CPC/CPX) and allocate budget
+  </Step>
+  <Step title="Set Up Tracking">
+    Choose your tracking method (Shopify, Pixel, or Webhook)
+  </Step>
+  <Step title="Go Live">
+    Activate your offers and start getting recommendations
+  </Step>
+</Steps>
+
+**Time to complete**: 10-60 minutes (depending on integration method)
+
+---
+
+## Account Setup
+
+### 1. Sign Up
+
+Visit [useadmesh.com](https://useadmesh.com) and click "Sign Up as Brand".
+
+**Required Information**:
+- Business email address
+- Password
+- Company website URL
+- Company name (optional)
+
+<Note>
+  If your email domain doesn't match your website domain, you'll need to verify your email address before proceeding.
+</Note>
+
+### 2. Email Verification
+
+If required, check your inbox for a verification email and click the confirmation link.
+
+**Bypass in Development**: Email verification is automatically bypassed in development environments.
+
+### 3. Welcome Bonus
+
+Upon successful signup, you'll receive:
+- **$50 promotional credit** (5000 cents) to test the platform
+- Access to your brand dashboard
+- Ability to create products and offers
+
+---
+
+## Choose Your Integration Path
+
+AdMesh offers three integration methods based on your platform and technical capabilities:
+
+<CardGroup cols={3}>
+  <Card title="Shopify OAuth" icon="shopify" href="/advertisers/tracking-shopify">
+    **10 minutes** • No-code
+    
+    Perfect for Shopify stores. Fully automated conversion tracking.
+  </Card>
+  
+  <Card title="Pixel Tracking" icon="code" href="/advertisers/tracking-pixel">
+    **20 minutes** • Copy/paste
+    
+    For SaaS and B2B. Simple JavaScript snippet.
+  </Card>
+  
+  <Card title="Server Webhooks" icon="server" href="/advertisers/tracking-webhooks">
+    **1-2 hours** • Developer required
+    
+    Enterprise-grade server-side tracking.
+  </Card>
+</CardGroup>
+
+### Integration Comparison
+
+| Feature | Shopify OAuth | Pixel Tracking | Server Webhooks |
+|---------|---------------|----------------|-----------------|
+| **Setup Time** | 10 minutes | 20 minutes | 1-2 hours |
+| **Technical Level** | No-code | Copy/paste | Developer required |
+| **Reliability** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Best For** | E-commerce | SaaS/B2B | Enterprise |
+| **Conversion Tracking** | Automatic | Client-side | Server-side |
+
+---
+
+## Adding Your First Product
+
+### Option A: Shopify Import (E-commerce)
+
+<Steps>
+  <Step title="Connect Store">
+    Navigate to **Shopify** page in sidebar and enter your store URL
+  </Step>
+  <Step title="Authorize">
+    Click "Connect Store" and authorize AdMesh in Shopify admin
+  </Step>
+  <Step title="Import Products">
+    Select products from your catalog to import (batch import supported)
+  </Step>
+  <Step title="Review">
+    Product data (title, description, price, images) is automatically synced
+  </Step>
+</Steps>
+
+### Option B: Manual Entry (SaaS/B2B)
+
+<Steps>
+  <Step title="Navigate to Products">
+    Go to **Products** page in your dashboard
+  </Step>
+  <Step title="Click Add Product">
+    Fill in product details or use AI generation
+  </Step>
+  <Step title="Product Information">
+    - **Product Title**: Clear, descriptive name
+    - **Description**: Detailed explanation of what your product does
+    - **URL**: Your product landing page
+    - **Categories**: Select relevant categories (improves matching)
+    - **Keywords**: Add search terms users would use
+    - **Audience Segment**: Define your target audience
+  </Step>
+  <Step title="AI Generation (Optional)">
+    Click "Generate with AI" to auto-create descriptions and keywords
+  </Step>
+</Steps>
+
+<Tip>
+  **Pro Tip**: Detailed, keyword-rich descriptions improve your Contextual Relevance Score, leading to better matches and lower CPX costs.
+</Tip>
+
+---
+
+## Creating Your First Offer
+
+An **offer** is a specific promotion for one or more products with defined pricing and budget.
+
+<Steps>
+  <Step title="Navigate to Offers">
+    Go to **Offers** page and click "Create New Offer"
+  </Step>
+  
+  <Step title="Select Products">
+    Choose 1-3 products to include in this offer (multi-product bundles supported)
+  </Step>
+  
+  <Step title="Set Pricing">
+    Define your cost-per-action (CPA) amount:
+    - **Typical SaaS**: $5-$20 per signup
+    - **E-commerce**: 5-15% of product price
+    - **Enterprise**: $50-$200 per qualified lead
+  </Step>
+  
+  <Step title="Allocate Budget">
+    Set total budget for this offer (minimum $10)
+    
+    <Warning>
+      Budget is locked when offer is created. You can pause/cancel to free budget.
+    </Warning>
+  </Step>
+  
+  <Step title="Offer Details">
+    - **Offer Title**: Auto-generated or custom (can regenerate)
+    - **Offer Description**: Auto-generated or custom (can regenerate)
+    - **Reward Note**: What users/agents get (e.g., "10% off annual plans")
+  </Step>
+  
+  <Step title="Review & Create">
+    Review all details and click "Create Offer"
+  </Step>
+</Steps>
+
+### Offer Status
+
+- **Active**: Offer is live and can receive recommendations
+- **Inactive**: Offer is paused (budget preserved)
+- **Cancelled**: Offer is permanently stopped (budget released)
+
+---
+
+## Understanding Pricing
+
+AdMesh uses a **three-stage attribution model** with fair, engagement-based pricing:
+
+### Pricing Tiers
+
+| Stage | What Happens | You Pay | Example Cost |
+|-------|--------------|---------|--------------|
+| **Exposure** | Product appears in AI response | CPX (if no click) | ~$0.08 |
+| **Click** | User clicks your product link | CPC (if no conversion) | ~$0.50 |
+| **Conversion** | User signs up/purchases | CPA (full value) | ~$10.00 |
+
+### Key Principles
+
+<AccordionGroup>
+  <Accordion title="Single Billing - Never Pay Twice">
+    You **NEVER** pay twice for the same user. Higher engagement overrides lower charges.
+    
+    - If user converts → Pay **CPA only** (not CPC + CPA)
+    - If user clicks but doesn't convert → Pay **CPC only**
+    - If user sees but doesn't click → Pay **CPX only**
+  </Accordion>
+  
+  <Accordion title="Attribution Windows">
+    - **Exposure → Click**: 30 minutes (or same session)
+    - **Click → Conversion**: 24 hours
+    - **Customizable**: Configure per your needs in Integration settings
+  </Accordion>
+  
+  <Accordion title="CPX Calculation">
+    CPX is calculated based on relevance:
+    
+    ```
+    CPX = CPA × 0.001 × (Contextual Relevance Score / 100)
+    ```
+    
+    **Example**: If CPA = $10 and CRS = 85%, then CPX = $0.085
+    
+    [Learn more about Contextual Relevance Score →](/contextual-relevance-score)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Set Up Tracking" icon="chart-line" href="/advertisers/tracking-overview">
+    Choose and implement your tracking method
+  </Card>
+  
+  <Card title="Understand Billing" icon="dollar-sign" href="/advertisers/billing-models">
+    Deep dive into CPX/CPC/CPA pricing
+  </Card>
+  
+  <Card title="Dashboard Analytics" icon="chart-bar" href="/advertisers/dashboard-analytics">
+    Learn what metrics you can track
+  </Card>
+  
+  <Card title="Optimization Tips" icon="lightbulb" href="/advertisers/optimization">
+    Improve your Contextual Relevance Score
+  </Card>
+</CardGroup>
+
+---
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="How long does setup take?">
+    - **Shopify**: ~10 minutes (no-code)
+    - **SaaS/B2B**: ~20 minutes (copy/paste JavaScript)
+    - **Enterprise**: 1-2 hours (server-side webhooks)
+  </Accordion>
+  
+  <Accordion title="What's the minimum budget?">
+    Minimum budget per offer is **$10**. We recommend starting with $50-$100 to gather meaningful data.
+  </Accordion>
+  
+  <Accordion title="Can I test before going live?">
+    Yes! Use `test=true` parameter in tracking URLs to test without spending real budget. Test conversions are tracked separately in your dashboard.
+  </Accordion>
+  
+  <Accordion title="What if I need to change my offer?">
+    You can pause offers anytime to preserve budget. To modify pricing or products, you'll need to create a new offer.
+  </Accordion>
+  
+  <Accordion title="How do I add more budget?">
+    Navigate to **Wallet** page and click "Add Funds". We accept credit cards via Stripe.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Need Help?
+
+<Card title="Contact Support" icon="envelope" href="mailto:mani@useadmesh.com">
+  Questions about getting started? Our team is here to help.
+</Card>
+

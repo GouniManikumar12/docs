@@ -94,7 +94,7 @@
                               "ad_id": "b1e5d17f-4f76-4669-800c-163398db0cc5",
                               "offer_trust_score": 100.0,
                               "brand_trust_score": 100,
-                              "intent_match_score": 69.19,
+                              "contextual_relevance_score": 69.19,
                               "reason": "This offer matches your category interest and relevant to your query and trusted platform and excellent earning potential.",
                               "description": "Website not provided, assuming as a developer tool for building marketing and design interfaces.",
                               "keywords": ["useadmesh", "marketing", "design", "development", "saas", "web", "tool", "interface", "building", "admesh"],
@@ -447,10 +447,12 @@
                 "description": "Trust score for the brand",
                 "example": 100
               },
-              "intent_match_score": {
+              "contextual_relevance_score": {
                 "type": "number",
                 "format": "float",
-                "description": "How well the product matches the user's intent",
+                "description": "Contextual relevance score (0-100) indicating how well the product matches the user's intent and query context. Used for CPX calculation.",
+                "minimum": 0,
+                "maximum": 100,
                 "example": 69.19
               },
               "reason": {

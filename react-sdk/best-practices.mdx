@@ -1,0 +1,333 @@
+---
+title: "Best Practices"
+description: "Best practices for integrating AdMesh React SDK"
+---
+
+# Best Practices
+
+## Hook Usage
+
+### ✅ Use Hooks Inside Components
+
+Always use hooks inside React components, never at the module level:
+
+```tsx
+// ✅ CORRECT
+export function MyComponent() {
+  const { recommendations } = useRecommendations({ query: 'laptop' });
+  return <div>{recommendations.length} items</div>;
+}
+
+// ❌ WRONG - Don't do this!
+const { recommendations } = useRecommendations({ query: 'laptop' });
+
+export function MyComponent() {
+  return <div>{recommendations.length} items</div>;
+}
+```
+
+### ✅ Memoize Components
+
+Use `React.memo()` to prevent unnecessary re-renders:
+
+```tsx
+const RecommendationCard = React.memo(({ recommendation }) => {
+  return (
+    <div>
+      <h3>{recommendation.title}</h3>
+      <p>{recommendation.description}</p>
+    </div>
+  );
+});
+```
+
+### ✅ Handle Loading States
+
+Always check loading state before rendering:
+
+```tsx
+const { recommendations, loading, error } = useRecommendations({
+  query: 'laptop'
+});
+
+if (loading) return <Skeleton />;
+if (error) return <ErrorMessage error={error} />;
+
+return <RecommendationGrid recommendations={recommendations} />;
+```
+
+## Viewability Tracking
+
+### ✅ Wrap Content in Tracking Div
+
+Always wrap recommendations in a viewability tracking container:
+
+```tsx
+const { ref, isVisible, metrics } = useViewabilityTracker({
+  threshold: 50,
+  duration: 1000
+});
+
+return (
+  <div ref={ref} style={{ minHeight: '200px' }}>
+    {/* Recommendations content */}
+  </div>
+);
+```
+
+### ✅ Ensure Sufficient Element Height
+
+Viewability tracking requires the element to be visible in the viewport:
+
+```tsx
+// ✅ Good - Element has sufficient height
+<div ref={ref} style={{ minHeight: '300px' }}>
+  <RecommendationGrid recommendations={recs} />
+</div>
+
+// ❌ Bad - Element too small to be visible
+<div ref={ref} style={{ height: '10px' }}>
+  <RecommendationGrid recommendations={recs} />
+</div>
+```
+
+### ✅ Use Appropriate Thresholds
+
+Choose thresholds based on your use case:
+
+```tsx
+// For above-the-fold content
+const { ref } = useViewabilityTracker({
+  threshold: 50,    // 50% visible
+  duration: 1000    // 1 second
+});
+
+// For below-the-fold content
+const { ref } = useViewabilityTracker({
+  threshold: 30,    // 30% visible (more lenient)
+  duration: 2000    // 2 seconds
+});
+```
+
+## Performance Optimization
+
+### ✅ Limit Recommendations
+
+Reduce the number of recommendations for better performance:
+
+```tsx
+const { recommendations } = useRecommendations({
+  query: 'laptop',
+  limit: 3  // Limit to 3 items instead of 10
+});
+```
+
+### ✅ Implement Pagination
+
+For large result sets, use pagination:
+
+```tsx
+const [page, setPage] = useState(1);
+const { recommendations } = useRecommendations({
+  query: 'laptop',
+  limit: 5,
+  offset: (page - 1) * 5
+});
+```
+
+### ✅ Cache Results
+
+Cache recommendations to avoid redundant API calls:
+
+```tsx
+const cache = useRef<Map<string, any>>(new Map());
+
+const { recommendations } = useRecommendations({
+  query,
+  enabled: !cache.current.has(query)
+});
+
+useEffect(() => {
+  if (recommendations.length > 0) {
+    cache.current.set(query, recommendations);
+  }
+}, [recommendations, query]);
+```
+
+### ✅ Debounce Search Queries
+
+Debounce search input to reduce API calls:
+
+```tsx
+import { useCallback, useRef } from 'react';
+
+function SearchRecommendations() {
+  const [query, setQuery] = useState('');
+  const debounceTimer = useRef<NodeJS.Timeout>();
+
+  const handleSearch = useCallback((value: string) => {
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setQuery(value);
+    }, 300);
+  }, []);
+
+  return (
+    <input
+      onChange={(e) => handleSearch(e.target.value)}
+      placeholder="Search..."
+    />
+  );
+}
+```
+
+## Error Handling
+
+### ✅ Implement Error Boundaries
+
+Wrap components with error boundaries:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary';
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div>
+      <h2>Something went wrong</h2>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
+export function App() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <RecommendationsPage />
+    </ErrorBoundary>
+  );
+}
+```
+
+### ✅ Handle Network Errors Gracefully
+
+```tsx
+const { recommendations, error, refetch } = useRecommendations({
+  query: 'laptop'
+});
+
+if (error) {
+  return (
+    <div className="error-container">
+      <p>Failed to load recommendations</p>
+      <button onClick={refetch}>Retry</button>
+    </div>
+  );
+}
+```
+
+## Next.js Specific
+
+### ✅ Use Dynamic Imports for SSR
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const AdMeshRecommendations = dynamic(
+  () => import('./AdMeshRecommendations'),
+  { ssr: false }
+);
+
+export function Page() {
+  return <AdMeshRecommendations />;
+}
+```
+
+### ✅ Use 'use client' Directive
+
+```tsx
+'use client';
+
+import { useRecommendations } from '@admesh/react-sdk';
+
+export function RecommendationsComponent() {
+  const { recommendations } = useRecommendations({ query: 'laptop' });
+  return <div>{/* ... */}</div>;
+}
+```
+
+## Analytics & Tracking
+
+### ✅ Track User Interactions
+
+```tsx
+const { trackClick, trackConversion } = useAnalytics();
+
+const handleClick = async (productId: string) => {
+  await trackClick({
+    ad_id: productId,
+    session_id: 'user_session_123'
+  });
+  window.open(`/product/${productId}`);
+};
+
+const handleConversion = async (productId: string, amount: number) => {
+  await trackConversion({
+    ad_id: productId,
+    session_id: 'user_session_123',
+    conversion_value: amount
+  });
+};
+```
+
+### ✅ Monitor Performance Metrics
+
+```tsx
+const { getMetrics } = useAnalytics();
+
+useEffect(() => {
+  const metrics = getMetrics();
+  console.log('Performance metrics:', {
+    ctr: metrics.clickThroughRate,
+    avgViewability: metrics.averageViewabilityScore,
+    avgLatency: metrics.averageAdLoadLatency
+  });
+}, []);
+```
+
+## Accessibility
+
+### ✅ Add ARIA Labels
+
+```tsx
+<div
+  ref={ref}
+  role="region"
+  aria-label="Recommended products"
+  aria-live="polite"
+>
+  <RecommendationGrid recommendations={recommendations} />
+</div>
+```
+
+### ✅ Ensure Keyboard Navigation
+
+```tsx
+<button
+  onClick={() => window.open(url)}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      window.open(url);
+    }
+  }}
+>
+  View Product
+</button>
+```
+
+## Next Steps
+
+- [Troubleshooting](/react-sdk/troubleshooting)
+- [API Reference](/react-sdk/api-reference)
+- [Examples](/react-sdk/examples)
+

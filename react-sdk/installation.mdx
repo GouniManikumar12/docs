@@ -1,0 +1,129 @@
+---
+title: "Installation"
+description: "Get started with the AdMesh React SDK"
+---
+
+# React SDK Installation
+
+The AdMesh React SDK is a zero-code solution for integrating AdMesh recommendations into your React applications with automatic tracking, viewability detection, and MRC compliance.
+
+## Features
+
+- ✅ **Zero-Code Integration** - Drop-in React components
+- ✅ **Automatic Tracking** - Exposure, click, and conversion tracking
+- ✅ **MRC Compliance** - Viewability detection using Intersection Observer
+- ✅ **Multiple Layouts** - Product card, ecommerce, and citation layouts
+- ✅ **Dark Mode** - Automatic dark mode support
+- ✅ **Responsive** - Mobile-friendly design
+- ✅ **TypeScript** - Full TypeScript support
+- ✅ **Tree-Shakeable** - Optimized bundle size
+
+## Installation
+
+Install the AdMesh React SDK using your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install @admesh/react-sdk
+```
+
+```bash yarn
+yarn add @admesh/react-sdk
+```
+
+```bash pnpm
+pnpm add @admesh/react-sdk
+```
+
+</CodeGroup>
+
+## Requirements
+
+- React 16.8+ (hooks support required)
+- React DOM 16.8+
+- Node.js 14+
+
+## Quick Setup
+
+### 1. Wrap Your App with AdMeshProvider
+
+```tsx
+import { AdMeshProvider } from '@admesh/react-sdk';
+
+function App() {
+  return (
+    <AdMeshProvider
+      config={{
+        apiKey: 'admesh_prod_your_api_key',
+        apiBaseUrl: 'https://api.admesh.com',
+        debug: true // Enable debug logging
+      }}
+    >
+      <YourApp />
+    </AdMeshProvider>
+  );
+}
+
+export default App;
+```
+
+<Warning>
+**Important:** Always import hooks inside components, not at the module level. Importing hooks at the top level of a file can cause "Cannot read properties of undefined" errors in Next.js. See [Troubleshooting](/react-sdk/troubleshooting) for more details.
+</Warning>
+
+### 2. Use Hooks to Fetch Recommendations
+
+```tsx
+import { useRecommendations, RecommendationGrid } from '@admesh/react-sdk';
+
+function RecommendationsPage() {
+  const { recommendations, loading, error } = useRecommendations({
+    query: 'laptop under $1000',
+    limit: 5
+  });
+
+  return (
+    <RecommendationGrid
+      recommendations={recommendations}
+      loading={loading}
+      error={error}
+    />
+  );
+}
+```
+
+## Configuration
+
+The `AdMeshProvider` accepts a configuration object with the following options:
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `apiKey` | string | Yes | Your AdMesh API key (format: `admesh_prod_*`) |
+| `apiBaseUrl` | string | No | API base URL (default: `https://api.admesh.com`) |
+| `debug` | boolean | No | Enable debug logging (default: `false`) |
+| `viewabilityConfig` | object | No | MRC viewability settings |
+
+### Viewability Configuration
+
+```tsx
+<AdMeshProvider
+  config={{
+    apiKey: 'admesh_prod_your_api_key',
+    viewabilityConfig: {
+      threshold: 50,    // Percentage of element visible (0-100)
+      duration: 1000    // Duration in milliseconds
+    }
+  }}
+>
+  <YourApp />
+</AdMeshProvider>
+```
+
+## Next Steps
+
+- [Learn about hooks](/react-sdk/hooks)
+- [Explore components](/react-sdk/components)
+- [View examples](/react-sdk/examples)
+- [Check API reference](/react-sdk/api-reference)
+

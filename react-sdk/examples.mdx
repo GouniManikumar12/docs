@@ -1,0 +1,274 @@
+---
+title: "Examples"
+description: "Real-world examples of AdMesh React SDK integration"
+---
+
+# React SDK Examples
+
+## Basic Recommendation Display
+
+Display recommendations with automatic loading and error handling:
+
+```tsx
+import { AdMeshProvider, useRecommendations, RecommendationGrid } from '@admesh/react-sdk';
+
+function RecommendationsPage() {
+  const { recommendations, loading, error } = useRecommendations({
+    query: 'best laptops 2024',
+    limit: 6
+  });
+
+  return (
+    <RecommendationGrid
+      recommendations={recommendations}
+      loading={loading}
+      error={error}
+      columns={3}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <AdMeshProvider
+      config={{
+        apiKey: 'admesh_prod_your_api_key',
+        debug: true
+      }}
+    >
+      <RecommendationsPage />
+    </AdMeshProvider>
+  );
+}
+```
+
+## With Viewability Tracking
+
+Track MRC-compliant viewability metrics:
+
+```tsx
+import { useRecommendations, useViewabilityTracker } from '@admesh/react-sdk';
+
+function TrackedRecommendations() {
+  const { ref, isVisible, metrics } = useViewabilityTracker({
+    threshold: 50,
+    duration: 1000,
+    onVisible: (metrics) => {
+      console.log('✅ Viewable impression:', {
+        score: metrics.score,
+        duration: metrics.duration,
+        mrcCompliant: (metrics as any).mrc_compliant
+      });
+    }
+  });
+
+  const { recommendations } = useRecommendations({
+    query: 'electronics'
+  });
+
+  return (
+    <div ref={ref}>
+      {recommendations.map((rec) => (
+        <div key={rec.id} className="p-4 border rounded">
+          <h3>{rec.title}</h3>
+          <p>{rec.description}</p>
+          {isVisible && <span className="text-green-500">Visible</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Search-Based Recommendations
+
+Update recommendations based on user search input:
+
+```tsx
+import { useState } from 'react';
+import { useRecommendations, RecommendationGrid } from '@admesh/react-sdk';
+
+function SearchRecommendations() {
+  const [query, setQuery] = useState('');
+  const { recommendations, loading, refetch } = useRecommendations({
+    query,
+    limit: 5,
+    enabled: query.length > 0
+  });
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await refetch();
+  };
+
+  return (
+    <div>
+      <form onSubmit={handleSearch}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search products..."
+          className="w-full px-4 py-2 border rounded"
+        />
+        <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
+          Search
+        </button>
+      </form>
+
+      {query && (
+        <RecommendationGrid
+          recommendations={recommendations}
+          loading={loading}
+          columns={2}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## Custom Analytics Tracking
+
+Track custom events and calculate metrics:
+
+```tsx
+import { useAnalytics } from '@admesh/react-sdk';
+
+function AnalyticsExample() {
+  const { trackExposure, trackClick, trackConversion, getMetrics } = useAnalytics();
+
+  const handleProductClick = async (productId: string) => {
+    await trackClick({
+      ad_id: productId,
+      session_id: 'user_session_123'
+    });
+    window.open(`/product/${productId}`);
+  };
+
+  const handleConversion = async (productId: string, amount: number) => {
+    await trackConversion({
+      ad_id: productId,
+      session_id: 'user_session_123',
+      conversion_value: amount
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={() => handleProductClick('prod_123')}>
+        View Product
+      </button>
+      <button onClick={() => handleConversion('prod_123', 99.99)}>
+        Complete Purchase
+      </button>
+    </div>
+  );
+}
+```
+
+## Perplexica Integration
+
+Integrate AdMesh recommendations into Perplexica chat:
+
+```tsx
+import { useViewabilityTracker } from '@admesh/react-sdk';
+
+function AdMeshRecommendations({ query }: { query: string }) {
+  const { ref, isVisible, metrics } = useViewabilityTracker({
+    threshold: 50,
+    duration: 1000,
+    onVisible: (metrics) => {
+      console.log('✅ AdMesh recommendations viewable:', {
+        score: metrics.score,
+        mrcCompliant: (metrics as any).mrc_compliant
+      });
+    }
+  });
+
+  // Fetch recommendations based on query
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    const fetchRecs = async () => {
+      const response = await fetch('/api/admesh/recommendations', {
+        method: 'POST',
+        body: JSON.stringify({ query, session_id: 'chat_session' })
+      });
+      const data = await response.json();
+      setRecommendations(data.recommendations);
+    };
+
+    if (query.trim()) {
+      fetchRecs();
+    }
+  }, [query]);
+
+  return (
+    <div ref={ref} className="mt-4">
+      {recommendations.map((rec) => (
+        <div key={rec.id} className="p-3 border rounded mb-2">
+          <h4>{rec.title}</h4>
+          <p className="text-sm text-gray-600">{rec.description}</p>
+          <a href={rec.url} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+            View →
+          </a>
+        </div>
+      ))}
+      {isVisible && <span className="text-xs text-green-500">Viewable</span>}
+    </div>
+  );
+}
+```
+
+## Error Handling
+
+Implement proper error handling:
+
+```tsx
+import { useRecommendations } from '@admesh/react-sdk';
+
+function SafeRecommendations() {
+  const { recommendations, loading, error, refetch } = useRecommendations({
+    query: 'products'
+  });
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded">
+        <h3 className="font-semibold text-red-800">Error loading recommendations</h3>
+        <p className="text-red-700">{error.message}</p>
+        <button
+          onClick={refetch}
+          className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="p-4 text-gray-500">Loading recommendations...</div>;
+  }
+
+  return (
+    <div>
+      {recommendations.length === 0 ? (
+        <p className="text-gray-500">No recommendations found</p>
+      ) : (
+        recommendations.map((rec) => (
+          <div key={rec.id}>{rec.title}</div>
+        ))
+      )}
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+- [API Reference](/react-sdk/api-reference)
+- [Best Practices](/react-sdk/best-practices)
+- [Troubleshooting](/react-sdk/troubleshooting)
+

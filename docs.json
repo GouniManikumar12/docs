@@ -53,6 +53,18 @@
             ]
           },
           {
+            "group": "React SDK",
+            "pages": [
+              "react-sdk/installation",
+              "react-sdk/hooks",
+              "react-sdk/components",
+              "react-sdk/examples",
+              "react-sdk/api-reference",
+              "react-sdk/best-practices",
+              "react-sdk/troubleshooting"
+            ]
+          },
+          {
             "group": "Policies",
             "pages": [
               "content-policy"

@@ -1,0 +1,268 @@
+---
+title: "Troubleshooting"
+description: "Common issues and solutions for AdMesh React SDK"
+---
+
+# Troubleshooting
+
+## Common Issues
+
+### 1. "Cannot read properties of undefined (reading 'ReactCurrentDispatcher')"
+
+**Problem:** This error occurs when importing hooks at the module level in Next.js, causing them to be evaluated before React is initialized.
+
+**Solution:** Use hooks only within components, not at the module level:
+
+❌ **Wrong:**
+```tsx
+import { useViewabilityTracker } from '@admesh/react-sdk';
+
+// This causes the error!
+const tracker = useViewabilityTracker();
+
+export function MyComponent() {
+  return <div>...</div>;
+}
+```
+
+✅ **Correct:**
+```tsx
+export function MyComponent() {
+  // Use hooks inside the component
+  const { ref, isVisible, metrics } = useViewabilityTracker();
+  
+  return <div ref={ref}>...</div>;
+}
+```
+
+### 2. "useViewabilityTracker must be used within AdMeshProvider"
+
+**Problem:** The hook is used outside of the AdMeshProvider context.
+
+**Solution:** Wrap your app with AdMeshProvider:
+
+```tsx
+import { AdMeshProvider } from '@admesh/react-sdk';
+
+function App() {
+  return (
+    <AdMeshProvider config={{ apiKey: 'admesh_prod_...' }}>
+      <YourComponent />
+    </AdMeshProvider>
+  );
+}
+```
+
+### 3. Recommendations not loading
+
+**Problem:** The `useRecommendations` hook returns empty recommendations.
+
+**Causes & Solutions:**
+
+1. **Invalid API Key:**
+   ```tsx
+   // Make sure your API key is correct
+   <AdMeshProvider config={{ apiKey: 'admesh_prod_your_actual_key' }}>
+   ```
+
+2. **Empty Query:**
+   ```tsx
+   // Ensure query is not empty
+   const { recommendations } = useRecommendations({
+     query: 'laptop',  // Must not be empty
+     enabled: query.length > 0  // Disable if query is empty
+   });
+   ```
+
+3. **Network Issues:**
+   ```tsx
+   const { recommendations, error, refetch } = useRecommendations({
+     query: 'laptop'
+   });
+   
+   if (error) {
+     console.error('Error:', error);
+     return <button onClick={refetch}>Retry</button>;
+   }
+   ```
+
+### 4. Viewability metrics not tracking
+
+**Problem:** Viewability metrics are not being collected.
+
+**Solution:** Ensure the element is properly visible:
+
+```tsx
+const { ref, isVisible, metrics } = useViewabilityTracker({
+  threshold: 50,  // 50% visible
+  duration: 1000, // 1 second
+  onVisible: (metrics) => {
+    console.log('Viewable:', metrics);
+  }
+});
+
+// Make sure the element has sufficient height
+return (
+  <div ref={ref} style={{ minHeight: '200px' }}>
+    {/* Content must be visible */}
+  </div>
+);
+```
+
+### 5. SSR/Hydration mismatch errors
+
+**Problem:** "Hydration failed" or "Text content does not match" errors in Next.js.
+
+**Solution:** Use dynamic imports with `ssr: false`:
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const AdMeshRecommendations = dynamic(
+  () => import('./AdMeshRecommendations'),
+  { ssr: false }
+);
+
+export function MyPage() {
+  return <AdMeshRecommendations />;
+}
+```
+
+### 6. TypeScript errors with metrics
+
+**Problem:** TypeScript complains about `mrc_compliant` property.
+
+**Solution:** Cast metrics to `any` or extend the type:
+
+```tsx
+// Option 1: Cast to any
+const mrcCompliant = (metrics as any).mrc_compliant;
+
+// Option 2: Create extended type
+interface ExtendedMetrics extends ViewabilityMetrics {
+  mrc_compliant?: boolean;
+}
+
+const extendedMetrics = metrics as ExtendedMetrics;
+```
+
+## Performance Issues
+
+### Slow recommendations loading
+
+**Problem:** Recommendations take too long to load.
+
+**Solutions:**
+
+1. **Increase timeout:**
+   ```tsx
+   const { recommendations } = useRecommendations({
+     query: 'laptop',
+     limit: 5  // Reduce limit for faster loading
+   });
+   ```
+
+2. **Add loading state:**
+   ```tsx
+   const { recommendations, loading } = useRecommendations({ query });
+   
+   if (loading) return <Skeleton />;
+   return <RecommendationGrid recommendations={recommendations} />;
+   ```
+
+3. **Implement caching:**
+   ```tsx
+   const cache = useRef<Map<string, any>>(new Map());
+   
+   const { recommendations } = useRecommendations({
+     query,
+     enabled: !cache.current.has(query)
+   });
+   ```
+
+### Memory leaks
+
+**Problem:** Memory usage increases over time.
+
+**Solution:** Ensure proper cleanup:
+
+```tsx
+useEffect(() => {
+  const observer = new IntersectionObserver(...);
+  
+  return () => {
+    observer.disconnect();  // Always cleanup
+  };
+}, []);
+```
+
+## Browser Compatibility
+
+### Intersection Observer not supported
+
+**Problem:** Error in older browsers without Intersection Observer support.
+
+**Solution:** Add polyfill:
+
+```bash
+npm install intersection-observer
+```
+
+```tsx
+import 'intersection-observer';
+import { useViewabilityTracker } from '@admesh/react-sdk';
+```
+
+## Debugging
+
+### Enable debug logging
+
+```tsx
+<AdMeshProvider
+  config={{
+    apiKey: 'admesh_prod_...',
+    debug: true  // Enable debug logs
+  }}
+>
+  <YourApp />
+</AdMeshProvider>
+```
+
+### Check browser console
+
+Look for logs starting with `[AdMesh]`:
+```
+[AdMesh] useRecommendations error: ...
+[AdMesh] Viewability tracked: ...
+```
+
+### Verify API key
+
+```tsx
+import { useAdMesh } from '@admesh/react-sdk';
+
+function DebugComponent() {
+  const { apiKey, apiBaseUrl } = useAdMesh();
+  
+  console.log('API Key:', apiKey);
+  console.log('API Base URL:', apiBaseUrl);
+  
+  return null;
+}
+```
+
+## Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check the examples** - See real-world usage patterns
+2. **Review the API reference** - Verify correct prop usage
+3. **Enable debug mode** - Get detailed logging
+4. **Contact support** - Email mani@useadmesh.com
+
+## Next Steps
+
+- [API Reference](/react-sdk/api-reference)
+- [Examples](/react-sdk/examples)
+- [Best Practices](/react-sdk/best-practices)
+

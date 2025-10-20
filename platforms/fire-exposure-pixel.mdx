@@ -3,14 +3,10 @@ title: "Fire Exposure Pixel"
 description: "Record ad impressions when showing AdMesh recommendations"
 ---
 
-# Fire Exposure Pixel
-
 After showing recommendations, platforms must **fire the exposure pixel** for each ad.
 This tells AdMesh that the recommendation was displayed (a viewable impression).
 
 ---
-
-## AdMesh Tracking Anchor (placeholder only)
 
 Use a **placeholder anchor** to signal where AdMesh recommendations appear inside your organic response.
 This does not render ads. It only gives us a stable element to watch for visibility and fire exposure pixels.
@@ -23,8 +19,6 @@ This does not render ads. It only gives us a stable element to watch for visibil
 Place this anchor right before or right after you inject the LLM response that includes AdMesh links.
 
 ---
-
-## Fire pixels when the anchor becomes visible
 
 Keep it simple: observe the placeholder. When it is visible, fire each unique `exposure_url` once.
 
@@ -65,8 +59,6 @@ Keep it simple: observe the placeholder. When it is visible, fire each unique `e
 
 ---
 
-## If you cannot place the anchor in your template
-
 Insert it right next to the LLM response with one line of JS, then run tracking.
 
 ```js
@@ -90,8 +82,6 @@ fireExposureWhenAnchorVisible(placements);
 ```
 
 ---
-
-## Notes that platforms must follow
 
 - Keep your own UI. The placeholder is **only** for tracking.
 - Keep the id exactly as provided: `admesh-recommendations`.

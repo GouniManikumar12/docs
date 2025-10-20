@@ -1,0 +1,282 @@
+---
+title: "Cost Per Exposure"
+description: "Understanding how CPX is calculated based on your payout model"
+---
+
+## What is Cost Per Exposure (CPX)?
+
+**Cost Per Exposure (CPX)** is the fee you pay when your product is shown to a verified user in an AI conversation or search result. It represents the baseline cost for visibility and reach.
+
+CPX is calculated differently depending on your **payout model**:
+- If you use **CPX model**: Direct CPX rate
+- If you use **CPA model**: CPX is derived from your CPA amount
+
+---
+
+## CPX Calculation Formula
+
+### For CPX-Based Offers
+
+```
+CPX = Base CPX Rate × Contextual Relevance Score (CRS) Multiplier
+```
+
+**Example**:
+- Base CPX Rate: $0.10 per exposure
+- CRS: 85 (good match)
+- **CPX = $0.10 × (85/100) = $0.085 per exposure**
+
+---
+
+### For CPA-Based Offers
+
+When you use a **CPA (Cost Per Action)** payout model, CPX is automatically calculated from your CPA:
+
+```
+CPX = (CPA × 0.001) × (CRS / 100)
+```
+
+**Where**:
+- **CPA**: Your cost per action (conversion) in dollars
+- **CRS**: Contextual Relevance Score (0-100)
+- **0.001**: Conversion factor to calculate exposure cost from action value
+
+---
+
+## CPX Calculation Examples
+
+### Example 1: CPA Model with High Relevance
+
+**Scenario**: SaaS product with CPA model, perfect match for user query
+
+- **CPA**: $50.00 (you pay $50 per signup)
+- **CRS**: 90 (excellent match)
+- **CPX = ($50 × 0.001) × (90 / 100)**
+- **CPX = $0.05 × 0.90 = $0.045 per exposure**
+
+**Interpretation**: You pay 4.5 cents for each verified exposure of your product.
+
+---
+
+### Example 2: CPA Model with Medium Relevance
+
+**Scenario**: E-commerce product, moderate match for user query
+
+- **CPA**: $25.00 (you pay $25 per purchase)
+- **CRS**: 70 (good match)
+- **CPX = ($25 × 0.001) × (70 / 100)**
+- **CPX = $0.025 × 0.70 = $0.0175 per exposure**
+
+**Interpretation**: You pay 1.75 cents for each verified exposure.
+
+---
+
+### Example 3: CPA Model with Low Relevance
+
+**Scenario**: Generic product, weak match for user query
+
+- **CPA**: $10.00 (you pay $10 per action)
+- **CRS**: 50 (weak match)
+- **CPX = ($10 × 0.001) × (50 / 100)**
+- **CPX = $0.01 × 0.50 = $0.005 per exposure**
+
+**Interpretation**: You pay 0.5 cents for each verified exposure.
+
+---
+
+### Example 4: CPX Model (Direct Rate)
+
+**Scenario**: Direct CPX pricing model
+
+- **Base CPX Rate**: $0.20 per exposure
+- **CRS**: 75 (good match)
+- **CPX = $0.20 × (75 / 100)**
+- **CPX = $0.15 per exposure**
+
+**Interpretation**: You pay 15 cents for each verified exposure.
+
+---
+
+## How CRS Affects CPX
+
+The **Contextual Relevance Score (CRS)** is a multiplier that adjusts your CPX based on how well your product matches the user's query.
+
+| CRS Range | Quality | CPX Multiplier | Impact |
+|-----------|---------|----------------|--------|
+| 90-100 | Excellent | 0.90-1.00 | Highest cost, best match |
+| 75-89 | Good | 0.75-0.89 | Moderate cost, strong match |
+| 60-74 | Fair | 0.60-0.74 | Lower cost, moderate match |
+| 45-59 | Poor | 0.45-0.59 | Minimal cost, weak match |
+| 0-44 | Very Poor | 0.00-0.44 | Filtered out (not shown) |
+
+**Key Insight**: Higher CRS = Higher CPX, but also higher likelihood of clicks and conversions.
+
+---
+
+## CPX vs Other Metrics
+
+### CPX vs CPC vs CPA
+
+| Metric | When You Pay | Typical Cost | Best For |
+|--------|--------------|--------------|----------|
+| **CPX** | Product is shown | $0.005-$0.50 | Visibility & reach |
+| **CPC** | User clicks link | $0.10-$5.00 | Traffic & awareness |
+| **CPA** | User converts | $5.00-$100+ | ROI & growth |
+
+**Billing Flow**:
+1. User sees your product → **CPX charged**
+2. User clicks your link → **CPC charged** (CPX waived if conversion happens)
+3. User completes action → **CPA charged** (CPX + CPC waived)
+
+---
+
+## Factors That Affect Your CPX
+
+### 1. Your Payout Model
+- **CPA Model**: CPX derived from CPA amount
+- **CPX Model**: Direct CPX rate you set
+
+### 2. Contextual Relevance Score (CRS)
+- Higher CRS = Higher CPX
+- Improve CRS by optimizing product description, categories, and keywords
+
+### 3. Product Quality
+- Better product descriptions → Higher CRS → Higher CPX
+- More specific categories → Better matching → Higher CRS
+
+### 4. Advertiser Competitiveness
+- Higher CPA/CPX rates → Better positioning
+- More competitive offers → Higher visibility
+
+---
+
+## Optimizing Your CPX
+
+### Strategy 1: Improve Product Matching
+
+**Better CRS = Better ROI despite higher CPX**
+
+- Write detailed product descriptions
+- Add specific, relevant categories
+- Include long-tail keywords
+- Define clear target audience
+
+**Result**: Higher CRS → Higher CPX → More qualified users → Better conversions
+
+---
+
+### Strategy 2: Adjust Your CPA
+
+If using CPA model, your CPA directly affects CPX:
+
+- **Higher CPA** → Higher CPX → Better positioning → More visibility
+- **Lower CPA** → Lower CPX → Less visibility → Fewer exposures
+
+**Recommendation**: Set CPA based on customer lifetime value, not just immediate profit.
+
+---
+
+### Strategy 3: Monitor CPX Performance
+
+Track these metrics in your dashboard:
+
+- **Average CPX**: Your typical exposure cost
+- **CPX vs CTR**: Does higher CPX lead to more clicks?
+- **CPX vs CVR**: Does higher CPX lead to more conversions?
+- **CPX Trend**: Is your CPX increasing or decreasing over time?
+
+---
+
+## CPX in API Responses
+
+When you receive recommendations from AdMesh, CPX information is included:
+
+```json
+{
+  "recommendations": [
+    {
+      "product_id": "abc-123",
+      "title": "HubSpot CRM",
+      "meta": {
+        "contextual_relevance_score": 87.5,
+        "cpa": 50.00,
+        "estimated_cpx": 0.04375
+      }
+    }
+  ]
+}
+```
+
+**Fields**:
+- **contextual_relevance_score**: CRS (0-100)
+- **cpa**: Your CPA amount in dollars
+- **estimated_cpx**: Calculated CPX for this exposure
+
+---
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="Why does my CPX vary?">
+    CPX varies based on CRS (Contextual Relevance Score). Each query produces a different CRS, so your CPX changes per exposure. Higher CRS = Higher CPX.
+  </Accordion>
+  
+  <Accordion title="Can I set a minimum CPX?">
+    No, CPX is calculated automatically based on your payout model and CRS. You can only control your CPA (if using CPA model) or base CPX rate (if using CPX model).
+  </Accordion>
+  
+  <Accordion title="Is CPX charged even if no one clicks?">
+    Yes. CPX is charged when your product is shown to a verified user, regardless of whether they click. This ensures you pay for visibility.
+  </Accordion>
+  
+  <Accordion title="How can I reduce my CPX?">
+    CPX is calculated automatically. To reduce it, you can:
+    1. Lower your CPA (if using CPA model)
+    2. Improve product matching to maintain high CRS with lower CPA
+    3. Focus on high-converting products
+  </Accordion>
+  
+  <Accordion title="What's a good CPX?">
+    It depends on your business model. Generally:
+    - **SaaS**: $0.01-$0.10 per exposure
+    - **E-commerce**: $0.005-$0.05 per exposure
+    - **Services**: $0.02-$0.20 per exposure
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Contextual Relevance Score" icon="chart-line" href="/contextual-relevance-score">
+    How CRS is calculated and affects CPX
+  </Card>
+  
+  <Card title="Pricing Model" icon="dollar-sign" href="/advertisers/pricing">
+    Complete pricing explanation for advertisers
+  </Card>
+  
+  <Card title="Create Offer" icon="plus" href="/advertisers/create-offer">
+    How to set up your first offer with CPA/CPX
+  </Card>
+  
+  <Card title="Reports" icon="chart-bar" href="/advertisers/reports">
+    Track your CPX performance in the dashboard
+  </Card>
+</CardGroup>
+
+---
+
+## Summary
+
+- **CPX** = Cost Per Exposure (visibility charge)
+- **For CPA Model**: CPX = (CPA × 0.001) × (CRS / 100)
+- **For CPX Model**: CPX = Base Rate × (CRS / 100)
+- **Higher CRS** = Higher CPX, but better user match
+- **Optimize** by improving product descriptions and setting competitive CPA
+
+---
+
+**Next**: Learn about [Contextual Relevance Score](/contextual-relevance-score) to improve your CPX performance.
+

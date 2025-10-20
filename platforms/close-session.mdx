@@ -1,0 +1,239 @@
+---
+title: "Close Session"
+description: "Optionally close a session when conversation ends"
+---
+
+When the user finishes their chat or conversion flow, close the AdMesh session.
+
+<Tabs>
+  <Tab title="TypeScript/JavaScript">
+    ```typescript
+    export async function closeAdmeshSession() {
+      const sessionId = localStorage.getItem("admesh_session_id");
+      if (!sessionId) return;
+
+      try {
+        const response = await fetch("https://api.useadmesh.com/agent/session/close", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("✅ Session closed:", data);
+          localStorage.removeItem("admesh_session_id");
+        } else {
+          console.error("❌ Failed to close session:", response.status);
+        }
+      } catch (error) {
+        console.error("❌ Error closing session:", error);
+        localStorage.removeItem("admesh_session_id");
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="React">
+    ```typescript
+    import { useCallback } from 'react';
+
+    export function useAdmeshSessionClose() {
+      const closeSession = useCallback(async () => {
+        const sessionId = localStorage.getItem("admesh_session_id");
+        if (!sessionId) return;
+
+        try {
+          const response = await fetch("https://api.useadmesh.com/agent/session/close", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("✅ Session closed:", data);
+            localStorage.removeItem("admesh_session_id");
+            return data;
+          } else {
+            console.error("❌ Failed to close session:", response.status);
+            return null;
+          }
+        } catch (error) {
+          console.error("❌ Error closing session:", error);
+          localStorage.removeItem("admesh_session_id");
+          return null;
+        }
+      }, []);
+
+      return { closeSession };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Android (Kotlin)">
+    ```kotlin
+    import kotlinx.coroutines.*
+    import android.content.SharedPreferences
+    import java.net.URL
+    import java.net.HttpURLConnection
+
+    class AdmeshSessionCloser(private val prefs: SharedPreferences) {
+        companion object {
+            private const val ADMESH_BASE = "https://api.useadmesh.com"
+        }
+
+        suspend fun closeSession(): Boolean = withContext(Dispatchers.IO) {
+            try {
+                val sessionId = prefs.getString("admesh_session_id", null) ?: return@withContext false
+
+                val url = URL("$ADMESH_BASE/agent/session/close")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                val body = """{"session_id":"$sessionId"}"""
+                connection.outputStream.write(body.toByteArray())
+
+                val success = connection.responseCode == HttpURLConnection.HTTP_OK
+                if (success) {
+                    prefs.edit().remove("admesh_session_id").apply()
+                    android.util.Log.d("AdMesh", "✅ Session closed")
+                } else {
+                    android.util.Log.e("AdMesh", "⚠️ Failed to close: ${connection.responseCode}")
+                }
+                success
+            } catch (e: Exception) {
+                android.util.Log.e("AdMesh", "⚠️ Error: ${e.message}")
+                false
+            }
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Flutter (Dart)">
+    ```dart
+    import 'package:http/http.dart' as http;
+    import 'package:shared_preferences/shared_preferences.dart';
+    import 'dart:convert';
+
+    class AdmeshSessionCloser {
+      static const String admeshBase = 'https://api.useadmesh.com';
+
+      static Future<bool> closeSession() async {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final sessionId = prefs.getString('admesh_session_id');
+          if (sessionId == null) return false;
+
+          final response = await http.post(
+            Uri.parse('$admeshBase/agent/session/close'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'session_id': sessionId}),
+          );
+
+          if (response.statusCode == 200) {
+            await prefs.remove('admesh_session_id');
+            print('✅ Session closed');
+            return true;
+          } else {
+            print('⚠️ Failed to close: ${response.statusCode}');
+            return false;
+          }
+        } catch (e) {
+          print('⚠️ Error: $e');
+          return false;
+        }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Swift/iOS">
+    ```swift
+    import Foundation
+
+    class AdmeshSessionCloser {
+        static let admeshBase = "https://api.useadmesh.com"
+
+        static func closeSession(completion: @escaping (Bool) -> Void) {
+            guard let sessionId = UserDefaults.standard.string(forKey: "admesh_session_id") else {
+                completion(false)
+                return
+            }
+
+            let url = URL(string: "\(admeshBase)/agent/session/close")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            let body: [String: String] = ["session_id": sessionId]
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    UserDefaults.standard.removeObject(forKey: "admesh_session_id")
+                    print("✅ Session closed")
+                    completion(true)
+                } else {
+                    print("⚠️ Failed to close session")
+                    completion(false)
+                }
+            }.resume()
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="React Native">
+    ```typescript
+    import AsyncStorage from '@react-native-async-storage/async-storage';
+
+    export async function closeAdmeshSession(): Promise<boolean> {
+      try {
+        const sessionId = await AsyncStorage.getItem('admesh_session_id');
+        if (!sessionId) return false;
+
+        const response = await fetch('https://api.useadmesh.com/agent/session/close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Session closed:', data);
+          await AsyncStorage.removeItem('admesh_session_id');
+          return true;
+        } else {
+          console.error('❌ Failed to close session:', response.status);
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Error closing session:', error);
+        await AsyncStorage.removeItem('admesh_session_id');
+        return false;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Response
+
+When the session is successfully closed, you'll receive a `200 OK` response.
+That's it — the session is closed. No need to parse stats or additional data.
+
+## When to close
+
+* User closes chat or tab
+* Conversion completes
+* Platform resets context
+* User logs out
+
+
+---
+
+**Integration complete!** You now have a fully functional AdMesh integration.
+

@@ -3,73 +3,108 @@ title: "Contextual Relevance Score"
 description: "Understanding how AdMesh measures recommendation quality and calculates CPX billing"
 ---
 
-# Contextual Relevance Score (CRS)
-
-The **Contextual Relevance Score (CRS)** is a 0-100 metric that measures how well a product recommendation matches a user's query. It directly impacts CPX costs and recommendation ranking.
+The **Contextual Relevance Score (CRS)** is a 0-100 metric that measures how well a product recommendation matches a user's query. It directly impacts CPX costs, recommendation ranking, and platform revenue.
 
 ---
 
 ## What is CRS?
 
-CRS combines multiple signals to determine recommendation quality:
+CRS is AdMesh's **quality signal** — a machine-learned score that combines multiple signals to determine how relevant a product is to a user's specific query.
 
-- **Semantic Similarity**: How closely the product matches the query meaning (60% weight)
-- **Category Match**: Whether product categories align with query intent (15% weight)
-- **LLM Confidence**: AI model's confidence in the match (5% weight)
-- **Payout Score**: Advertiser's CPA amount (15% weight)
-- **Trust Scores**: Product and brand trust metrics (5% weight)
+Higher CRS = Better match = Higher CPX cost, but also higher likelihood of clicks and conversions.
+
+### How CRS is Calculated
+
+CRS combines multiple weighted signals:
+
+- **Semantic Similarity** (60%): How closely the product matches the query meaning using embeddings
+- **Category Match** (15%): Whether product categories align with query intent
+- **LLM Confidence** (5%): AI model's confidence in the match
+- **Payout Score** (15%): Advertiser's CPA amount and competitiveness
+- **Trust Scores** (5%): Product and brand credibility metrics
 
 ### Score Ranges
 
-| Score Range | Quality | Meaning |
-|-------------|---------|---------|
-| **90-100** | Excellent | Perfect match for user's query |
-| **75-89** | Good | Strong relevance, likely to convert |
-| **60-74** | Fair | Moderate relevance, may convert |
-| **45-59** | Poor | Weak relevance, unlikely to convert |
-| **0-44** | Very Poor | Not recommended (filtered out) |
+| Score Range | Quality | Meaning | Platform Action |
+|-------------|---------|---------|-----------------|
+| **90-100** | Excellent | Perfect match for user's query | Rank first, highest priority |
+| **75-89** | Good | Strong relevance, likely to convert | Rank high, show prominently |
+| **60-74** | Fair | Moderate relevance, may convert | Show, but lower priority |
+| **45-59** | Poor | Weak relevance, unlikely to convert | Optional (filter out recommended) |
+| **0-44** | Very Poor | Not recommended (filtered out) | Do not show |
+
+**Recommendation**: Platforms should filter out scores below 60 to maintain user experience quality.
 
 ---
 
 ## How CRS Affects CPX
 
-CRS directly determines your CPX cost using this formula:
+CRS is the **primary multiplier** for CPX costs. The higher the CRS, the higher your CPX — but also the higher your likelihood of clicks and conversions.
+
+### CPX Formula (CPA Model)
+
+For advertisers using **CPA-based payout**:
 
 ```
-CPX = CPA × 0.001 × (CRS / 100)
+CPX = (CPA × 0.001) × (CRS / 100)
 ```
 
-### Example Calculations
+**Where**:
+- **CPA**: Your cost per action (conversion) in dollars
+- **CRS**: Contextual Relevance Score (0-100)
+- **0.001**: Conversion factor to calculate exposure cost from action value
+
+### CPX Formula (CPX Model)
+
+For advertisers using **direct CPX pricing**:
+
+```
+CPX = Base CPX Rate × (CRS / 100)
+```
+
+---
+
+### Real-World Examples
 
 <AccordionGroup>
   <Accordion title="High CRS (90) - Excellent Match">
     **Scenario**: SaaS CRM perfectly matches "best CRM for startups"
-    
-    - CPA: $10.00 (1000 cents)
+
+    - CPA: $50.00
     - CRS: 90.0
-    - **CPX = 1000 × 0.001 × (90.0 / 100) = 0.90 cents ($0.009)**
-    
-    **Result**: Higher cost, but much more likely to convert
+    - **CPX = ($50 × 0.001) × (90 / 100) = $0.045 per exposure**
+
+    **Interpretation**: You pay 4.5 cents per verified exposure. Higher cost, but much more likely to convert.
   </Accordion>
 
   <Accordion title="Medium CRS (70) - Good Match">
     **Scenario**: Project management tool for "team collaboration software"
-    
-    - CPA: $15.00 (1500 cents)
+
+    - CPA: $25.00
     - CRS: 70.0
-    - **CPX = 1500 × 0.001 × (70.0 / 100) = 1.05 cents ($0.0105)**
-    
-    **Result**: Moderate cost, decent conversion potential
+    - **CPX = ($25 × 0.001) × (70 / 100) = $0.0175 per exposure**
+
+    **Interpretation**: You pay 1.75 cents per exposure. Moderate cost, decent conversion potential.
   </Accordion>
 
   <Accordion title="Low CRS (50) - Weak Match">
     **Scenario**: Generic productivity tool for specific query
-    
-    - CPA: $5.00 (500 cents)
+
+    - CPA: $10.00
     - CRS: 50.0
-    - **CPX = 500 × 0.001 × (50.0 / 100) = 0.25 cents ($0.0025)**
-    
-    **Result**: Low cost, but unlikely to convert
+    - **CPX = ($10 × 0.001) × (50 / 100) = $0.005 per exposure**
+
+    **Interpretation**: You pay 0.5 cents per exposure. Low cost, but unlikely to convert.
+  </Accordion>
+
+  <Accordion title="CPX Model Example">
+    **Scenario**: Direct CPX pricing model
+
+    - Base CPX Rate: $0.20
+    - CRS: 75.0
+    - **CPX = $0.20 × (75 / 100) = $0.15 per exposure**
+
+    **Interpretation**: You pay 15 cents per exposure with direct CPX model.
   </Accordion>
 </AccordionGroup>
 
@@ -283,20 +318,34 @@ Both are important, but serve different purposes.
 ## Related Resources
 
 <CardGroup cols={2}>
-  <Card title="Billing Models" icon="dollar-sign" href="/advertisers/billing-models">
-    How CRS affects CPX costs
+  <Card title="Cost Per Exposure" icon="dollar-sign" href="/cost-per-exposure">
+    How CRS affects CPX costs and calculations
   </Card>
-  
-  <Card title="Optimization Guide" icon="lightbulb" href="/advertisers/optimization">
-    Detailed tips to improve CRS
+
+  <Card title="Pricing Model" icon="chart-line" href="/advertisers/pricing">
+    Complete CPX + CPC + CPA pricing guide
   </Card>
-  
-  <Card title="API Reference" icon="code" href="/api-playground">
-    CRS in API responses
+
+  <Card title="Create Offers" icon="plus" href="/advertisers/create-offer">
+    How to set up products for better CRS
   </Card>
-  
-  <Card title="Dashboard Analytics" icon="chart-bar" href="/advertisers/dashboard-analytics">
-    Tracking CRS performance
+
+  <Card title="Reports" icon="chart-bar" href="/advertisers/reports">
+    Track CRS performance in your dashboard
   </Card>
 </CardGroup>
+
+---
+
+## Summary
+
+- **CRS** = 0-100 quality score measuring product-query relevance
+- **Higher CRS** = Higher CPX cost, but better user match
+- **Aim for 75+** for optimal performance
+- **Improve CRS** by optimizing product descriptions, categories, and keywords
+- **CRS directly affects CPX** using formula: `CPX = (CPA × 0.001) × (CRS / 100)`
+
+---
+
+**Next**: Learn how to [optimize your CPX costs](/cost-per-exposure) based on CRS.
 

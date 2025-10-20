@@ -1,0 +1,205 @@
+---
+title: "Complete Integration Guide"
+description: "Step-by-step guide to integrate AdMesh into your AI platform with code examples"
+---
+
+# Complete Platform Integration Guide
+
+This guide walks you through integrating AdMesh recommendations into your AI platform, from initial setup through production deployment.
+
+---
+
+## Architecture Overview
+
+AdMesh supports two integration paths:
+
+### Path 1: SDK Integration (Recommended)
+- Use official AdMesh SDKs (TypeScript, Python)
+- Automatic response handling and formatting
+- Built-in error handling and retries
+- Type-safe implementations
+
+### Path 2: Direct API Integration
+- Call REST endpoints directly
+- Full control over request/response handling
+- Suitable for custom implementations
+- Requires manual signature validation for tracking
+
+---
+
+## Step 1: Authentication Setup
+
+### Generate API Key
+
+1. Sign up at [useadmesh.com](https://useadmesh.com)
+2. Navigate to Dashboard → Settings → API Keys
+3. Click "Generate New API Key"
+4. Copy the key (format: `admesh_prod_abc123xyz789`)
+5. Store securely in environment variables
+
+### Store Credentials
+
+```bash
+# .env.local or environment variables
+ADMESH_API_KEY=admesh_prod_your_key_here
+ADMESH_AGENT_ID=your_agent_id_here
+ADMESH_API_BASE_URL=https://api.useadmesh.com  # or http://localhost:8000 for dev
+```
+
+### Verify Authentication
+
+```bash
+curl -X POST "https://api.useadmesh.com/agent/recommend" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test", "format": "auto"}'
+```
+
+---
+
+## Step 2: Backend Setup
+
+### Option A: Using TypeScript SDK
+
+```typescript
+import { Admesh } from '@admesh/typescript-sdk';
+
+const client = new Admesh({
+  apiKey: process.env.ADMESH_API_KEY,
+  baseURL: process.env.ADMESH_API_BASE_URL
+});
+
+async function getRecommendations(query: string, sessionId?: string) {
+  const response = await client.recommend.getRecommendations({
+    query,
+    session_id: sessionId,
+    format: 'auto'
+  });
+  
+  return response.response?.recommendations || [];
+}
+```
+
+### Option B: Using Python SDK
+
+```python
+from admesh import Admesh
+import os
+
+client = Admesh(
+    api_key=os.environ.get("ADMESH_API_KEY"),
+    base_url=os.environ.get("ADMESH_API_BASE_URL")
+)
+
+def get_recommendations(query: str, session_id: str = None):
+    response = client.recommend.get_recommendations(
+        query=query,
+        session_id=session_id,
+        format='auto'
+    )
+    return response.response.recommendations
+```
+
+### Option C: Direct REST API
+
+```javascript
+async function getRecommendations(query, sessionId) {
+  const response = await fetch(
+    `${process.env.ADMESH_API_BASE_URL}/agent/recommend`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.ADMESH_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query,
+        session_id: sessionId,
+        format: 'auto'
+      })
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data.response.recommendations;
+}
+```
+
+---
+
+## Step 3: Frontend Integration
+
+### Display Recommendations
+
+```tsx
+import { AdMeshLayout } from 'admesh-ui-sdk';
+
+function ChatResponse({ query }) {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query) return;
+    
+    setLoading(true);
+    fetch('/api/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    })
+      .then(r => r.json())
+      .then(data => setRecommendations(data))
+      .finally(() => setLoading(false));
+  }, [query]);
+
+  return (
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="auto"
+      loading={loading}
+      onRecommendationClick={(adId, admeshLink) => {
+        window.open(admeshLink, '_blank');
+      }}
+    />
+  );
+}
+```
+
+---
+
+## Step 4: Session Management
+
+Sessions track user conversations for attribution. See [Session Management Guide](/ai-platforms/session-management) for detailed implementation.
+
+---
+
+## Step 5: Tracking Implementation
+
+Implement exposure, click, and conversion tracking. See [Tracking & Attribution Guide](/ai-platforms/tracking-attribution) for complete details.
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Session Management" icon="link" href="/ai-platforms/session-management">
+    Implement server-side session tracking
+  </Card>
+  
+  <Card title="Tracking & Attribution" icon="chart-line" href="/ai-platforms/tracking-attribution">
+    Set up exposure, click, and conversion tracking
+  </Card>
+  
+  <Card title="Error Handling" icon="triangle-exclamation" href="/ai-platforms/error-handling">
+    Handle errors and edge cases
+  </Card>
+  
+  <Card title="Testing & Debugging" icon="bug" href="/ai-platforms/testing-debugging">
+    Test your integration
+  </Card>
+</CardGroup>
+

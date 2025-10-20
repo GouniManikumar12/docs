@@ -1,0 +1,234 @@
+---
+title: "Create Session"
+description: "Create a new AdMesh session to track conversation context"
+---
+
+# Create Session
+
+Each conversation or search thread starts with a **new AdMesh session**.
+A session ensures all exposures, clicks, and conversions are tied together.
+
+<Tabs>
+  <Tab title="TypeScript/JavaScript">
+    ```typescript
+    const ADMESH_BASE = "https://api.useadmesh.com";
+
+    export async function createAdmeshSession() {
+      try {
+        const res = await fetch(`${ADMESH_BASE}/agent/session/new`, { method: "POST" });
+        if (!res.ok) throw new Error("Failed to create AdMesh session");
+
+        const { session_id } = await res.json();
+        localStorage.setItem("admesh_session_id", session_id);
+        console.log("✅ Session created:", session_id);
+        return session_id;
+      } catch (err) {
+        console.error("⚠️ Session creation failed:", err);
+        return `admesh_temp_${Date.now()}`;
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="React">
+    ```typescript
+    import { useState, useCallback } from 'react';
+
+    export function useAdmeshSession() {
+      const [sessionId, setSessionId] = useState<string | null>(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState<string | null>(null);
+
+      const createSession = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch("https://api.useadmesh.com/agent/session/new", {
+            method: "POST",
+          });
+          if (!res.ok) throw new Error("Failed to create session");
+
+          const { session_id } = await res.json();
+          setSessionId(session_id);
+          localStorage.setItem("admesh_session_id", session_id);
+          console.log("✅ Session created:", session_id);
+          return session_id;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unknown error";
+          setError(message);
+          console.error("⚠️ Session creation failed:", message);
+          return null;
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      return { sessionId, loading, error, createSession };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Android (Kotlin)">
+    ```kotlin
+    import kotlinx.coroutines.*
+    import java.net.URL
+    import java.net.HttpURLConnection
+
+    class AdmeshSessionManager {
+        companion object {
+            private const val ADMESH_BASE = "https://api.useadmesh.com"
+        }
+
+        suspend fun createSession(): String? = withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$ADMESH_BASE/agent/session/new")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    val sessionId = extractSessionId(response)
+                    android.util.Log.d("AdMesh", "✅ Session created: $sessionId")
+                    sessionId
+                } else {
+                    android.util.Log.e("AdMesh", "⚠️ Failed to create session: ${connection.responseCode}")
+                    null
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AdMesh", "⚠️ Session creation failed: ${e.message}")
+                null
+            }
+        }
+
+        private fun extractSessionId(json: String): String {
+            val regex = """"session_id"\s*:\s*"([^"]+)"""".toRegex()
+            return regex.find(json)?.groupValues?.get(1) ?: ""
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Flutter (Dart)">
+    ```dart
+    import 'package:http/http.dart' as http;
+    import 'dart:convert';
+
+    class AdmeshSessionManager {
+      static const String admeshBase = 'https://api.useadmesh.com';
+
+      static Future<String?> createSession() async {
+        try {
+          final response = await http.post(
+            Uri.parse('$admeshBase/agent/session/new'),
+            headers: {'Content-Type': 'application/json'},
+          );
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final sessionId = data['session_id'] as String;
+            print('✅ Session created: $sessionId');
+            return sessionId;
+          } else {
+            print('⚠️ Failed to create session: ${response.statusCode}');
+            return null;
+          }
+        } catch (e) {
+          print('⚠️ Session creation failed: $e');
+          return null;
+        }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Swift/iOS">
+    ```swift
+    import Foundation
+
+    class AdmeshSessionManager {
+        static let admeshBase = "https://api.useadmesh.com"
+
+        static func createSession(completion: @escaping (String?) -> Void) {
+            let url = URL(string: "\(admeshBase)/agent/session/new")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data = data, error == nil else {
+                    print("⚠️ Session creation failed: \(error?.localizedDescription ?? "Unknown error")")
+                    completion(nil)
+                    return
+                }
+
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                       let sessionId = json["session_id"] as? String {
+                        print("✅ Session created: \(sessionId)")
+                        completion(sessionId)
+                    } else {
+                        completion(nil)
+                    }
+                } catch {
+                    print("⚠️ Failed to parse response: \(error)")
+                    completion(nil)
+                }
+            }.resume()
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="React Native">
+    ```typescript
+    import AsyncStorage from '@react-native-async-storage/async-storage';
+
+    export async function createAdmeshSession(): Promise<string | null> {
+      try {
+        const response = await fetch('https://api.useadmesh.com/agent/session/new', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const sessionId = data.session_id;
+
+        await AsyncStorage.setItem('admesh_session_id', sessionId);
+        console.log('✅ Session created:', sessionId);
+        return sessionId;
+      } catch (error) {
+        console.error('⚠️ Session creation failed:', error);
+        return null;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## When to create
+
+* When a user starts a new chat or query
+* When a previous session expires (401)
+* When the platform resets its context
+
+## Response Format
+
+```json
+{
+  "session_id": "admesh_sess_1760022990_w8RkKA",
+  "created_at": "2024-10-20T10:30:00Z",
+  "expires_at": "2024-10-20T11:30:00Z"
+}
+```
+
+---
+
+Next → [Get Recommendations](/platforms/get-recommendations)
+

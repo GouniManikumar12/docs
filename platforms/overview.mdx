@@ -1,0 +1,72 @@
+---
+title: "Overview"
+description: "Everything platforms need to integrate AdMesh — from session to tracking"
+---
+
+# Platform Overview
+
+AdMesh lets AI platforms, chatbots, and search systems show **contextual sponsored recommendations** directly inside organic responses.
+You control the UI, while AdMesh handles **ads, tracking, and attribution** behind the scenes.
+
+---
+
+## Integration Flow
+
+Follow these 5 steps to integrate AdMesh recommendations into your product:
+
+| Step | Action | Docs |
+|------|---------|------|
+| 1 | **Create Session** — Start a new conversation context | [Create Session](/platforms/create-session) |
+| 2 | **Get Recommendations** — Fetch contextual ads for a query | [Get Recommendations](/platforms/get-recommendations) |
+| 3 | **Inline Recommendations** — Pass AdMesh offers to your LLM | [Weave Inline Recommendations](/platforms/inline-recommendations) |
+| 4 | **Fire Exposure Pixels** — Track impressions when showing ads | [Fire Exposure Pixel](/platforms/fire-exposure-pixel) |
+| 5 | **Close Session** — End or expire the session cleanly | [Close Session](/platforms/close-session) |
+
+---
+
+## Example Flow
+
+```mermaid
+sequenceDiagram
+participant User
+participant Platform
+participant AdMesh
+participant LLM
+
+User->>Platform: Asks a question
+Platform->>AdMesh: POST /agent/session/new
+AdMesh-->>Platform: Returns session_id
+Platform->>AdMesh: POST /agent/recommend (with session_id)
+AdMesh-->>Platform: Returns recommendations
+Platform->>LLM: Adds Inline Recommendations block + rules
+LLM-->>Platform: Returns contextual response with [Product](link)<sub>[Ad]</sub>
+Platform->>User: Displays blended organic + sponsored response
+Platform->>AdMesh: Fires exposure pixels
+Platform->>AdMesh: (Optional) POST /agent/session/close
+```
+
+---
+
+## Platform Flexibility
+
+**You can fully design your own UI** — grid, carousel, chat bubble, card layout, or anything else.
+There's **no required AdMesh component**.
+
+However, you **must label AdMesh recommendations clearly** so the exposure pixels can be triggered correctly when shown.
+
+This means:
+- Clearly identify the section or cards as **"AdMesh Recommendations"** (for transparency)
+- Ensure we can detect when the AdMesh recommendations are actually visible — this is how exposure pixels are triggered
+
+Example label:
+```html
+<div class="admesh-section">
+  <h4>AdMesh Recommendations</h4>
+  <div id="admesh-recommendations"></div>
+</div>
+```
+
+---
+
+**Ready to start?** → [Create Session](/platforms/create-session)
+

@@ -1,0 +1,106 @@
+---
+title: "Fire Exposure Pixel"
+description: "Record ad impressions when showing AdMesh recommendations"
+---
+
+# Fire Exposure Pixel
+
+After showing recommendations, platforms must **fire the exposure pixel** for each ad.
+This tells AdMesh that the recommendation was displayed (a viewable impression).
+
+---
+
+## AdMesh Tracking Anchor (placeholder only)
+
+Use a **placeholder anchor** to signal where AdMesh recommendations appear inside your organic response.
+This does not render ads. It only gives us a stable element to watch for visibility and fire exposure pixels.
+
+```html
+<!-- Placeholder only. Do not render ads here. -->
+<div id="admesh-recommendations" aria-hidden="true" style="width:0;height:0;overflow:hidden;"></div>
+```
+
+Place this anchor right before or right after you inject the LLM response that includes AdMesh links.
+
+---
+
+## Fire pixels when the anchor becomes visible
+
+Keep it simple: observe the placeholder. When it is visible, fire each unique `exposure_url` once.
+
+```html
+<script>
+  // recommendations = array you received from /agent/recommend
+  function fireExposureWhenAnchorVisible(recommendations) {
+    const fired = new Set();
+    const anchor = document.getElementById("admesh-recommendations");
+    if (!anchor) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+
+      recommendations.forEach((rec) => {
+        if (fired.has(rec.ad_id)) return;
+        fired.add(rec.ad_id);
+
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(rec.exposure_url);
+        } else {
+          fetch(rec.exposure_url, { method: "GET", keepalive: true, mode: "no-cors" });
+        }
+      });
+
+      observer.disconnect();
+    });
+
+    observer.observe(anchor);
+  }
+
+  // Example usage after you inject the LLM response:
+  // 1) Ensure the anchor exists in DOM
+  // 2) Call the function with the placements you got from AdMesh
+  // fireExposureWhenAnchorVisible(placements);
+</script>
+```
+
+---
+
+## If you cannot place the anchor in your template
+
+Insert it right next to the LLM response with one line of JS, then run tracking.
+
+```js
+function ensureAdmeshAnchor(containerSelector = "#llm-output") {
+  const container = document.querySelector(containerSelector);
+  if (!container) return null;
+  let anchor = document.getElementById("admesh-recommendations");
+  if (!anchor) {
+    anchor = document.createElement("div");
+    anchor.id = "admesh-recommendations";
+    anchor.setAttribute("aria-hidden", "true");
+    anchor.style.cssText = "width:0;height:0;overflow:hidden;";
+    container.insertAdjacentElement("afterend", anchor); // or "beforebegin"
+  }
+  return anchor;
+}
+
+// After you render the organic answer:
+ensureAdmeshAnchor();
+fireExposureWhenAnchorVisible(placements);
+```
+
+---
+
+## Notes that platforms must follow
+
+- Keep your own UI. The placeholder is **only** for tracking.
+- Keep the id exactly as provided: `admesh-recommendations`.
+- Place the anchor right where the AdMesh mentions appear in the organic response, so visibility matches what users see.
+- Fire each `exposure_url` once per `ad_id`.
+- Use `sendBeacon` first, fetch as fallback.
+- Do not modify `exposure_url` or any AdMesh links in the organic text.
+
+---
+
+Next → [Close Session](/platforms/close-session)
+

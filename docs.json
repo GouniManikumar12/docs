@@ -16,32 +16,39 @@
           {
             "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart"
-            ]
+              "introduction"            ]
           },
-          {
-            "group": "Core Concepts",
-            "pages": [
-              "contextual-relevance-score"
-            ]
-          },
+        
           {
             "group": "For Advertisers",
             "pages": [
-              "advertisers/getting-started",
-              "advertisers/billing-models",
-              "advertisers/tracking-overview",
-              "advertisers/dashboard-analytics",
-              "advertisers/optimization"
+              "advertisers/overview",
+              "advertisers/quickstart",
+              "advertisers/create-offer",
+              "advertisers/pricing",
+              "advertisers/budgets-pacing",
+              "advertisers/conversion-tracking",
+              "advertisers/reports",
+              "advertisers/billing",
+              "advertisers/fraud-policy"
             ]
           },
           {
-            "group": "For AI Platforms",
+            "group": "For Platforms",
             "pages": [
-              "ai-platforms/getting-started",
-              "ai-platforms/best-practices",
-              "ai-platforms/earnings"
+              "platforms/overview",
+              "platforms/create-session",
+              "platforms/get-recommendations",
+              "platforms/inline-recommendations",
+              "platforms/fire-exposure-pixel",
+              "platforms/close-session"
+            ]
+          },
+            {
+            "group": "Core Concepts",
+            "pages": [
+              "contextual-relevance-score",
+              "cost-per-exposure"
             ]
           },
           {
@@ -63,14 +70,8 @@
             "pages": [
               "api-playground"
             ]
-          },
-          {
-            "group": "Integration Examples",
-            "pages": [
-              "examples/integration-examples",
-              "examples/ai-assistant"
-            ]
           }
+         
         ]
       }
     ],

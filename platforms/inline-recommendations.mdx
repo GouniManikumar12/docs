@@ -1,0 +1,264 @@
+---
+title: "Inline Recommendations"
+description: "How to weave AdMesh recommendations naturally into your LLM responses"
+---
+
+# Inline Recommendations
+
+After receiving AdMesh recommendations, pass them to your LLM or search API.
+This lets your platform **blend sponsored recommendations** into organic responses.
+
+---
+
+<Tabs>
+  <Tab title="TypeScript/JavaScript">
+    ```typescript
+    function formatRecommendationsForLLM(recommendations: any[], userQuery: string): string {
+      const formattedRecs = recommendations
+        .map((rec) => `- ${rec.title}: ${rec.click_url}`)
+        .join('\n');
+
+      return `
+${userQuery}
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+Make recommendations feel organic. Use the exact links provided.
+
+${formattedRecs}
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+8. If you mention a product, include its link in the same sentence.
+9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
+`;
+    }
+    ```
+  </Tab>
+
+  <Tab title="React">
+    ```typescript
+    import { useMemo } from 'react';
+
+    export function useFormattedRecommendations(recommendations: any[], userQuery: string) {
+      return useMemo(() => {
+        if (!recommendations || recommendations.length === 0) return userQuery;
+
+        const formattedRecs = recommendations
+          .map((rec) => `- ${rec.title}: ${rec.click_url}`)
+          .join('\n');
+
+        return `
+${userQuery}
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+
+${formattedRecs}
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+`;
+      }, [recommendations, userQuery]);
+    }
+    ```
+  </Tab>
+
+  <Tab title="Android (Kotlin)">
+    ```kotlin
+    class RecommendationFormatter {
+        fun formatForLLM(recommendations: List<Map<String, String>>, userQuery: String): String {
+            val formattedRecs = recommendations
+                .map { rec -> "- ${rec["title"]}: ${rec["click_url"]}" }
+                .joinToString("\n")
+
+            return """
+$userQuery
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+Make recommendations feel organic. Use the exact links provided.
+
+$formattedRecs
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+8. If you mention a product, include its link in the same sentence.
+9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
+            """.trimIndent()
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Flutter (Dart)">
+    ```dart
+    class RecommendationFormatter {
+      static String formatForLLM(
+        List<Map<String, dynamic>> recommendations,
+        String userQuery,
+      ) {
+        final formattedRecs = recommendations
+            .map((rec) => '- ${rec['title']}: ${rec['click_url']}')
+            .join('\n');
+
+        return '''
+$userQuery
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+Make recommendations feel organic. Use the exact links provided.
+
+$formattedRecs
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+8. If you mention a product, include its link in the same sentence.
+9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
+        ''';
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Swift/iOS">
+    ```swift
+    class RecommendationFormatter {
+        static func formatForLLM(
+            recommendations: [[String: Any]],
+            userQuery: String
+        ) -> String {
+            let formattedRecs = recommendations
+                .compactMap { rec -> String? in
+                    guard let title = rec["title"] as? String,
+                          let url = rec["click_url"] as? String else {
+                        return nil
+                    }
+                    return "- \(title): \(url)"
+                }
+                .joined(separator: "\n")
+
+            return """
+\(userQuery)
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+Make recommendations feel organic. Use the exact links provided.
+
+\(formattedRecs)
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+8. If you mention a product, include its link in the same sentence.
+9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
+            """
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="React Native">
+    ```typescript
+    export function formatRecommendationsForLLM(
+      recommendations: any[],
+      userQuery: string
+    ): string {
+      const formattedRecs = recommendations
+        .map((rec) => `- ${rec.title}: ${rec.click_url}`)
+        .join('\n');
+
+      return `
+${userQuery}
+
+=== INLINE RECOMMENDATIONS (Weave these naturally into your response) ===
+Instructions: Mention these products/services naturally within your answer as relevant suggestions.
+IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+Make recommendations feel organic. Use the exact links provided.
+
+${formattedRecs}
+
+INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
+1. Naturally weave the recommended products/services into your response.
+2. Mention them where they fit contextually within your answer.
+3. Use the exact links provided - preserve them exactly as given.
+4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
+5. Make them sound natural, not forced.
+6. Mention 1–3 depending on relevance.
+7. Keep all tracking links intact.
+8. If you mention a product, include its link in the same sentence.
+9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
+`;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Example LLM Output
+
+> For workflow automation, you can try [ClickUp](https://api.useadmesh.com/click/r/ad_7a2b?...)<sub>[Ad]</sub> or [Notion](https://api.useadmesh.com/click/r/ad_9b1c?...)<sub>[Ad]</sub> for team documentation.
+
+---
+
+## Best Practices
+
+✅ **DO:**
+- Weave recommendations naturally into the response
+- Use exact tracking links provided by AdMesh
+- Always include `[Ad]` label for transparency
+- Mention 1–3 products based on relevance
+- Keep links intact with all parameters
+
+❌ **DON'T:**
+- Modify or shorten tracking URLs
+- Hide the `[Ad]` label
+- Force recommendations that don't fit
+- Mention more than 3 products
+- Break the link structure
+
+---
+
+Next → [Fire Exposure Pixel](/platforms/fire-exposure-pixel)
+

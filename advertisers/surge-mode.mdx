@@ -1,0 +1,187 @@
+---
+title: "Surge Mode"
+description: "Understand how AdMesh optimizes delivery when budget runs low"
+---
+
+Surge mode is an automatic optimization feature that keeps your offers visible even when budget is running low. Instead of stopping delivery completely, AdMesh adjusts pricing to maximize remaining budget efficiency.
+
+---
+
+## What is Surge Mode?
+
+Surge mode activates automatically when your offer has insufficient budget remaining to cover a full CPA (Cost Per Action) charge, but still has some budget available.
+
+**Trigger Condition:**
+- Remaining budget is greater than $0
+- Remaining budget is less than your CPA amount
+
+When triggered, surge mode adjusts your pricing model to prioritize visibility and engagement over conversion tracking.
+
+---
+
+## How Surge Mode Works
+
+### Pricing Adjustments
+
+When surge mode activates, AdMesh applies a **3x multiplier** to your engagement costs:
+
+| Metric | Normal Rate | Surge Mode Rate | Example |
+|--------|-------------|-----------------|---------|
+| **CPX** | Base rate | 3x multiplier | $0.002 → $0.006 |
+| **CPC** | Your rate | 3x multiplier | $0.50 → $1.50 |
+| **CPA** | Your rate | Disabled | N/A |
+
+### Key Changes
+
+1. **CPA Disabled** - Conversion tracking is temporarily disabled. You only pay for exposures and clicks.
+2. **Higher Engagement Costs** - CPX and CPC rates triple to reflect the limited budget window.
+3. **Partial Billing** - If your remaining budget is less than the calculated charge, AdMesh charges only what's available.
+4. **Continued Delivery** - Your offer continues to be shown to users instead of pausing completely.
+
+---
+
+## Example Scenario
+
+**Initial Setup:**
+- Total budget: $100
+- CPX rate: $0.002 per exposure
+- CPC rate: $0.50 per click
+- CPA rate: $10 per conversion
+
+**Normal Operation:**
+- Budget spent: $85
+- Remaining budget: $15
+- CPA amount needed: $10
+
+**Surge Mode Triggers:**
+- Remaining budget ($15) < CPA amount ($10)? No, so normal mode continues
+
+**Later:**
+- Budget spent: $92
+- Remaining budget: $8
+- CPA amount needed: $10
+
+**Surge Mode Activates:**
+- Remaining budget ($8) < CPA amount ($10)? Yes
+- New CPX rate: $0.006 (3x multiplier)
+- New CPC rate: $1.50 (3x multiplier)
+- CPA: Disabled
+- Your offer continues to get impressions and clicks with the higher rates
+
+---
+
+## When Surge Mode Activates
+
+Surge mode is **automatic** and requires no action from you. It activates during the recommendation generation process when:
+
+1. Your offer is selected for a user query
+2. The system checks your remaining budget
+3. Budget is insufficient for CPA but greater than zero
+4. Surge mode flag is set in the recommendation
+
+---
+
+## Impact on Your Campaign
+
+### What Changes
+
+- **Billing Model:** Shifts from CPX + CPC + CPA to CPX + CPC only
+- **Cost Per Engagement:** Increases 3x for both exposures and clicks
+- **Conversion Tracking:** Temporarily unavailable
+- **Delivery:** Continues instead of pausing
+
+### What Stays the Same
+
+- Your offer remains visible to relevant users
+- Click tracking continues normally
+- Budget is still respected and never exceeded
+- All transactions remain transparent and auditable
+
+---
+
+## Managing Surge Mode
+
+### Prevent Surge Mode
+
+To avoid surge mode and maintain full CPA tracking:
+
+1. **Monitor Budget** - Check your remaining budget regularly in the dashboard
+2. **Increase Budget** - Add funds before reaching low-budget thresholds
+3. **Adjust Pacing** - Use even pacing to spread budget more gradually
+4. **Set Daily Limits** - Prevent rapid budget depletion
+
+### When Surge Mode Activates
+
+If surge mode activates:
+
+1. **Check Dashboard** - View your remaining budget and surge mode status
+2. **Add Budget** - Increase your total budget to exit surge mode
+3. **Review Performance** - Check metrics for the surge period
+4. **Plan Ahead** - Adjust future budgets to prevent recurrence
+
+---
+
+## Billing During Surge Mode
+
+### Partial Billing
+
+If your remaining budget is less than the calculated charge:
+
+- **Example:** Remaining budget is $5, CPC charge would be $1.50
+- **Result:** You're charged $1.50 (the full amount is available)
+- **Next Charge:** If remaining budget is $0.75 and next CPC is $1.50
+- **Result:** You're charged $0.75 (partial billing)
+
+### Transaction Records
+
+All surge mode activity is tracked in your billing records:
+
+- Surge mode status is recorded for each transaction
+- Partial billing amounts are clearly marked
+- Full audit trail available in your dashboard
+
+---
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Does surge mode cost me more?">
+    Yes, the 3x multiplier means higher CPX and CPC rates. However, surge mode allows continued delivery instead of pausing, which may provide better overall value depending on your goals.
+  </Accordion>
+
+  <Accordion title="Can I disable surge mode?">
+    Surge mode is automatic and cannot be disabled. To avoid it, maintain sufficient budget for your CPA amount.
+  </Accordion>
+
+  <Accordion title="How long does surge mode last?">
+    Surge mode lasts until you add more budget or your remaining budget reaches zero. Once you increase your budget above your CPA amount, normal pricing resumes.
+  </Accordion>
+
+  <Accordion title="Will I lose conversion data in surge mode?">
+    Conversion tracking is disabled during surge mode, so you won't see CPA metrics. However, all click and exposure data continues to be tracked normally.
+  </Accordion>
+
+  <Accordion title="What happens when budget reaches zero?">
+    Your offer stops being shown to new users. Existing clicks in progress are still processed, but no new impressions are delivered.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Budgets & Pacing" icon="chart-line" href="/advertisers/budgets-pacing">
+    Learn how to set and manage your campaign budget.
+  </Card>
+  <Card title="Pricing Model" icon="dollar-sign" href="/advertisers/pricing">
+    Understand CPX, CPC, and CPA pricing layers.
+  </Card>
+  <Card title="Billing" icon="receipt" href="/advertisers/billing">
+    View invoices and payment details.
+  </Card>
+  <Card title="Reports" icon="chart-bar" href="/advertisers/reports">
+    Track campaign performance and spending.
+  </Card>
+</CardGroup>
+

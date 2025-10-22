@@ -62,10 +62,29 @@ CPX makes sure you see *where and how often* users were exposed to your offer, e
 
 ```mermaid
 graph LR
-A[Exposure<br/>CPX] --> B[Click<br/>CPC] --> C[Conversion<br/>CPA]
-A:::exposure -->|viewed| B:::click -->|completed action| C:::conversion
-classDef exposure fill:#f4f9ff,stroke:#4c6ef5,stroke-width:1px;
-classDef click fill:#e8fff1,stroke:#059669,stroke-width:1px;
-classDef conversion fill:#fff9e6,stroke:#f59e0b,stroke-width:1px;
+A[Exposure<br/>CPX] -->|viewed| B[Click<br/>CPC]
+B -->|completed action| C[Conversion<br/>CPA]
+A:::exposure
+B:::click
+C:::conversion
+classDef exposure fill:#f4f9ff,stroke:#4c6ef5,stroke-width:1px
+classDef click fill:#e8fff1,stroke:#059669,stroke-width:1px
+classDef conversion fill:#fff9e6,stroke:#f59e0b,stroke-width:1px
 ```
+
+---
+
+## Surge Mode Pricing
+
+When your remaining budget is insufficient for a full CPA charge but greater than zero, AdMesh automatically activates **Surge Mode** to optimize delivery.
+
+In Surge Mode:
+- CPX and CPC rates increase 3x
+- CPA tracking is temporarily disabled
+- Your offer continues to be shown instead of pausing
+- Partial billing charges only what's available
+
+This ensures maximum visibility with your remaining budget.
+
+[Learn more about Surge Mode →](/advertisers/surge-mode)
 

@@ -1,0 +1,342 @@
+---
+title: "Citation & Product Format"
+description: "Complete end-to-end guide for SDK-based automatic rendering with built-in tracking"
+---
+
+The **Citation & Product Format** uses the AdMesh UI SDK to automatically render recommendations with built-in tracking, labeling, and transparency.
+
+This is the **easiest integration** if you want AdMesh to handle all rendering and tracking automatically.
+
+---
+
+## Integration Overview
+
+```
+1. Create Session
+   ↓
+2. Initialize SDK
+   ↓
+3. Add Container
+   ↓
+4. Fetch & Render Recommendations
+   ↓
+5. SDK Auto-Fires Exposure Pixels
+   ↓
+6. Close Session (Optional)
+```
+
+---
+
+## What You Get
+
+✅ **Automatic Rendering** - SDK renders recommendations in your container
+✅ **Built-in Tracking** - Exposure pixels fire automatically
+✅ **Transparency Labels** - `[Ad]` labels included automatically
+✅ **Multiple Formats** - Citation layout, product cards, ecommerce cards
+✅ **Zero Configuration** - Works out of the box
+
+---
+
+## Step 1: Create Session
+
+Each conversation or search thread starts with a **new AdMesh session**.
+A session ensures all exposures, clicks, and conversions are tied together.
+
+```typescript
+const ADMESH_BASE = "https://api.useadmesh.com";
+
+export async function createAdmeshSession() {
+  try {
+    const res = await fetch(`${ADMESH_BASE}/agent/session/new`, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to create AdMesh session");
+
+    const { session_id } = await res.json();
+    localStorage.setItem("admesh_session_id", session_id);
+    console.log("✅ Session created:", session_id);
+    return session_id;
+  } catch (err) {
+    console.error("⚠️ Session creation failed:", err);
+    return `admesh_temp_${Date.now()}`;
+  }
+}
+```
+
+---
+
+## Step 2: Install and Initialize the SDK
+
+### Install the SDK
+
+```bash
+npm install admesh-ui-sdk
+```
+
+### Initialize the SDK
+
+```typescript
+import { AdMeshSDK } from 'admesh-ui-sdk';
+
+const admesh = new AdMeshSDK({
+  apiKey: 'your_api_key',
+  apiBaseUrl: 'https://api.useadmesh.com',
+  debug: true
+});
+```
+
+---
+
+## Step 3: Add Container to Your HTML
+
+Add a container div where you want recommendations to appear:
+
+```html
+<div id="admesh-recommendations"></div>
+```
+
+---
+
+## Step 4: Fetch and Render Recommendations
+
+Call the SDK's `showRecommendations` method to fetch and render recommendations:
+
+```typescript
+// Get the session ID
+const sessionId = localStorage.getItem("admesh_session_id") || await createAdmeshSession();
+
+// Fetch and render recommendations
+await admesh.showRecommendations({
+  query: 'best project management tools',
+  sessionId: sessionId,
+  containerId: 'admesh-recommendations',
+  format: 'auto'
+});
+```
+
+The SDK will automatically:
+1. Fetch recommendations from AdMesh
+2. Render them in the specified container
+3. Fire exposure pixels when visible
+4. Add transparency labels
+5. Handle click tracking
+
+---
+
+## Step 5: Close Session (Optional)
+
+When the user finishes their chat or conversion flow, close the AdMesh session:
+
+```typescript
+export async function closeAdmeshSession() {
+  const sessionId = localStorage.getItem("admesh_session_id");
+  if (!sessionId) return;
+
+  try {
+    const response = await fetch("https://api.useadmesh.com/agent/session/close", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+
+    if (response.ok) {
+      console.log("✅ Session closed");
+      localStorage.removeItem("admesh_session_id");
+    }
+  } catch (error) {
+    console.error("❌ Error closing session:", error);
+  }
+}
+```
+
+---
+
+## Supported Formats
+
+### Citation Layout
+Displays LLM-generated summary with embedded product links.
+
+```
+"Consider [HubSpot](url) for CRM needs or [Asana](url) for project management."
+```
+
+### Product Cards
+Displays individual product recommendation cards with details.
+
+```
+┌─────────────────────────┐
+│ HubSpot                 │
+│ CRM Platform            │
+│ Free tier available     │
+│ [Learn More]            │
+└─────────────────────────┘
+```
+
+### Ecommerce Cards
+Displays product cards optimized for ecommerce recommendations.
+
+```
+┌─────────────────────────┐
+│ Product Image           │
+│ Product Name            │
+│ $99.99                  │
+│ [View Product]          │
+└─────────────────────────┘
+```
+
+---
+
+## Customization
+
+### Theme Customization
+
+```typescript
+const admesh = new AdMeshSDK({
+  apiKey: 'your_api_key',
+  theme: {
+    mode: 'dark',
+    colors: {
+      primary: '#2563EB',
+      background: '#1F2937'
+    }
+  }
+});
+```
+
+### Event Handlers
+
+```typescript
+await admesh.showRecommendations({
+  query: 'best tools',
+  containerId: 'admesh-recommendations',
+  onRecommendationClick: (recommendation) => {
+    console.log('User clicked:', recommendation.title);
+  },
+  onLinkClick: (url) => {
+    console.log('User clicked link:', url);
+  }
+});
+```
+
+---
+
+## Automatic Tracking
+
+The SDK automatically:
+
+1. **Fires exposure pixels** when recommendations are rendered
+2. **Tracks clicks** when users interact with recommendations
+3. **Tracks conversions** if configured
+4. **Adds transparency labels** (`[Ad]`) to all recommendations
+
+No additional code needed!
+
+---
+
+## Complete Integration Example
+
+Here's a complete end-to-end example in React:
+
+```typescript
+import { useEffect, useState } from 'react';
+import { AdMeshSDK } from 'admesh-ui-sdk';
+
+export function SearchResults({ query }) {
+  const [admesh, setAdmesh] = useState(null);
+
+  useEffect(() => {
+    // Initialize SDK
+    const sdk = new AdMeshSDK({
+      apiKey: 'your_api_key',
+      apiBaseUrl: 'https://api.useadmesh.com',
+      debug: true
+    });
+    setAdmesh(sdk);
+  }, []);
+
+  useEffect(() => {
+    if (!admesh || !query) return;
+
+    // Create session
+    const createSession = async () => {
+      try {
+        const res = await fetch('https://api.useadmesh.com/agent/session/new', {
+          method: 'POST'
+        });
+        const { session_id } = await res.json();
+        localStorage.setItem('admesh_session_id', session_id);
+
+        // Fetch and render recommendations
+        await admesh.showRecommendations({
+          query,
+          sessionId: session_id,
+          containerId: 'admesh-recommendations',
+          format: 'auto'
+        });
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    createSession();
+  }, [admesh, query]);
+
+  return (
+    <div>
+      <h1>Search Results for: {query}</h1>
+      <div id="admesh-recommendations"></div>
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+✅ **DO:**
+- Use the SDK for quick, reliable integration
+- Let the SDK handle rendering and tracking
+- Customize theme to match your brand
+- Test with different recommendation types
+- Create a new session for each conversation
+
+❌ **DON'T:**
+- Modify the SDK's tracking URLs
+- Remove or hide transparency labels
+- Render recommendations outside the SDK container
+- Manually fire exposure pixels (SDK does this automatically)
+- Reuse session IDs across different conversations
+
+---
+
+## Troubleshooting
+
+### Recommendations Not Showing?
+
+1. Check that container element exists: `<div id="admesh-recommendations"></div>`
+2. Verify API key is correct
+3. Check browser console for errors
+4. Ensure query is not empty
+5. Verify session ID is being passed correctly
+
+### Tracking Not Working?
+
+1. Verify exposure pixels are firing (check Network tab)
+2. Ensure SDK debug mode is enabled
+3. Check that recommendations have valid tracking URLs
+4. Verify session ID is being passed correctly
+5. Check for CORS issues in browser console
+
+### SDK Not Loading?
+
+1. Verify npm package is installed: `npm install admesh-ui-sdk`
+2. Check that API key is valid
+3. Verify API base URL is correct
+4. Check browser console for import errors
+
+---
+
+## Next Steps
+
+- [Weave Ad Format](/platforms/weave-ad-format) - For custom rendering control
+- [FAQ](/platforms/faq) - Common questions and troubleshooting
+

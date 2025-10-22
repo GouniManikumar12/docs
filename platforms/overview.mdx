@@ -1,6 +1,6 @@
 ---
 title: "Overview"
-description: "Everything platforms need to integrate AdMesh ,  from session to tracking"
+description: "Everything platforms need to integrate AdMesh with two simple integration formats"
 ---
 
 # Platform Overview
@@ -10,21 +10,50 @@ You control the UI, while AdMesh handles **ads, tracking, and attribution** behi
 
 ---
 
-## Integration Flow
+## Choose Your Integration
 
-Follow these 5 steps to integrate AdMesh recommendations into your product:
+AdMesh offers two complete integration formats. Pick one and follow the comprehensive guide:
 
-| Step | Action | Docs |
-|------|---------|------|
-| 1 | **Create Session** ,  Start a new conversation context | [Create Session](/platforms/create-session) |
-| 2 | **Get Recommendations** ,  Fetch contextual ads for a query | [Get Recommendations](/platforms/get-recommendations) |
-| 3 | **Inline Recommendations** ,  Pass AdMesh offers to your LLM | [Weave Inline Recommendations](/platforms/inline-recommendations) |
-| 4 | **Fire Exposure Pixels** ,  Track impressions when showing ads | [Fire Exposure Pixel](/platforms/fire-exposure-pixel) |
-| 5 | **Close Session** ,  End or expire the session cleanly | [Close Session](/platforms/close-session) |
+| Format | Type | Best For | Setup |
+|--------|------|----------|-------|
+| **Weave Ad Format** | API-based | Custom conversational ads, LLM integration | Moderate |
+| **Citation & Product Format** | SDK-based | Quick setup, automatic rendering | Minimal (3 steps) |
+
+[Compare Formats →](/platforms/choose-integration)
 
 ---
 
-## Example Flow
+## Quick Start
+
+### For Weave Ad Format (API-Based)
+
+Follow the complete end-to-end guide that includes:
+- Creating sessions
+- Fetching recommendations
+- Formatting for your LLM
+- Firing exposure pixels
+- Closing sessions
+
+[Start with Weave Ad Format →](/platforms/weave-ad-format)
+
+### For Citation & Product Format (SDK-Based)
+
+Follow the complete end-to-end guide that includes:
+- Creating sessions
+- Installing the SDK
+- Adding a container
+- Fetching and rendering recommendations
+- Closing sessions
+
+[Start with Citation & Product Format →](/platforms/citation-format)
+
+---
+
+---
+
+## Integration Flows
+
+### Weave Ad Format Flow
 
 ```mermaid
 sequenceDiagram
@@ -38,12 +67,52 @@ Platform->>AdMesh: POST /agent/session/new
 AdMesh-->>Platform: Returns session_id
 Platform->>AdMesh: POST /agent/recommend (with session_id)
 AdMesh-->>Platform: Returns recommendations
-Platform->>LLM: Adds Inline Recommendations block + rules
+Platform->>LLM: Adds Weave Recommendations block + rules
 LLM-->>Platform: Returns contextual response with [Product](link)<sub>[Ad]</sub>
 Platform->>User: Displays blended organic + sponsored response
 Platform->>AdMesh: Fires exposure pixels
 Platform->>AdMesh: (Optional) POST /agent/session/close
 ```
+
+### Citation & Product Format Flow
+
+```mermaid
+sequenceDiagram
+participant User
+participant Platform
+participant AdMesh
+participant SDK
+
+User->>Platform: Asks a question
+Platform->>AdMesh: POST /agent/session/new
+AdMesh-->>Platform: Returns session_id
+Platform->>SDK: Initialize SDK with API key
+Platform->>SDK: Call showRecommendations()
+SDK->>AdMesh: Fetches recommendations
+SDK->>Platform: Auto-renders in container
+SDK->>AdMesh: Fires exposure pixels automatically
+Platform->>User: Displays recommendations with tracking
+```
+
+---
+
+## Key Features
+
+✅ **Two Integration Formats** - Choose API-based or SDK-based
+✅ **Complete Guides** - Each format has a comprehensive end-to-end guide
+✅ **6 Language Examples** - TypeScript, React, Kotlin, Dart, Swift, React Native
+✅ **Automatic Tracking** - Exposure pixels, clicks, and conversions
+✅ **Transparency Built-in** - `[Ad]` labels included automatically
+✅ **Session Management** - Group interactions per conversation
+✅ **Error Handling** - Graceful degradation if AdMesh is unavailable
+
+---
+
+## Need Help?
+
+- [Choosing Your Integration](/platforms/choose-integration) - Compare formats
+- [FAQ](/platforms/faq) - Common questions and troubleshooting
+- Email support: mani@useadmesh.com
 
 ---
 

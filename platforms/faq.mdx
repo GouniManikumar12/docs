@@ -1,0 +1,598 @@
+---
+title: "Platform FAQ"
+description: "Frequently asked questions from platform integrators about format selection, SDK usage, API integration, and implementation"
+---
+
+## Getting Started
+
+<AccordionGroup data-faq-section="Getting Started">
+  <Accordion title="What is AdMesh?" data-faq-item="What is AdMesh?">
+    AdMesh is a conversational advertising platform that enables platforms (like AI assistants, search engines, and chat applications) to monetize through contextually relevant product recommendations. AdMesh provides two integration approaches:
+
+    - **React SDK**: For citation format and product card layouts
+    - **Direct API**: For weave format and custom implementations
+  </Accordion>
+
+  <Accordion title="How do I choose between weave format and citation format?" data-faq-item="How do I choose between weave format and citation format?">
+    | Aspect | Weave Format | Citation Format |
+    |--------|--------------|-----------------|
+    | **What it is** | Inline product cards embedded in conversation | Clickable links within conversational text |
+    | **Best for** | Visual-heavy platforms, mobile apps | Text-based platforms, chat interfaces |
+    | **Integration** | Direct API only | React SDK or Direct API |
+    | **User Experience** | Rich, interactive cards | Minimal, non-intrusive links |
+    | **Implementation** | More complex | Simpler |
+    | **Performance** | Requires more bandwidth | Lightweight |
+
+    **Choose Weave if:**
+    - Your platform supports rich media/cards
+    - You want a visual, interactive experience
+    - You have sufficient bandwidth
+
+    **Choose Citation if:**
+    - Your platform is text-based
+    - You want minimal UI changes
+    - You want lightweight integration
+
+    For detailed comparison, see [Choose Integration](/platforms/choose-integration).
+  </Accordion>
+
+  <Accordion title="When should I use the React SDK vs. direct API?" data-faq-item="When should I use the React SDK vs. direct API?">
+    | Aspect | React SDK | Direct API |
+    |--------|-----------|-----------|
+    | **Supported Formats** | Citation, Product Cards | All formats (Weave, Citation) |
+    | **Best for** | React applications | Any platform/language |
+    | **Setup Time** | 5-10 minutes | 30-60 minutes |
+    | **Customization** | Limited | Full control |
+    | **Maintenance** | Automatic updates | Manual updates |
+    | **Weave Support** | ❌ No | ✅ Yes |
+
+    **Use React SDK if:**
+    - Your platform is built with React
+    - You want citation or product card format
+    - You want quick setup
+
+    **Use Direct API if:**
+    - You need weave format
+    - You want full customization
+    - You're not using React
+
+    For details, see [React SDK](/ui-sdk/installation) or [Direct API](/platforms/overview).
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## React SDK Integration
+
+<AccordionGroup data-faq-section="React SDK Integration">
+  <Accordion title="How do I install the React SDK?" data-faq-item="How do I install the React SDK?">
+    Install via npm:
+
+    ```bash
+    npm install admesh-ui-sdk
+    ```
+
+    Or with yarn:
+
+    ```bash
+    yarn add admesh-ui-sdk
+    ```
+
+    For detailed instructions, see [Installation](/ui-sdk/installation).
+  </Accordion>
+
+  <Accordion title="What formats does the React SDK support?" data-faq-item="What formats does the React SDK support?">
+    The React SDK supports:
+
+    ✅ **Citation Format** - Clickable links within conversational text
+    ✅ **Product Card Layouts** - Individual product recommendation cards
+
+    ❌ **Weave Format** - Not supported (use Direct API instead)
+  </Accordion>
+
+  <Accordion title="How do I use the React SDK in my application?" data-faq-item="How do I use the React SDK in my application?">
+    Basic usage:
+
+    ```tsx
+    import { AdMeshLayout } from 'admesh-ui-sdk';
+
+    export const MyComponent = () => {
+      const recommendations = [
+        {
+          id: 'rec_123',
+          title: 'Product Name',
+          description: 'Product description',
+          url: 'https://example.com/product',
+          price: '$99.99'
+        }
+      ];
+
+      return (
+        <AdMeshLayout
+          recommendations={recommendations}
+          layout="auto"
+        />
+      );
+    };
+    ```
+
+    For more examples, see [Customization](/ui-sdk/customization).
+  </Accordion>
+
+  <Accordion title="How do I customize the React SDK styling?" data-faq-item="How do I customize the React SDK styling?">
+    Use the theming API:
+
+    ```tsx
+    import {
+      AdMeshLayout,
+      mergeTheme,
+      injectCustomTheme
+    } from 'admesh-ui-sdk';
+
+    const theme = mergeTheme({
+      mode: 'dark',
+      primaryColor: '#3b82f6',
+      accentColor: '#ffffff'
+    });
+
+    injectCustomTheme(theme);
+
+    <AdMeshLayout recommendations={recommendations} theme={theme} />
+    ```
+
+    For detailed styling options, see [Styling System](/ui-sdk/styling-system).
+  </Accordion>
+
+  <Accordion title="Does the React SDK work with my CSS framework?" data-faq-item="Does the React SDK work with my CSS framework?">
+    Yes! The React SDK is platform-agnostic and works with:
+
+    ✅ Tailwind CSS
+    ✅ Bootstrap
+    ✅ Material-UI
+    ✅ Chakra UI
+    ✅ Styled Components
+    ✅ Emotion
+
+    The SDK's styles are isolated and won't conflict with your framework.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Weave Format Integration
+
+<AccordionGroup data-faq-section="Weave Format Integration">
+  <Accordion title="How do I integrate weave format?" data-faq-item="How do I integrate weave format?">
+    Weave format requires the Direct API approach:
+
+    1. **Get API Key**: Generate from your dashboard
+    2. **Call Recommendation API**: Get recommendations for user query
+    3. **Render Cards**: Display product cards in your UI
+    4. **Track Interactions**: Fire exposure, click, and conversion pixels
+
+    For step-by-step guide, see [Weave Format](/platforms/weave-ad-format).
+  </Accordion>
+
+  <Accordion title="What's the weave format API flow?" data-faq-item="What's the weave format API flow?">
+    ```
+    1. User Query
+       ↓
+    2. Call /recommend endpoint
+       ↓
+    3. Receive recommendations with signed URLs
+       ↓
+    4. Render product cards in UI
+       ↓
+    5. Fire exposure pixel when card is shown
+       ↓
+    6. Fire click pixel when user clicks
+       ↓
+    7. Fire conversion pixel when user converts
+    ```
+  </Accordion>
+
+  <Accordion title="How do I render weave format cards?" data-faq-item="How do I render weave format cards?">
+    Weave format returns product data that you render as cards:
+
+    ```json
+    {
+      "recommendations": [
+        {
+          "id": "rec_123",
+          "title": "Product Name",
+          "description": "Product description",
+          "image_url": "https://...",
+          "price": "$99.99",
+          "click_url": "https://track.useadmesh.com/click?...",
+          "exposure_pixel": "https://track.useadmesh.com/exposure?..."
+        }
+      ]
+    }
+    ```
+
+    Render each recommendation as a card with:
+    - Product image
+    - Title and description
+    - Price
+    - "Visit" button (links to click_url)
+  </Accordion>
+
+  <Accordion title="How do I track weave format interactions?" data-faq-item="How do I track weave format interactions?">
+    Fire tracking pixels:
+
+    ```javascript
+    // Fire exposure pixel when card is shown
+    const exposurePixel = new Image();
+    exposurePixel.src = recommendation.exposure_pixel;
+
+    // Fire click pixel when user clicks
+    window.open(recommendation.click_url, '_blank');
+
+    // Conversions are tracked brand-side via localStorage and tracking pixels
+    // See brand integration guide for conversion tracking implementation
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Citation Format Integration
+
+<AccordionGroup data-faq-section="Citation Format Integration">
+  <Accordion title="How do I integrate citation format?" data-faq-item="How do I integrate citation format?">
+    Citation format can be integrated via:
+
+    1. **React SDK** (recommended for React apps)
+    2. **Direct API** (for any platform)
+
+    **Using React SDK:**
+    ```tsx
+    import { AdMeshLayout } from 'admesh-ui-sdk';
+
+    <AdMeshLayout
+      recommendations={recommendations}
+      layout="citation"
+    />
+    ```
+
+    **Using Direct API:**
+    See [Citation Format](/platforms/citation-format) for API details.
+  </Accordion>
+
+  <Accordion title="What does citation format look like?" data-faq-item="What does citation format look like?">
+    Citation format displays recommendations as clickable links within conversational text:
+
+    ```
+    Here are some great options for you:
+    - [Ad] Product Name (https://...)
+    - [Ad] Another Product (https://...)
+    ```
+
+    Each link is tracked for clicks and conversions.
+  </Accordion>
+
+  <Accordion title="How do I customize citation format styling?" data-faq-item="How do I customize citation format styling?">
+    With React SDK:
+
+    ```tsx
+    const theme = mergeTheme({
+      primaryColor: '#3b82f6',
+      customCSS: `
+        .admesh-link {
+          color: #3b82f6;
+          text-decoration: underline;
+        }
+      `
+    });
+
+    injectCustomTheme(theme);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## API Integration
+
+<AccordionGroup data-faq-section="API Integration">
+  <Accordion title="How do I get an API key?" data-faq-item="How do I get an API key?">
+    1. Log in to your [AdMesh Dashboard](https://useadmesh.com)
+    2. Go to **Settings** → **API Keys**
+    3. Click **Generate New Key**
+    4. Copy your API key (format: `admesh_prod_xxx`)
+    5. Store securely (never commit to version control)
+  </Accordion>
+
+  <Accordion title="How do I authenticate API requests?" data-faq-item="How do I authenticate API requests?">
+    Include your API key in the Authorization header:
+
+    ```bash
+    curl -H "Authorization: Bearer admesh_prod_xxx" \
+      https://api.useadmesh.com/recommend
+    ```
+
+    Or in your code:
+
+    ```javascript
+    const response = await fetch('https://api.useadmesh.com/recommend', {
+      headers: {
+        'Authorization': 'Bearer admesh_prod_xxx'
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="What's the /recommend endpoint?" data-faq-item="What's the /recommend endpoint?">
+    The `/recommend` endpoint returns recommendations for a user query:
+
+    ```bash
+    POST /recommend
+    Content-Type: application/json
+    Authorization: Bearer admesh_prod_xxx
+
+    {
+      "query": "best laptop for programming",
+      "user_id": "user_123",
+      "session_id": "session_456"
+    }
+    ```
+
+    Response:
+
+    ```json
+    {
+      "recommendations": [
+        {
+          "id": "rec_123",
+          "title": "Product Name",
+          "description": "...",
+          "click_url": "https://...",
+          "exposure_pixel": "https://..."
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="What are tracking URLs?" data-faq-item="What are tracking URLs?">
+    Tracking URLs are cryptographically signed URLs for tracking interactions:
+
+    - **exposure_pixel**: Fire when recommendation is shown
+    - **click_url**: Redirect when user clicks
+
+    All URLs include:
+    - HMAC-SHA256 signature
+    - TTL (time-to-live, default 300 seconds)
+    - Nonce for idempotency
+
+    Conversions are tracked brand-side via localStorage and tracking pixels, not through pre-generated URLs.
+
+    Never modify these URLs - they're signed and will fail if altered.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Performance & Optimization
+
+<AccordionGroup data-faq-section="Performance & Optimization">
+  <Accordion title="What are the performance requirements?" data-faq-item="What are the performance requirements?">
+    Minimum requirements:
+
+    - **API Response Time**: < 500ms
+    - **Recommendation Latency**: < 1 second
+    - **Pixel Firing**: < 100ms
+    - **SDK Bundle Size**: ~25KB gzipped
+
+    Recommended:
+
+    - **API Response Time**: < 200ms
+    - **Recommendation Latency**: < 500ms
+    - **Pixel Firing**: < 50ms
+  </Accordion>
+
+  <Accordion title="How can I optimize performance?" data-faq-item="How can I optimize performance?">
+    Best practices:
+
+    1. **Cache Recommendations**: Cache results for 5-10 minutes
+    2. **Lazy Load SDK**: Load SDK only when needed
+    3. **Batch Requests**: Combine multiple requests when possible
+    4. **Use CDN**: Serve SDK from CDN for faster delivery
+    5. **Monitor Latency**: Track API response times
+  </Accordion>
+
+  <Accordion title="What's the rate limit?" data-faq-item="What's the rate limit?">
+    Rate limits:
+
+    - **Free Tier**: 100 requests/minute
+    - **Pro Tier**: 1,000 requests/minute
+    - **Enterprise**: Custom limits
+
+    If you exceed limits, you'll receive a 429 (Too Many Requests) response.
+  </Accordion>
+
+  <Accordion title="How do I handle rate limiting?" data-faq-item="How do I handle rate limiting?">
+    Implement exponential backoff:
+
+    ```javascript
+    async function callAPI(url, retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url);
+          if (response.status === 429) {
+            const delay = Math.pow(2, i) * 1000;
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+          return response;
+        } catch (error) {
+          console.error('API error:', error);
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Contextual Relevance
+
+<AccordionGroup data-faq-section="Contextual Relevance">
+  <Accordion title="What is contextual relevance scoring?" data-faq-item="What is contextual relevance scoring?">
+    Contextual relevance scoring measures how well a recommendation matches a user's query. Scores range from 0-100:
+
+    - **90-100**: Highly relevant
+    - **70-89**: Relevant
+    - **50-69**: Somewhat relevant
+    - **< 50**: Not relevant
+
+    Higher scores mean better recommendations.
+  </Accordion>
+
+  <Accordion title="How is relevance calculated?" data-faq-item="How is relevance calculated?">
+    Relevance is calculated using:
+
+    1. **Semantic Matching**: Compare query embeddings with product embeddings
+    2. **Keyword Matching**: Match query keywords with product keywords
+    3. **Category Matching**: Match query intent with product categories
+    4. **User History**: Consider user's past interactions
+
+    For details, see [Contextual Relevance Score](/contextual-relevance-score).
+  </Accordion>
+
+  <Accordion title="How can I improve relevance scores?" data-faq-item="How can I improve relevance scores?">
+    To improve scores:
+
+    1. **Better Product Data**: Provide detailed titles, descriptions, keywords
+    2. **Accurate Categories**: Assign correct product categories
+    3. **Rich Metadata**: Include price, brand, ratings, etc.
+    4. **Update Regularly**: Keep product data current
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Testing & Debugging
+
+<AccordionGroup data-faq-section="Testing & Debugging">
+  <Accordion title="How do I test my integration?" data-faq-item="How do I test my integration?">
+    Testing steps:
+
+    1. **Test API Key**: Verify API key is valid
+    2. **Test Endpoint**: Call `/recommend` with test query
+    3. **Test Rendering**: Verify recommendations display correctly
+    4. **Test Tracking**: Verify pixels fire correctly
+    5. **Test Edge Cases**: Test with no results, errors, etc.
+  </Accordion>
+
+  <Accordion title="How do I debug integration issues?" data-faq-item="How do I debug integration issues?">
+    Debugging tips:
+
+    1. **Check Console**: Look for JavaScript errors
+    2. **Check Network**: Verify API requests are successful
+    3. **Check Pixels**: Verify tracking pixels are firing
+    4. **Check Logs**: Review server logs for errors
+    5. **Enable Debug Mode**: Add `debug=true` to API requests
+  </Accordion>
+
+  <Accordion title="What should I test before going live?" data-faq-item="What should I test before going live?">
+    Pre-launch checklist:
+
+    - [ ] API key is valid and secure
+    - [ ] Recommendations display correctly
+    - [ ] Tracking pixels fire correctly
+    - [ ] Error handling works
+    - [ ] Performance meets requirements
+    - [ ] Mobile responsiveness works
+    - [ ] Accessibility is compliant
+    - [ ] Security is verified
+  </Accordion>
+
+  <Accordion title="How do I report bugs?" data-faq-item="How do I report bugs?">
+    To report bugs:
+
+    1. **Email**: mani@useadmesh.com
+    2. **Dashboard**: Click **Help** → **Report Bug**
+    3. **GitHub**: Open issue in AdMesh repository
+
+    Include:
+
+    - Description of the issue
+    - Steps to reproduce
+    - Expected vs. actual behavior
+    - Screenshots/logs if applicable
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Common Issues
+
+<AccordionGroup data-faq-section="Common Issues">
+  <Accordion title="My API requests are failing" data-faq-item="My API requests are failing">
+    Check:
+
+    1. **API Key**: Verify key is correct and not expired
+    2. **Authorization Header**: Ensure header format is correct
+    3. **Endpoint URL**: Verify you're using correct endpoint
+    4. **Request Body**: Validate JSON is properly formatted
+    5. **Network**: Check internet connection
+  </Accordion>
+
+  <Accordion title="Recommendations aren't showing up" data-faq-item="Recommendations aren't showing up">
+    Troubleshoot:
+
+    1. **API Response**: Verify API returns recommendations
+    2. **Rendering**: Check if recommendations are being rendered
+    3. **Styling**: Verify CSS isn't hiding recommendations
+    4. **JavaScript**: Check for JavaScript errors in console
+    5. **Permissions**: Verify API key has correct permissions
+  </Accordion>
+
+  <Accordion title="Tracking pixels aren't firing" data-faq-item="Tracking pixels aren't firing">
+    Check:
+
+    1. **Pixel URL**: Verify pixel URL is correct
+    2. **Network**: Check if pixel request is being sent
+    3. **Ad Blockers**: Disable ad blockers and test
+    4. **CORS**: Verify CORS headers are correct
+    5. **Timing**: Ensure pixel fires at correct time
+  </Accordion>
+
+  <Accordion title="Performance is slow" data-faq-item="Performance is slow">
+    Optimize:
+
+    1. **Cache Results**: Cache recommendations for 5-10 minutes
+    2. **Lazy Load**: Load SDK only when needed
+    3. **Compress**: Enable gzip compression
+    4. **CDN**: Use CDN for static assets
+    5. **Monitor**: Track API response times
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card title="Choose Integration" icon="code-branch" href="/platforms/choose-integration">
+    Compare weave and citation formats
+  </Card>
+  <Card title="React SDK" icon="react" href="/ui-sdk/installation">
+    React SDK installation and setup
+  </Card>
+  <Card title="Weave Format" icon="layout-grid" href="/platforms/weave-ad-format">
+    Weave format integration guide
+  </Card>
+  <Card title="Citation Format" icon="link" href="/platforms/citation-format">
+    Citation format integration guide
+  </Card>
+  <Card title="Styling System" icon="palette" href="/ui-sdk/styling-system">
+    Customize component styling
+  </Card>
+  <Card title="API Playground" icon="play" href="/api-playground">
+    Test API endpoints interactively
+  </Card>
+</CardGroup>
+

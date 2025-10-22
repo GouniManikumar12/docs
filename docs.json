@@ -24,24 +24,33 @@
             "pages": [
               "advertisers/overview",
               "advertisers/quickstart",
-              "advertisers/create-offer",
-              "advertisers/pricing",
-              "advertisers/budgets-pacing",
-              "advertisers/conversion-tracking",
-              "advertisers/reports",
-              "advertisers/billing",
-              "advertisers/fraud-policy"
+              {
+                "group": "Campaign Management",
+                "pages": [
+                  "advertisers/create-offer",
+                  "advertisers/pricing",
+                  "advertisers/budgets-pacing",
+                  "advertisers/surge-mode",
+                  "advertisers/conversion-tracking"
+                ]
+              },
+              {
+                "group": "Reporting & Compliance",
+                "pages": [
+                  "advertisers/reports",
+                  "advertisers/billing",
+                  "advertisers/fraud-policy"
+                ]
+              }
             ]
           },
           {
             "group": "For Platforms",
             "pages": [
               "platforms/overview",
-              "platforms/create-session",
-              "platforms/get-recommendations",
-              "platforms/inline-recommendations",
-              "platforms/fire-exposure-pixel",
-              "platforms/close-session"
+              "platforms/choose-integration",
+              "platforms/weave-ad-format",
+              "platforms/citation-format"
             ]
           },
             {
@@ -52,11 +61,22 @@
             ]
           },
           {
-            "group": "Frontend Integration",
+            "group": "SDKs",
             "pages": [
-              "ui-sdk/installation",
-              "ui-sdk/layout-component",
-              "ui-sdk/customization"
+              {
+                "group": "React SDK",
+                "pages": [
+                  "ui-sdk/installation",
+                  "ui-sdk/styling-customization"
+                                ]
+              }
+            ]
+          },
+          
+          {
+            "group": "API Playground",
+            "pages": [
+              "api-playground"
             ]
           },
           {
@@ -66,9 +86,10 @@
             ]
           },
           {
-            "group": "API Playground",
+            "group": "FAQ",
             "pages": [
-              "api-playground"
+              "faq/advertiser-faq",
+              "platforms/faq"
             ]
           }
          
@@ -112,36 +133,28 @@
      "vscode"
    ]
   },
+  
   "footer": {
+    "socials": {
+      "x": "https://x.com/useadmesh",
+      "linkedin": "https://linkedin.com/company/admesh"
+          },
     "links": [
       {
-        "title": "Resources",
-        "items": [
-          {
-            "label": "Try AdPlex",
-            "href": "https://tryadplex.com"
-          },
-          {
-            "label": "Storybook",
-            "href": "https://storybook.useadmesh.com"
-          }
-        ]
-      },
-      {
-        "title": "Platform",
+        "header": "Resources",
         "items": [
           {
             "label": "Dashboard",
             "href": "https://useadmesh.com"
           },
           {
-            "label": "Earnings Calculator",
-            "href": "https://useadmesh.com/agents#earnings-calculator"
+            "label": "Try AdPlex",
+            "href": "https://tryadplex.com"
           }
         ]
       },
       {
-        "title": "Support",
+        "header": "Support",
         "items": [
           {
             "label": "Contact Us",

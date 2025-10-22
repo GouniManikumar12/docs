@@ -1,185 +1,124 @@
 ---
 title: "Citation & Product Format"
-description: "Complete end-to-end guide for SDK-based automatic rendering with built-in tracking"
+description: "Display recommendations as inline citations or product cards with automatic tracking"
 ---
 
 The **Citation & Product Format** uses the AdMesh UI SDK to automatically render recommendations with built-in tracking, labeling, and transparency.
 
 This is the **easiest integration** if you want AdMesh to handle all rendering and tracking automatically.
 
----
+## Quick Start
 
-## Integration Overview
+<Steps>
+  <Step title="Install the SDK">
+    ```bash
+    npm install admesh-ui-sdk
+    ```
+  </Step>
+  <Step title="Initialize the SDK">
+    ```tsx
+    import { AdMeshSDK } from 'admesh-ui-sdk';
 
-```
-1. Create Session
-   ↓
-2. Initialize SDK
-   ↓
-3. Add Container
-   ↓
-4. Fetch & Render Recommendations
-   ↓
-5. SDK Auto-Fires Exposure Pixels
-   ↓
-6. Close Session (Optional)
-```
-
----
-
-## What You Get
-
-✅ **Automatic Rendering** - SDK renders recommendations in your container
-✅ **Built-in Tracking** - Exposure pixels fire automatically
-✅ **Transparency Labels** - `[Ad]` labels included automatically
-✅ **Multiple Formats** - Citation layout, product cards, ecommerce cards
-✅ **Zero Configuration** - Works out of the box
-
----
-
-## Step 1: Create Session
-
-Each conversation or search thread starts with a **new AdMesh session**.
-A session ensures all exposures, clicks, and conversions are tied together.
-
-```typescript
-const ADMESH_BASE = "https://api.useadmesh.com";
-
-export async function createAdmeshSession() {
-  try {
-    const res = await fetch(`${ADMESH_BASE}/agent/session/new`, { method: "POST" });
-    if (!res.ok) throw new Error("Failed to create AdMesh session");
-
-    const { session_id } = await res.json();
-    localStorage.setItem("admesh_session_id", session_id);
-    console.log("✅ Session created:", session_id);
-    return session_id;
-  } catch (err) {
-    console.error("⚠️ Session creation failed:", err);
-    return `admesh_temp_${Date.now()}`;
-  }
-}
-```
+    const admesh = new AdMeshSDK({
+      apiKey: process.env.REACT_APP_ADMESH_API_KEY,
+      debug: false
+    });
+    ```
+  </Step>
+  <Step title="Add Container">
+    ```html
+    <div id="admesh-recommendations"></div>
+    ```
+  </Step>
+  <Step title="Render Recommendations">
+    ```tsx
+    // SDK handles session management automatically
+    await admesh.showRecommendations({
+      query: 'best project management tools',
+      containerId: 'admesh-recommendations',
+      format: 'citation'
+    });
+    ```
+  </Step>
+</Steps>
 
 ---
 
-## Step 2: Install and Initialize the SDK
+## Format Types
 
-### Install the SDK
+### Citation Format
+Displays LLM-generated summary with embedded product links. Perfect for AI assistants and conversational interfaces.
 
-```bash
-npm install admesh-ui-sdk
-```
-
-### Initialize the SDK
-
-```typescript
-import { AdMeshSDK } from 'admesh-ui-sdk';
-
-const admesh = new AdMeshSDK({
-  apiKey: 'your_api_key',
-  apiBaseUrl: 'https://api.useadmesh.com',
-  debug: true
+```tsx
+await admesh.showRecommendations({
+  query: 'best project management tools',
+  containerId: 'admesh-recommendations',
+  format: 'citation'
 });
 ```
 
----
-
-## Step 3: Add Container to Your HTML
-
-Add a container div where you want recommendations to appear:
-
-```html
-<div id="admesh-recommendations"></div>
+**Output:**
+```
+"Consider [HubSpot](url) for CRM needs or [Asana](url) for project management."
 ```
 
----
+### Product Format
+Displays individual product recommendation cards with details. Ideal for SaaS and software recommendations.
 
-## Step 4: Fetch and Render Recommendations
-
-Call the SDK's `showRecommendations` method to fetch and render recommendations:
-
-```typescript
-// Get the session ID
-const sessionId = localStorage.getItem("admesh_session_id") || await createAdmeshSession();
-
-// Fetch and render recommendations
+```tsx
 await admesh.showRecommendations({
-  query: 'best project management tools',
-  sessionId: sessionId,
+  query: 'best CRM software',
+  containerId: 'admesh-recommendations',
+  format: 'product'
+});
+```
+
+### Ecommerce Format
+Displays product cards optimized for ecommerce recommendations. Perfect for shopping and physical products.
+
+```tsx
+await admesh.showRecommendations({
+  query: 'laptop under 1000',
+  containerId: 'admesh-recommendations',
+  format: 'ecommerce'
+});
+```
+
+### Auto Format
+Automatically selects the best layout based on content type.
+
+```tsx
+await admesh.showRecommendations({
+  query: 'best tools',
   containerId: 'admesh-recommendations',
   format: 'auto'
 });
 ```
 
-The SDK will automatically:
-1. Fetch recommendations from AdMesh
-2. Render them in the specified container
-3. Fire exposure pixels when visible
-4. Add transparency labels
-5. Handle click tracking
-
 ---
 
-## Step 5: Close Session (Optional)
+## Session Management
 
-When the user finishes their chat or conversion flow, close the AdMesh session:
+The SDK handles session management automatically, but you can also control it manually:
 
-```typescript
-export async function closeAdmeshSession() {
-  const sessionId = localStorage.getItem("admesh_session_id");
-  if (!sessionId) return;
+```tsx
+import { AdMeshSDK } from 'admesh-ui-sdk';
 
-  try {
-    const response = await fetch("https://api.useadmesh.com/agent/session/close", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
-    });
+const admesh = new AdMeshSDK({
+  apiKey: process.env.REACT_APP_ADMESH_API_KEY
+});
 
-    if (response.ok) {
-      console.log("✅ Session closed");
-      localStorage.removeItem("admesh_session_id");
-    }
-  } catch (error) {
-    console.error("❌ Error closing session:", error);
-  }
-}
-```
+// Get current session ID (auto-created on first use)
+const sessionId = admesh.getSessionId();
 
----
+// Create a new session (e.g., for a new conversation)
+const newSessionId = admesh.createNewSession();
 
-## Supported Formats
+// Set a custom session ID
+admesh.setSessionId('custom-session-id');
 
-### Citation Layout
-Displays LLM-generated summary with embedded product links.
-
-```
-"Consider [HubSpot](url) for CRM needs or [Asana](url) for project management."
-```
-
-### Product Cards
-Displays individual product recommendation cards with details.
-
-```
-┌─────────────────────────┐
-│ HubSpot                 │
-│ CRM Platform            │
-│ Free tier available     │
-│ [Learn More]            │
-└─────────────────────────┘
-```
-
-### Ecommerce Cards
-Displays product cards optimized for ecommerce recommendations.
-
-```
-┌─────────────────────────┐
-│ Product Image           │
-│ Product Name            │
-│ $99.99                  │
-│ [View Product]          │
-└─────────────────────────┘
+// Close session when done
+admesh.closeSession();
 ```
 
 ---
@@ -188,25 +127,37 @@ Displays product cards optimized for ecommerce recommendations.
 
 ### Theme Customization
 
-```typescript
+```tsx
+import {
+  AdMeshSDK,
+  mergeTheme,
+  injectCustomTheme
+} from 'admesh-ui-sdk';
+
+// Create custom theme
+const theme = mergeTheme({
+  mode: 'dark',
+  primaryColor: '#3b82f6',
+  accentColor: '#ffffff',
+  borderRadius: '0.5rem'
+});
+
+// Inject globally
+injectCustomTheme(theme);
+
+// Initialize SDK (theme automatically applied)
 const admesh = new AdMeshSDK({
-  apiKey: 'your_api_key',
-  theme: {
-    mode: 'dark',
-    colors: {
-      primary: '#2563EB',
-      background: '#1F2937'
-    }
-  }
+  apiKey: process.env.REACT_APP_ADMESH_API_KEY
 });
 ```
 
 ### Event Handlers
 
-```typescript
+```tsx
 await admesh.showRecommendations({
   query: 'best tools',
   containerId: 'admesh-recommendations',
+  format: 'citation',
   onRecommendationClick: (recommendation) => {
     console.log('User clicked:', recommendation.title);
   },
@@ -220,14 +171,14 @@ await admesh.showRecommendations({
 
 ## Automatic Tracking
 
-The SDK automatically:
+The SDK automatically handles all tracking:
 
-1. **Fires exposure pixels** when recommendations are rendered
-2. **Tracks clicks** when users interact with recommendations
-3. **Tracks conversions** if configured
-4. **Adds transparency labels** (`[Ad]`) to all recommendations
+1. **Exposure pixels** fire when recommendations are rendered
+2. **Click tracking** fires when users interact with recommendations
+3. **Conversion tracking** if configured
+4. **Transparency labels** (`[Ad]`) are added automatically
 
-No additional code needed!
+No additional code needed! The SDK manages everything internally.
 
 ---
 
@@ -235,57 +186,82 @@ No additional code needed!
 
 Here's a complete end-to-end example in React:
 
-```typescript
-import { useEffect, useState } from 'react';
+```tsx
+import React, { useState, useEffect } from 'react';
 import { AdMeshSDK } from 'admesh-ui-sdk';
 
-export function SearchResults({ query }) {
-  const [admesh, setAdmesh] = useState(null);
+function ChatWithRecommendations() {
+  const [query, setQuery] = useState('');
+  const [admesh, setAdmesh] = useState<AdMeshSDK | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Initialize SDK once on mount
   useEffect(() => {
-    // Initialize SDK
     const sdk = new AdMeshSDK({
-      apiKey: 'your_api_key',
-      apiBaseUrl: 'https://api.useadmesh.com',
-      debug: true
+      apiKey: process.env.REACT_APP_ADMESH_API_KEY,
+      debug: false
     });
     setAdmesh(sdk);
+
+    // Cleanup: close session when component unmounts
+    return () => {
+      sdk.closeSession();
+    };
   }, []);
 
-  useEffect(() => {
-    if (!admesh || !query) return;
+  const showRecommendations = async () => {
+    if (!query.trim() || !admesh) return;
 
-    // Create session
-    const createSession = async () => {
-      try {
-        const res = await fetch('https://api.useadmesh.com/agent/session/new', {
-          method: 'POST'
-        });
-        const { session_id } = await res.json();
-        localStorage.setItem('admesh_session_id', session_id);
+    setLoading(true);
+    setError(null);
 
-        // Fetch and render recommendations
-        await admesh.showRecommendations({
-          query,
-          sessionId: session_id,
-          containerId: 'admesh-recommendations',
-          format: 'auto'
-        });
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-
-    createSession();
-  }, [admesh, query]);
+    try {
+      // SDK automatically handles session management and tracking
+      await admesh.showRecommendations({
+        query,
+        containerId: 'admesh-recommendations',
+        format: 'citation'
+      });
+    } catch (err) {
+      console.error('Failed to render recommendations:', err);
+      setError('Failed to load recommendations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div>
-      <h1>Search Results for: {query}</h1>
-      <div id="admesh-recommendations"></div>
+    <div className="chat-container">
+      <div className="chat-input">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && showRecommendations()}
+          placeholder="Ask for product recommendations..."
+          disabled={loading || !admesh}
+        />
+        <button
+          onClick={showRecommendations}
+          disabled={loading || !query.trim() || !admesh}
+        >
+          {loading ? 'Loading...' : 'Get Recommendations'}
+        </button>
+      </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+      <div id="admesh-recommendations" />
     </div>
   );
 }
+
+export default ChatWithRecommendations;
 ```
 
 ---
@@ -294,49 +270,130 @@ export function SearchResults({ query }) {
 
 ✅ **DO:**
 - Use the SDK for quick, reliable integration
-- Let the SDK handle rendering and tracking
+- Let the SDK handle rendering and tracking automatically
 - Customize theme to match your brand
-- Test with different recommendation types
-- Create a new session for each conversation
+- Test with different format types (citation, product, ecommerce)
+- Create a new session for each conversation or search thread
+- Enable debug mode during development
 
 ❌ **DON'T:**
-- Modify the SDK's tracking URLs
-- Remove or hide transparency labels
-- Render recommendations outside the SDK container
 - Manually fire exposure pixels (SDK does this automatically)
+- Modify or remove transparency labels
+- Render recommendations outside the SDK container
+- Manually manage session creation/closing (SDK handles this)
 - Reuse session IDs across different conversations
 
 ---
 
 ## Troubleshooting
 
-### Recommendations Not Showing?
+<AccordionGroup>
+  <Accordion title="Recommendations Not Showing">
+    **Common causes:**
+    - Container element not found
+    - API key not configured
+    - Invalid query
 
-1. Check that container element exists: `<div id="admesh-recommendations"></div>`
-2. Verify API key is correct
-3. Check browser console for errors
-4. Ensure query is not empty
-5. Verify session ID is being passed correctly
+    **Solutions:**
+    ```tsx
+    // Enable debug mode to see detailed logs
+    const admesh = new AdMeshSDK({
+      apiKey: process.env.REACT_APP_ADMESH_API_KEY,
+      debug: true
+    });
 
-### Tracking Not Working?
+    // Verify container exists
+    const container = document.getElementById('admesh-recommendations');
+    if (!container) {
+      console.error('Container element not found');
+    }
 
-1. Verify exposure pixels are firing (check Network tab)
-2. Ensure SDK debug mode is enabled
-3. Check that recommendations have valid tracking URLs
-4. Verify session ID is being passed correctly
-5. Check for CORS issues in browser console
+    // Check session ID
+    console.log('Session ID:', admesh.getSessionId());
+    ```
+  </Accordion>
 
-### SDK Not Loading?
+  <Accordion title="API Key Issues">
+    **Common causes:**
+    - Missing API key
+    - Invalid API key format
+    - API key not passed correctly
 
-1. Verify npm package is installed: `npm install admesh-ui-sdk`
-2. Check that API key is valid
-3. Verify API base URL is correct
-4. Check browser console for import errors
+    **Solutions:**
+    ```tsx
+    // Verify API key is set
+    const apiKey = process.env.REACT_APP_ADMESH_API_KEY;
+    if (!apiKey) {
+      console.error('REACT_APP_ADMESH_API_KEY not set');
+    }
+
+    // Check API key format
+    if (!apiKey.startsWith('admesh_')) {
+      console.error('Invalid API key format');
+    }
+
+    // Initialize with valid key
+    const admesh = new AdMeshSDK({
+      apiKey: apiKey,
+      apiBaseUrl: 'https://api.useadmesh.com'
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Tracking Not Working">
+    **Important:** The SDK handles all tracking automatically. You should NOT:
+    - Manually fire exposure pixels
+    - Modify tracking URLs
+    - Remove transparency labels
+
+    If tracking isn't working:
+    ```tsx
+    // Enable debug mode to see tracking events
+    const admesh = new AdMeshSDK({
+      apiKey: process.env.REACT_APP_ADMESH_API_KEY,
+      debug: true
+    });
+
+    // Check browser console for tracking logs
+    // Verify network requests in DevTools Network tab
+    ```
+  </Accordion>
+
+  <Accordion title="Session Management Issues">
+    **Common causes:**
+    - Session creation failed
+    - Session expired
+    - Multiple SDK instances
+
+    **Solutions:**
+    ```tsx
+    // Create single SDK instance (not multiple)
+    const admesh = new AdMeshSDK({
+      apiKey: process.env.REACT_APP_ADMESH_API_KEY
+    });
+
+    // SDK automatically creates session on first use
+    const sessionId = admesh.getSessionId();
+
+    // Create new session for new conversation
+    const newSessionId = admesh.createNewSession();
+
+    // Close session when done
+    admesh.closeSession();
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ---
 
 ## Next Steps
 
-- [Weave Ad Format](/platforms/weave-ad-format) - For custom rendering control
-- [FAQ](/platforms/faq) - Common questions and troubleshooting
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/ui-sdk/installation">
+    Complete SDK installation and setup
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/recommendations">
+    Complete API documentation
+  </Card>
+</CardGroup>
 

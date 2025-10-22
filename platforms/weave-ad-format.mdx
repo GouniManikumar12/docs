@@ -1080,6 +1080,419 @@ When the user finishes their chat or conversion flow, close the AdMesh session.
 
 ---
 
+## Session Management
+
+Unlike the **Citation & Product Format** which uses the SDK's automatic session management, the **Weave Ad Format** requires you to manually manage sessions since it's an API-based integration.
+
+This section provides comprehensive guidance on creating, storing, retrieving, and closing sessions for your Weave Ad Format integration.
+
+### Session Lifecycle
+
+A typical session lifecycle looks like this:
+
+```
+1. User starts new conversation
+   ↓
+2. Create session → Get session_id
+   ↓
+3. Store session_id (localStorage, state, etc.)
+   ↓
+4. Use session_id for all API calls (recommendations, exposure pixels)
+   ↓
+5. Retrieve session_id for subsequent requests
+   ↓
+6. Close session when conversation ends
+```
+
+### Creating and Storing Sessions
+
+#### TypeScript/JavaScript
+
+```typescript
+const ADMESH_BASE = "https://api.useadmesh.com";
+
+// Create a new session
+export async function createAndStoreSession(): Promise<string | null> {
+  try {
+    const response = await fetch(`${ADMESH_BASE}/agent/session/new`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create session: ${response.statusText}`);
+    }
+
+    const { session_id } = await response.json();
+
+    // Store in localStorage for persistence across page reloads
+    localStorage.setItem("admesh_session_id", session_id);
+    console.log("✅ Session created and stored:", session_id);
+
+    return session_id;
+  } catch (error) {
+    console.error("❌ Session creation failed:", error);
+    // Fallback: create temporary session ID
+    const tempSessionId = `admesh_temp_${Date.now()}`;
+    localStorage.setItem("admesh_session_id", tempSessionId);
+    return tempSessionId;
+  }
+}
+
+// Retrieve existing session or create new one
+export async function getOrCreateSession(): Promise<string> {
+  // Check if session already exists
+  const existingSessionId = localStorage.getItem("admesh_session_id");
+
+  if (existingSessionId) {
+    console.log("✅ Using existing session:", existingSessionId);
+    return existingSessionId;
+  }
+
+  // Create new session if none exists
+  const newSessionId = await createAndStoreSession();
+  return newSessionId || `admesh_temp_${Date.now()}`;
+}
+```
+
+#### React with Hooks
+
+```typescript
+import { useState, useCallback, useEffect } from 'react';
+
+export function useAdmeshSessionManagement() {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize session on component mount
+  useEffect(() => {
+    const initializeSession = async () => {
+      const session = await getOrCreateSession();
+      setSessionId(session);
+    };
+
+    initializeSession();
+  }, []);
+
+  // Create new session
+  const createNewSession = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("https://api.useadmesh.com/agent/session/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      const { session_id } = await response.json();
+      localStorage.setItem("admesh_session_id", session_id);
+      setSessionId(session_id);
+      console.log("✅ New session created:", session_id);
+
+      return session_id;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+      console.error("❌ Session creation failed:", message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Get or create session
+  const getOrCreateSession = useCallback(async (): Promise<string> => {
+    const existing = localStorage.getItem("admesh_session_id");
+    if (existing) {
+      setSessionId(existing);
+      return existing;
+    }
+
+    const newId = await createNewSession();
+    return newId || `admesh_temp_${Date.now()}`;
+  }, [createNewSession]);
+
+  // Close session
+  const closeSession = useCallback(async () => {
+    if (!sessionId) return false;
+
+    try {
+      const response = await fetch("https://api.useadmesh.com/agent/session/close", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId })
+      });
+
+      if (response.ok) {
+        localStorage.removeItem("admesh_session_id");
+        setSessionId(null);
+        console.log("✅ Session closed");
+        return true;
+      } else {
+        console.error("❌ Failed to close session:", response.status);
+        return false;
+      }
+    } catch (err) {
+      console.error("❌ Error closing session:", err);
+      // Still remove from storage even if API call fails
+      localStorage.removeItem("admesh_session_id");
+      setSessionId(null);
+      return false;
+    }
+  }, [sessionId]);
+
+  return {
+    sessionId,
+    loading,
+    error,
+    createNewSession,
+    getOrCreateSession,
+    closeSession
+  };
+}
+
+// Usage in component
+export function ChatComponent() {
+  const { sessionId, createNewSession, closeSession } = useAdmeshSessionManagement();
+
+  const handleNewConversation = async () => {
+    await createNewSession();
+    // Reset chat UI, etc.
+  };
+
+  const handleEndConversation = async () => {
+    await closeSession();
+    // Clean up UI, etc.
+  };
+
+  return (
+    <div>
+      <button onClick={handleNewConversation}>New Conversation</button>
+      <button onClick={handleEndConversation}>End Conversation</button>
+      {sessionId && <p>Session: {sessionId}</p>}
+    </div>
+  );
+}
+```
+
+### Best Practices for Session Management
+
+#### 1. When to Create a New Session
+
+Create a new session in these scenarios:
+
+```typescript
+// Scenario 1: User starts a new conversation
+async function startNewConversation() {
+  const sessionId = await createAndStoreSession();
+  resetChatUI();
+  return sessionId;
+}
+
+// Scenario 2: Session expires (401 error)
+async function handleSessionExpired() {
+  console.warn("⚠️ Session expired, creating new one");
+  localStorage.removeItem("admesh_session_id");
+  const newSessionId = await createAndStoreSession();
+  return newSessionId;
+}
+
+// Scenario 3: User logs out
+async function handleUserLogout() {
+  await closeSession();
+  localStorage.removeItem("admesh_session_id");
+  redirectToLogin();
+}
+
+// Scenario 4: Platform resets context
+async function handleContextReset() {
+  const oldSessionId = localStorage.getItem("admesh_session_id");
+  if (oldSessionId) {
+    await closeSession();
+  }
+  const newSessionId = await createAndStoreSession();
+  return newSessionId;
+}
+```
+
+#### 2. Retrieving and Reusing Session IDs
+
+```typescript
+// Always retrieve before making API calls
+async function makeAdmeshRequest(endpoint: string, body: any) {
+  const sessionId = localStorage.getItem("admesh_session_id");
+
+  if (!sessionId) {
+    console.warn("⚠️ No session found, creating new one");
+    const newSessionId = await createAndStoreSession();
+    return makeAdmeshRequest(endpoint, body); // Retry with new session
+  }
+
+  const response = await fetch(`https://api.useadmesh.com${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...body,
+      session_id: sessionId
+    })
+  });
+
+  // Handle 401 (session expired)
+  if (response.status === 401) {
+    console.warn("⚠️ Session expired, creating new one");
+    const newSessionId = await createAndStoreSession();
+    return makeAdmeshRequest(endpoint, body); // Retry with new session
+  }
+
+  return response;
+}
+```
+
+#### 3. Handling Session Expiration
+
+```typescript
+// Wrapper for API calls with automatic retry on 401
+async function makeAdmeshRequestWithRetry(
+  endpoint: string,
+  body: any,
+  retries = 1
+): Promise<Response> {
+  let sessionId = localStorage.getItem("admesh_session_id");
+
+  if (!sessionId) {
+    sessionId = await createAndStoreSession();
+  }
+
+  const response = await fetch(`https://api.useadmesh.com${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...body,
+      session_id: sessionId
+    })
+  });
+
+  // If session expired and we have retries left
+  if (response.status === 401 && retries > 0) {
+    console.warn("⚠️ Session expired, retrying with new session");
+    localStorage.removeItem("admesh_session_id");
+    const newSessionId = await createAndStoreSession();
+
+    // Retry the request
+    return makeAdmeshRequestWithRetry(endpoint, body, retries - 1);
+  }
+
+  return response;
+}
+```
+
+#### 4. Storage Patterns
+
+```typescript
+// Pattern 1: localStorage (browser)
+function storeSessionInLocalStorage(sessionId: string) {
+  localStorage.setItem("admesh_session_id", sessionId);
+}
+
+function getSessionFromLocalStorage(): string | null {
+  return localStorage.getItem("admesh_session_id");
+}
+
+// Pattern 2: React State (in-memory)
+const [sessionId, setSessionId] = useState<string | null>(null);
+
+// Pattern 3: Session Storage (cleared on tab close)
+function storeSessionInSessionStorage(sessionId: string) {
+  sessionStorage.setItem("admesh_session_id", sessionId);
+}
+
+// Pattern 4: IndexedDB (for larger data)
+async function storeSessionInIndexedDB(sessionId: string) {
+  const db = await openDB('admesh', 1, {
+    upgrade(db) {
+      db.createObjectStore('sessions');
+    }
+  });
+  await db.put('sessions', { id: sessionId, createdAt: Date.now() }, 'current');
+}
+
+// Pattern 5: Server-side session (Node.js)
+app.post('/api/chat', (req, res) => {
+  const sessionId = req.session.admesh_session_id || generateNewSessionId();
+  req.session.admesh_session_id = sessionId;
+  // Use sessionId for AdMesh API calls
+});
+```
+
+### Error Handling and Fallbacks
+
+```typescript
+// Comprehensive error handling
+async function createSessionWithFallback(): Promise<string> {
+  try {
+    // Try to create session
+    const response = await fetch("https://api.useadmesh.com/agent/session/new", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      timeout: 5000 // 5 second timeout
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const { session_id } = await response.json();
+
+    if (!session_id) {
+      throw new Error("No session_id in response");
+    }
+
+    localStorage.setItem("admesh_session_id", session_id);
+    return session_id;
+
+  } catch (error) {
+    console.error("❌ Session creation failed:", error);
+
+    // Fallback 1: Use temporary session ID
+    const tempSessionId = `admesh_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem("admesh_session_id", tempSessionId);
+
+    console.warn("⚠️ Using temporary session ID:", tempSessionId);
+    return tempSessionId;
+  }
+}
+
+// Handle different error types
+async function handleSessionError(error: any, sessionId: string) {
+  if (error.message.includes("401")) {
+    // Session expired
+    console.warn("⚠️ Session expired");
+    localStorage.removeItem("admesh_session_id");
+    return await createSessionWithFallback();
+  } else if (error.message.includes("timeout")) {
+    // Network timeout
+    console.warn("⚠️ Session creation timeout, using temporary ID");
+    return `admesh_temp_${Date.now()}`;
+  } else if (error.message.includes("network")) {
+    // Network error
+    console.warn("⚠️ Network error, using temporary ID");
+    return `admesh_temp_${Date.now()}`;
+  } else {
+    // Unknown error
+    console.error("❌ Unknown error:", error);
+    return sessionId; // Keep existing session
+  }
+}
+```
+
+---
+
 ## Complete Integration Example
 
 Here's a complete end-to-end example in TypeScript:

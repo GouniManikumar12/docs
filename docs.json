@@ -16,67 +16,47 @@
           {
             "group": "Getting Started",
             "pages": [
-              "introduction"            ]
+              "introduction"     
+                 ]
           },
-        
           {
             "group": "For Advertisers",
             "pages": [
               "advertisers/overview",
-              "advertisers/quickstart",
-              {
-                "group": "Campaign Management",
-                "pages": [
-                  "advertisers/create-offer",
-                  "advertisers/pricing",
-                  "advertisers/budgets-pacing",
-                  "advertisers/surge-mode",
-                  "advertisers/conversion-tracking"
-                ]
-              },
-              {
-                "group": "Reporting & Compliance",
-                "pages": [
-                  "advertisers/reports",
-                  "advertisers/billing",
-                  "advertisers/fraud-policy"
-                ]
-              }
-            ]
+              "advertisers/getting-started",
+              "advertisers/budget-performance",
+              "advertisers/best-practices"            ]
           },
           {
-            "group": "For Platforms",
+            "group": "Platforms",
             "pages": [
               "platforms/overview",
-              "platforms/choose-integration",
-              "platforms/weave-ad-format",
-              "platforms/citation-format"
-            ]
-          },
-            {
-            "group": "Core Concepts",
-            "pages": [
-              "contextual-relevance-score",
-              "cost-per-exposure"
+              "platforms/citation-format",
+              "platforms/weave-ad-format"
             ]
           },
           {
             "group": "SDKs",
             "pages": [
               {
-                "group": "React SDK",
+                "group": "React",
                 "pages": [
                   "ui-sdk/installation",
                   "ui-sdk/styling-customization"
                                 ]
+              },
+              {
+                "group": "Node/Express.js",
+                "pages": [
+                  "weave-node/installation"                ]
               }
             ]
           },
-          
           {
-            "group": "API Playground",
+            "group": "Core Concepts",
             "pages": [
-              "api-playground"
+              "contextual-relevance-score",
+              "cost-per-exposure"
             ]
           },
           {
@@ -88,8 +68,8 @@
           {
             "group": "FAQ",
             "pages": [
-              "faq/advertiser-faq",
-              "platforms/faq"
+              "platforms/faq",
+              "advertisers/faq"
             ]
           }
          

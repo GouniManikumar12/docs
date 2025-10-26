@@ -1,88 +1,44 @@
 ---
 title: "AdMesh Documentation"
-description: "Simple API for intelligent product recommendations. One endpoint, any language, copy-paste integration."
+description: "SDK-first platform for AI-native advertising. Simple integration with admesh-ui-sdk and @admesh/weave-node."
 ---
 
-Simple API for intelligent product recommendations. One endpoint, any language, copy-paste integration.
+**AdMesh** provides simple, developer-friendly SDKs for integrating intelligent product recommendations into your AI platform.
+
 Earn revenue while providing value to your users.
 
 <CardGroup cols={2}>
   <Card
-    title="Quick Start Guide"
+    title="Getting Started"
     icon="rocket"
-    href="/quickstart"
+    href="/getting-started"
   >
-    Get AdMesh recommendations in 3 simple steps
+    Learn about AdMesh and choose your SDK
   </Card>
   <Card
-    title="Get API Key"
+    title="Sign Up"
     icon="key"
     href="https://useadmesh.com"
   >
-    Sign up for free and get your API credentials
+    Create an account and get your API key
   </Card>
 </CardGroup>
 
-## Quick Example
+## Our SDKs
 
+AdMesh provides two main SDKs for easy integration:
+
+**admesh-ui-sdk** (React Frontend)
 ```bash
-# Simple API call
-curl -X POST "https://api.useadmesh.com/agent/recommend" \
-  -H "Authorization: Bearer your-api-key" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "best CRM for startups", "format": "auto"}'
+npm install admesh-ui-sdk
 ```
 
-<Accordion title="See response format">
-```json
-{
-  "session_id": "string",
-  "intent": {
-    "goal": "The user wants to find and learn about the best CRM platforms for startups.",
-    "intent_group": "informational",
-    "purchase_intent": "research",
-    "intent_type": "product_discovery",
-    "layout_type": "citation",
-    "categories": ["crm", "business_software", "saas"]
-  },
-  "response": {
-    "summary": "Here are CRM tools that match your goal: The user wants to find and learn about the best CRM platforms for startups.",
-    "recommendations": [
-      {
-        "product_id": "hubspot_crm_001",
-        "title": "HubSpot CRM",
-        "recommendation_description": "Perfect for startups with excellent free tier and comprehensive features",
-        "admesh_link": "https://api.useadmesh.com/click/r/hubspot_001?utm_product=hubspot_crm_001&utm_redirect=https%3A%2F%2Fhubspot.com",
-        "categories": ["crm", "marketing", "sales"],
-        "integrations": ["Gmail", "Outlook", "Slack", "Zapier"],
-        "trust_score": 95,
-        "reward_note": "$50.00 per signup (Free Trial - 10 max conversions)",
-        "meta": {
-          "ad_id": "hubspot_001",
-          "offer_trust_score": 95,
-          "brand_trust_score": 98,
-          "intent_match_score": 92,
-          "reason": "Perfect for startups with excellent free tier and comprehensive features",
-          "description": "All-in-one CRM platform with marketing, sales, and service tools",
-          "keywords": ["CRM", "Free", "Startup", "Marketing", "Sales"],
-          "url": "https://hubspot.com",
-          "redirect_url": "https://hubspot.com"
-        }
-      }
-    ],
-    "followup_suggestions": [
-      {
-        "label": "What features does HubSpot offer?",
-        "query": "HubSpot CRM key features and benefits"
-      }
-    ],
-    "layout_type": "citation"
-  },
-  "tokens_used": 500,
-  "model_used": "openai/gpt-4o"
-}
+**@admesh/weave-node** (Node/Express.js Backend)
+```bash
+npm install @admesh/weave-node
 ```
-</Accordion>
+
+Both SDKs handle all the complexity: session management, recommendation fetching, rendering, tracking, and transparency labels.
 
 ## Why Choose AdMesh
 
@@ -94,10 +50,10 @@ curl -X POST "https://api.useadmesh.com/agent/recommend" \
     Transform every chat, search, and user interaction into a new revenue stream powered by intelligent, context-aware recommendations.
   </Card>
   <Card
-    title="Seamless Integration"
-    icon="bolt"
+    title="SDK-First Integration"
+    icon="code"
   >
-    Activate AdMesh with a single API call and start generating value instantly. No complex setup, just simple, scalable monetization for any platform.
+    Simple, developer-friendly SDKs for React and Node.js. Copy-paste integration with zero complexity. No REST API calls needed.
   </Card>
   <Card
     title="Performance You Can Trust"
@@ -110,14 +66,17 @@ curl -X POST "https://api.useadmesh.com/agent/recommend" \
 ## How It Works
 
 <Steps>
-  <Step title="Get API Key">
-    Sign up for free at useadmesh.com
+  <Step title="Sign Up">
+    Create an account at useadmesh.com and get your API key
   </Step>
-  <Step title="Make API Call">
-    Send user queries to get recommendations
+  <Step title="Install SDK">
+    Install admesh-ui-sdk (React) or @admesh/weave-node (Node.js)
   </Step>
-  <Step title="Display Results">
-    Show recommendations in your app
+  <Step title="Integrate">
+    Copy-paste code examples from the SDK documentation
+  </Step>
+  <Step title="Start Earning">
+    Monitor your earnings in the dashboard
   </Step>
 </Steps>
 
@@ -125,17 +84,31 @@ curl -X POST "https://api.useadmesh.com/agent/recommend" \
 
 <CardGroup cols={2}>
   <Card
-    title="API Reference"
-    icon="book"
-    href="/api/recommendations"
-  >
-    Complete endpoint documentation
-  </Card>
-  <Card
-    title="UI Components"
-    icon="palette"
+    title="Frontend SDK"
+    icon="react"
     href="/ui-sdk/installation"
   >
-    React components for frontend
+    admesh-ui-sdk for React applications
+  </Card>
+  <Card
+    title="Backend SDK"
+    icon="server"
+    href="/integration-guides/backend-integration"
+  >
+    @admesh/weave-node for Node.js/Express.js
+  </Card>
+  <Card
+    title="Platforms"
+    icon="layers"
+    href="/platforms/overview"
+  >
+    Integration approaches and ad formats
+  </Card>
+  <Card
+    title="SDKs"
+    icon="book"
+    href="/SDKs"
+  >
+    Complete SDK reference documentation
   </Card>
 </CardGroup>

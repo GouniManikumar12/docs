@@ -1,58 +1,38 @@
 ---
 title: "Styling & Customization"
-description: "Learn how to customize AdMesh UI components with the platform-agnostic styling system and theming API"
+description: "Customize AdMesh UI components with built-in styling isolation and theming options."
 ---
 
 ## Overview
 
-The AdMesh UI SDK includes a comprehensive platform-agnostic styling system that ensures consistent rendering across all platforms (Perplexica, custom React apps, Next.js, etc.) without being affected by host platform CSS frameworks like Tailwind, Bootstrap, Material-UI, or Chakra UI.
+The AdMesh UI SDK includes a simple, framework-agnostic styling system. It ensures your components look clean and consistent—no matter where they’re embedded (Next.js, React, Vite, or platforms like Perplexica).
 
-## Key Features
+## Key Highlights
 
 <CardGroup cols={2}>
   <Card title="Style Isolation" icon="shield">
-    CSS reset and scoped styles prevent host platform CSS interference
+    Prevents CSS conflicts with host frameworks like Tailwind or Bootstrap.
   </Card>
-  <Card title="Consistent Rendering" icon="check">
-    Components look identical across all platforms by default
+  <Card title="Consistent Look" icon="layout">
+    Same visual quality across all environments.
   </Card>
-  <Card title="Customization Support" icon="palette">
-    Optional theming API for controlled customization
+  <Card title="Custom Themes" icon="palette">
+    Easily adjust colors, borders, and typography.
   </Card>
-  <Card title="Framework Agnostic" icon="code">
-    Works with Tailwind, Bootstrap, Material-UI, Chakra UI, and more
+  <Card title="Light & Dark Modes" icon="sun">
+    Built-in theme switching with simple configuration.
   </Card>
 </CardGroup>
 
-## How Style Isolation Works
-
-The styling system uses three layers of isolation:
-
-1. **CSS Reset** - Normalizes all styles within `.admesh-component` boundary
-2. **Scoped Styles** - All AdMesh components use `.admesh-component` class prefix
-3. **CSS-in-JS** - Styles are injected dynamically and isolated from global CSS
-
-```tsx
-// All AdMesh components automatically use the .admesh-component class
-<div className="admesh-component">
-  {/* Component content is isolated from host platform CSS */}
-</div>
-```
-
 ## Quick Start
 
-### Default Usage (No Configuration)
-
-Components work out-of-the-box with default styling:
+By default, the SDK injects its own scoped styles automatically. No CSS import is needed.
 
 ```tsx
 import { AdMeshSDK } from 'admesh-ui-sdk';
 
-const admesh = new AdMeshSDK({
-  apiKey: process.env.REACT_APP_ADMESH_API_KEY
-});
+const admesh = new AdMeshSDK({ apiKey: process.env.REACT_APP_ADMESH_API_KEY });
 
-// Render with default styling
 await admesh.showRecommendations({
   query: 'best CRM software',
   containerId: 'admesh-recommendations',
@@ -60,16 +40,13 @@ await admesh.showRecommendations({
 });
 ```
 
-### With Custom Theme
+## Custom Theming
+
+You can modify the appearance globally with the theming API.
 
 ```tsx
-import {
-  AdMeshSDK,
-  mergeTheme,
-  injectCustomTheme
-} from 'admesh-ui-sdk';
+import { AdMeshSDK, mergeTheme, injectCustomTheme } from 'admesh-ui-sdk';
 
-// Create custom theme
 const theme = mergeTheme({
   mode: 'dark',
   primaryColor: '#3b82f6',
@@ -77,15 +54,10 @@ const theme = mergeTheme({
   borderRadius: '0.5rem'
 });
 
-// Inject globally (do this once at app startup)
 injectCustomTheme(theme);
 
-// Initialize SDK
-const admesh = new AdMeshSDK({
-  apiKey: process.env.REACT_APP_ADMESH_API_KEY
-});
+const admesh = new AdMeshSDK({ apiKey: process.env.REACT_APP_ADMESH_API_KEY });
 
-// Render with theme (automatically applied)
 await admesh.showRecommendations({
   query: 'best CRM software',
   containerId: 'admesh-recommendations',
@@ -93,262 +65,98 @@ await admesh.showRecommendations({
 });
 ```
 
-## Theming API
+## Theming Functions
 
-### mergeTheme()
-
-Merges user theme configuration with default theme:
-
-```tsx
-import { mergeTheme } from 'admesh-ui-sdk';
-
-// Light theme (default)
-const lightTheme = mergeTheme();
-
-// Dark theme
-const darkTheme = mergeTheme({ mode: 'dark' });
-
-// Custom theme
-const customTheme = mergeTheme({
-  mode: 'light',
-  primaryColor: '#6366f1',
-  accentColor: '#000000',
-  backgroundColor: '#ffffff',
-  textColor: '#111827',
-  borderColor: '#e5e7eb',
-  borderRadius: '0.75rem'
-});
-```
-
-### injectCustomTheme()
-
-Injects custom theme CSS into the document:
-
-```tsx
-import { injectCustomTheme, mergeTheme } from 'admesh-ui-sdk';
-
-const theme = mergeTheme({ mode: 'dark' });
-injectCustomTheme(theme); // Inject globally
-```
-
-### Available Theme Functions
-
-| Function | Purpose |
-|----------|---------|
-| `mergeTheme(config?)` | Merge user config with defaults |
-| `injectCustomTheme(theme)` | Inject theme CSS globally |
-| `generateThemeVariables(theme)` | Generate CSS custom properties |
-| `getCurrentThemeMode(mode?)` | Get current theme mode |
-| `createThemeProvider(config?)` | Create theme provider for state management |
-| `detectCSSFramework()` | Detect host platform CSS frameworks |
-| `injectAdMeshStyles()` | Inject AdMesh CSS reset and core styles |
-| `areAdMeshStylesInjected()` | Check if styles are injected |
+| Function | Description |
+|-----------|-------------|
+| `mergeTheme(config?)` | Merge custom settings with default theme |
+| `injectCustomTheme(theme)` | Apply theme globally |
+| `generateThemeVariables(theme)` | Convert theme to CSS variables |
+| `createThemeProvider()` | Manage theme state dynamically |
 
 ## CSS Variables
 
-Customize AdMesh components using CSS variables:
+You can override AdMesh default styling with standard CSS variables.
 
 ```css
 :root {
-  /* Colors */
-  --admesh-primary-color: #007bff;
-  --admesh-secondary-color: #6c757d;
-  --admesh-success-color: #28a745;
-  
-  /* Background colors */
-  --admesh-bg-primary: #ffffff;
-  --admesh-bg-secondary: #f8f9fa;
-  
-  /* Text colors */
-  --admesh-text-primary: #212529;
-  --admesh-text-secondary: #6c757d;
-  
-  /* Spacing */
-  --admesh-spacing-md: 16px;
-  --admesh-spacing-lg: 24px;
-  
-  /* Border radius */
-  --admesh-border-radius-md: 8px;
-  
-  /* Shadows */
-  --admesh-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
-  /* Typography */
-  --admesh-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --admesh-font-size-md: 1rem;
+  --admesh-primary-color: #3b82f6;
+  --admesh-border-radius: 10px;
+  --admesh-font-family: 'Inter', sans-serif;
+  --admesh-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 ```
 
-## Theme Presets
+## Example Themes
 
 <AccordionGroup>
   <Accordion title="Dark Theme">
-
-```tsx
-import { mergeTheme, injectCustomTheme } from 'admesh-ui-sdk';
-
-const darkTheme = mergeTheme({
-  mode: 'dark',
-  primaryColor: '#0d6efd',
-  backgroundColor: '#1a1a1a',
-  textColor: '#ffffff'
-});
-
-injectCustomTheme(darkTheme);
-```
-
+  ```tsx
+  const theme = mergeTheme({ mode: 'dark', primaryColor: '#0ea5e9' });
+  injectCustomTheme(theme);
+  ```
   </Accordion>
 
-  <Accordion title="Brand Colors">
-
-```tsx
-const brandTheme = mergeTheme({
-  primaryColor: '#6366f1',      // Indigo
-  accentColor: '#8b5cf6',       // Purple
-  backgroundColor: '#fefefe',
-  borderRadius: '0.75rem'
-});
-
-injectCustomTheme(brandTheme);
-```
-
+  <Accordion title="Brand Theme">
+  ```tsx
+  const theme = mergeTheme({
+    primaryColor: '#6366f1',
+    accentColor: '#8b5cf6',
+    borderRadius: '0.75rem'
+  });
+  injectCustomTheme(theme);
+  ```
   </Accordion>
 
   <Accordion title="Minimal Theme">
-
-```tsx
-const minimalTheme = mergeTheme({
-  primaryColor: '#000000',
-  backgroundColor: '#ffffff',
-  borderRadius: '0px'
-});
-
-injectCustomTheme(minimalTheme);
-```
-
+  ```tsx
+  const theme = mergeTheme({
+    primaryColor: '#000',
+    backgroundColor: '#fff',
+    borderRadius: '0px'
+  });
+  injectCustomTheme(theme);
+  ```
   </Accordion>
 </AccordionGroup>
 
-## Platform-Specific Integration
+## Integration Tips
 
-### Next.js with Tailwind
+### Next.js + Tailwind
+
+AdMesh styles are isolated from Tailwind classes, so you can safely use both.
 
 ```tsx
 import { AdMeshSDK, mergeTheme, injectCustomTheme } from 'admesh-ui-sdk';
-import { useEffect } from 'react';
 
-export const RecommendationsComponent = () => {
-  useEffect(() => {
-    // Inject theme once at app startup
-    const theme = mergeTheme({ mode: 'dark' });
-    injectCustomTheme(theme);
-  }, []);
+export default function Recommendations() {
+  const theme = mergeTheme({ mode: 'light' });
+  injectCustomTheme(theme);
 
-  const admesh = new AdMeshSDK({
-    apiKey: process.env.NEXT_PUBLIC_ADMESH_API_KEY
-  });
+  const admesh = new AdMeshSDK({ apiKey: process.env.NEXT_PUBLIC_ADMESH_API_KEY });
 
-  return (
-    <div className="bg-white p-4">
-      {/* Tailwind styles won't affect AdMesh */}
-      <div id="admesh-recommendations" />
-    </div>
-  );
-};
+  return <div id="admesh-recommendations" className="p-4 bg-white rounded-lg" />;
+}
 ```
 
-### Custom React App with Bootstrap
+### React + Bootstrap
 
 ```tsx
-import { AdMeshSDK, mergeTheme, injectCustomTheme, detectCSSFramework } from 'admesh-ui-sdk';
-import { useEffect } from 'react';
+import { AdMeshSDK, mergeTheme, injectCustomTheme } from 'admesh-ui-sdk';
 
-export const BootstrapApp = () => {
-  useEffect(() => {
-    // Detect Bootstrap and apply appropriate theme
-    const frameworks = detectCSSFramework();
-    const theme = mergeTheme({
-      mode: frameworks.includes('bootstrap') ? 'light' : 'dark'
-    });
-    injectCustomTheme(theme);
-  }, []);
+export default function App() {
+  const theme = mergeTheme({ mode: 'light' });
+  injectCustomTheme(theme);
 
-  const admesh = new AdMeshSDK({
-    apiKey: process.env.REACT_APP_ADMESH_API_KEY
-  });
+  const admesh = new AdMeshSDK({ apiKey: process.env.REACT_APP_ADMESH_API_KEY });
 
-  return (
-    <div className="container">
-      <div id="admesh-recommendations" />
-    </div>
-  );
-};
-```
-
-## Advanced Customization
-
-### Runtime Theme Switching
-
-```tsx
-import { createThemeProvider } from 'admesh-ui-sdk';
-import { useState } from 'react';
-
-const provider = createThemeProvider({ mode: 'light' });
-
-export const ThemeSwitcher = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  const toggleTheme = () => {
-    const newMode = isDark ? 'light' : 'dark';
-    provider.updateTheme({ mode: newMode });
-    setIsDark(!isDark);
-  };
-
-  return (
-    <button onClick={toggleTheme}>
-      Toggle {isDark ? 'Light' : 'Dark'} Mode
-    </button>
-  );
-};
-```
-
-### Custom CSS Overrides
-
-```css
-/* Override SDK styles */
-.admesh-component {
-  --admesh-primary: #6366f1;
-  --admesh-accent: #ffffff;
-  --admesh-background: #1a1a1a;
-  --admesh-text: #ffffff;
-  --admesh-radius: 0.75rem;
-}
-
-.admesh-component .admesh-card {
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
-}
-
-.admesh-component .admesh-card:hover {
-  transform: translateY(-4px);
+  return <div className="container"><div id="admesh-recommendations" /></div>;
 }
 ```
 
-## Key Takeaways
+## Quick Summary
 
-✅ **Style Isolation** - AdMesh components are protected from host platform CSS  
-✅ **Zero Configuration** - Works out-of-the-box with default styling  
-✅ **Flexible Customization** - Use theming API, CSS variables, or custom CSS  
-✅ **Framework Agnostic** - Works with any CSS framework  
-✅ **Consistent Rendering** - Same appearance across all platforms  
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Installation" icon="download" href="/ui-sdk/installation">
-    Get started with the SDK
-  </Card>
-  <Card title="API Reference" icon="book" href="/api/recommendations">
-    Complete API documentation
-  </Card>
-</CardGroup>
-
+✅ No CSS conflicts — AdMesh styles are fully scoped  
+✅ No extra imports — Styles load automatically  
+✅ Easy customization — Use theme API or CSS variables  
+✅ Works everywhere — Compatible with any frontend framework  

@@ -1,54 +1,63 @@
 ---
 title: "Introduction"
-description: "AdMesh - The AI-Native Ad Network built on top of the AdMesh Protocol"
+description: "Start integrating AdMesh SDKs into your application in minutes"
 ---
 
 ## Welcome to AdMesh
 
-**AdMesh** is the first **AI-native ad network** built on top of the **AdMesh Protocol**, a new infrastructure that connects AI chatbots, assistants, and search platforms with verified product recommendations in real time.
+**AdMesh** is the first **AI-native ad network** built on the **AdMesh Protocol**, a new infrastructure that connects AI chatbots, assistants, and search platforms with verified product recommendations in real time.
 
-It enables platforms to **monetize user intent** and helps advertisers **reach decision-ready audiences** through conversational placements while maintaining privacy, transparency, and contextual integrity.
+It enables developers and platforms to **monetize user intent** while helping advertisers **reach decision-ready audiences** through conversational placements — with privacy, transparency, and contextual accuracy at the core.
 
 ---
 
-## What Is AdMesh?
+## SDK-First Integration
 
-AdMesh bridges the gap between **AI platforms** and **advertisers** using intent-driven recommendations instead of traditional display ads.
+AdMesh provides **SDKs** that handle session management, caching, attribution, rendering, and transparency — so you can focus on building great experiences.
 
-When a user asks something like "best payment gateways for startups" or "tools for creating pitch decks", AdMesh identifies the **intent**, retrieves **relevant offers**, and returns structured recommendations for the platform to display naturally inside its responses.
+### Two Main SDKs
+
+**1. `admesh-ui-sdk` (React Frontend)**  
+- Zero-code integration for displaying recommendations  
+- Handles rendering, tracking, and transparency labels  
+- Supports multiple layouts: citation, product cards, and weave mode  
+- Works with any React application  
+
+**2. `@admesh/weave-node` (Node.js / Express Backend)**  
+- Optional backend SDK for weaving recommendations into LLM responses  
+- Includes database caching for instant retrieval  
+- Simplifies backend integration for Node.js environments  
 
 ---
 
 ## Why AdMesh Exists
 
-Traditional ad systems (CPM/CPC) weren't designed for AI.
-They rely on banners, cookies, and visual inventory, not real-time conversations or language models.
+Traditional ad systems (CPM/CPC) were never designed for AI.  
+They rely on banners, cookies, and page views — not real-time conversations or generative responses.
 
-AdMesh introduces a **three-tier performance model** suited for the conversational web:
+AdMesh introduces a **three-tier performance model** built for the conversational web:
 
 | Tier | Trigger | What It Measures |
 |------|----------|------------------|
 | **CPX** | Verified exposure | Visibility and reach |
-| **CPC** | User click | Engagement and interest |
+| **CPC** | User click | Engagement and intent |
 | **CPA** | Conversion | Proven performance |
 
-Every campaign automatically tracks all three, giving brands accuracy and platforms predictable revenue.
+Every campaign automatically tracks all three, giving brands better accuracy and platforms predictable revenue.
 
 ---
 
 ## Who Uses AdMesh
 
 ### AI Platforms & Agents
-- Chatbots, LLM assistants, browser extensions
-- AI-powered search engines and research tools
-- Agentic workspaces and automation systems
+- Chatbots, LLM assistants, and browser extensions  
+- AI-powered search engines and research tools  
+- Agentic workspaces and automation systems  
 
 ### Advertisers & Brands
-- SaaS, fintech, and e-commerce companies
-- Affiliate and CPA networks
-- Marketplaces promoting verified digital products
-
-> AdMesh turns AI user intent into measurable, brand-safe ad inventory.
+- SaaS, fintech, and e-commerce companies  
+- Affiliate and CPA networks  
+- Marketplaces promoting verified digital products  
 
 ---
 
@@ -64,15 +73,15 @@ Every campaign automatically tracks all three, giving brands accuracy and platfo
   </Card>
 
   <Card title="Privacy-Safe Tracking" icon="shield">
-    Uses server-side attribution via the AdMesh Protocol. No cookies, no pixels.
+    Tracks exposure and conversions using server-side attribution — no third-party cookies, fully privacy-compliant.
   </Card>
 
   <Card title="Transparent Revenue Model" icon="dollar-sign">
     CPX, CPC, and CPA layers ensure fair payouts for every engagement level.
   </Card>
 
-  <Card title="Flexible Integration" icon="code">
-    Simple REST API for AI platforms, chat systems, or agents.
+  <Card title="SDK Integration" icon="code">
+    Simple SDKs for React and Node.js — copy, paste, and start earning.
   </Card>
 
   <Card title="Brand Safety" icon="check-circle">
@@ -82,27 +91,12 @@ Every campaign automatically tracks all three, giving brands accuracy and platfo
 
 ---
 
-## Why It's Different
-
-| Legacy Ad Networks | AdMesh (AI-Native Ad Network) |
-|--------------------|-------------------------------|
-| Generic impressions | Intent-based, contextual placements |
-| Cookie tracking | Server-side, privacy-safe attribution |
-| Banner ads | Inline product recommendations |
-| CPM billing | Transparent CPX + CPC + CPA model |
-| Platform as publisher | Platform as intelligent monetizer |
-
-> AdMesh makes monetization invisible. Recommendations feel like genuine help, not ads.
-
----
-
 ## How It Works
 
-```
-
+```text
 User Query
 ↓
-AdMesh API (Intent Detection + Offer Matching)
+AdMesh SDK (Intent Detection + Offer Matching)
 ↓
 Structured Recommendations
 ↓
@@ -111,19 +105,80 @@ Displayed Inline in the AI Response
 Exposure → Click → Conversion
 ↓
 Revenue Shared with Platform
-
 ```
 
 ---
 
-## Quick Links
+## Quick Start
 
-- **Website:** [useadmesh.com](https://useadmesh.com)
-- **Dashboard:** [dashboard.useadmesh.com](https://dashboard.useadmesh.com)
-- **Support:** [mani@useadmesh.com](mailto:mani@useadmesh.com)
-- **Live Demo:** [tryadplex.com](https://tryadplex.com)
+Choose your integration path:
+
+<CardGroup cols={2}>
+  <Card
+    title="Frontend Integration"
+    icon="react"
+    href="/ui-sdk/installation"
+  >
+    Use `admesh-ui-sdk` to display recommendations in React.
+  </Card>
+
+  <Card
+    title="Backend Integration"
+    icon="server"
+    href="/integration-guides/backend-integration"
+  >
+    Use `@admesh/weave-node` for Node.js and Express.
+  </Card>
+
+  <Card
+    title="Platforms Overview"
+    icon="layers"
+    href="/platforms/overview"
+  >
+    Learn about supported formats and integration approaches.
+  </Card>
+
+  <Card
+    title="SDK Reference"
+    icon="book"
+    href="/SDKs"
+  >
+    Explore the full SDK documentation.
+  </Card>
+</CardGroup>
 
 ---
 
-> **AdMesh is the AI-native ad network built on top of the AdMesh Protocol, transforming user intent into monetized recommendations for the conversational internet.**
+## Why It's Different
 
+| Legacy Ad Networks | AdMesh (AI-Native) |
+|--------------------|--------------------|
+| Generic impressions | Intent-based, contextual placements |
+| Cookie tracking | Server-side, privacy-safe attribution |
+| Banner ads | Inline product recommendations |
+| CPM billing | Transparent CPX + CPC + CPA model |
+| Platform as publisher | Platform as monetizer |
+| Complex API setup | Simple SDK integration |
+
+---
+
+## Next Steps
+
+1. **Choose your SDK** — Frontend (React) or Backend (Node.js)  
+2. **Install** — Follow the quick installation guide  
+3. **Get your API key** — Sign up at [useadmesh.com](https://useadmesh.com)  
+4. **Integrate** — Copy-paste the code examples  
+5. **Start earning** — Track your results in the AdMesh dashboard  
+
+---
+
+## Resources
+
+- **Website:** [useadmesh.com](https://useadmesh.com)  
+- **Dashboard:** [dashboard.useadmesh.com](https://dashboard.useadmesh.com)  
+- **Support:** [mani@useadmesh.com](mailto:mani@useadmesh.com)  
+- **Live Demo:** [tryadplex.com](https://tryadplex.com)  
+
+---
+
+> **AdMesh is the AI-native ad network built on the AdMesh Protocol — transforming user intent into monetized recommendations for the conversational internet, powered by developer-friendly SDKs.**

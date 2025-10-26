@@ -1,1544 +1,189 @@
 ---
 title: "Weave Ad Format"
-description: "Complete end-to-end guide for integrating AdMesh recommendations into your AI or LLM responses"
+description: "Integrate AdMesh recommendations into LLM responses using admesh-weave-node"
 ---
 
-The **Weave Ad Format** is an API-based integration that gives you full control over how and where AdMesh recommendations appear in your AI-generated responses.
+## Overview
 
-This guide walks you through the complete integration flow: creating sessions, fetching recommendations, formatting for your LLM, firing exposure pixels, and closing sessions.
+The **Weave Ad Format** enables you to weave AdMesh recommendations directly into your LLM generated responses. Using `@admesh/weave-node`, you get:
 
----
+- **Fast retrieval** - efficiently retrieves recommendations with low latency
+- **Simple integration** - clean API with minimal configuration
+- **Full control** - format recommendations exactly how you want
+- **LLM integration** - pass recommendations to your LLM for natural weaving
+- **Graceful fallback** - works seamlessly even if recommendations are not available
 
-## Integration Overview
+**Setup time:** 15 to 30 minutes | **Code complexity:** Simple
 
-```
-1. Create Session
-   ↓
-2. Get Recommendations
-   ↓
-3. Format for LLM
-   ↓
-4. LLM Generates Response with [Product](link)[Ad]
-   ↓
-5. Fire Exposure Pixels
-   ↓
-6. Close Session (Optional)
-```
+## When to Use Weave Ad Format
+
+Use Weave Ad Format if you want to:
+- Weave recommendations into LLM generated responses
+- Have full control over recommendation formatting
+- Build custom conversational ad experiences
+- Integrate recommendations into your backend LLM pipeline
 
 ---
 
-## Step 1: Create Session
+## Installation
 
-Each conversation or search thread starts with a **new AdMesh session**.
-A session ensures all exposures, clicks, and conversions are tied together.
-
-### When to Create
-
-- When a user starts a new chat or query
-- When a previous session expires (401)
-- When the platform resets its context
-
-<Tabs>
-  <Tab title="TypeScript/JavaScript">
-    ```typescript
-    const ADMESH_BASE = "https://api.useadmesh.com";
-
-    export async function createAdmeshSession() {
-      try {
-        const res = await fetch(`${ADMESH_BASE}/agent/session/new`, { method: "POST" });
-        if (!res.ok) throw new Error("Failed to create AdMesh session");
-
-        const { session_id } = await res.json();
-        localStorage.setItem("admesh_session_id", session_id);
-        console.log("✅ Session created:", session_id);
-        return session_id;
-      } catch (err) {
-        console.error("⚠️ Session creation failed:", err);
-        return `admesh_temp_${Date.now()}`;
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React">
-    ```typescript
-    import { useState, useCallback } from 'react';
-
-    export function useAdmeshSession() {
-      const [sessionId, setSessionId] = useState<string | null>(null);
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState<string | null>(null);
-
-      const createSession = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const res = await fetch("https://api.useadmesh.com/agent/session/new", {
-            method: "POST",
-          });
-          if (!res.ok) throw new Error("Failed to create session");
-
-          const { session_id } = await res.json();
-          setSessionId(session_id);
-          localStorage.setItem("admesh_session_id", session_id);
-          console.log("✅ Session created:", session_id);
-          return session_id;
-        } catch (err) {
-          const message = err instanceof Error ? err.message : "Unknown error";
-          setError(message);
-          console.error("⚠️ Session creation failed:", message);
-          return null;
-        } finally {
-          setLoading(false);
-        }
-      }, []);
-
-      return { sessionId, loading, error, createSession };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Android (Kotlin)">
-    ```kotlin
-    import kotlinx.coroutines.*
-    import java.net.URL
-    import java.net.HttpURLConnection
-
-    class AdmeshSessionManager {
-        companion object {
-            private const val ADMESH_BASE = "https://api.useadmesh.com"
-        }
-
-        suspend fun createSession(): String? = withContext(Dispatchers.IO) {
-            try {
-                val url = URL("$ADMESH_BASE/agent/session/new")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = connection.inputStream.bufferedReader().readText()
-                    val sessionId = extractSessionId(response)
-                    android.util.Log.d("AdMesh", "✅ Session created: $sessionId")
-                    sessionId
-                } else {
-                    android.util.Log.e("AdMesh", "⚠️ Failed to create session: ${connection.responseCode}")
-                    null
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("AdMesh", "⚠️ Session creation failed: ${e.message}")
-                null
-            }
-        }
-
-        private fun extractSessionId(json: String): String {
-            val regex = """"session_id"\s*:\s*"([^"]+)"""".toRegex()
-            return regex.find(json)?.groupValues?.get(1) ?: ""
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Flutter (Dart)">
-    ```dart
-    import 'package:http/http.dart' as http;
-    import 'dart:convert';
-
-    class AdmeshSessionManager {
-      static const String admeshBase = 'https://api.useadmesh.com';
-
-      static Future<String?> createSession() async {
-        try {
-          final response = await http.post(
-            Uri.parse('$admeshBase/agent/session/new'),
-            headers: {'Content-Type': 'application/json'},
-          );
-
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            final sessionId = data['session_id'] as String;
-            print('✅ Session created: $sessionId');
-            return sessionId;
-          } else {
-            print('⚠️ Failed to create session: ${response.statusCode}');
-            return null;
-          }
-        } catch (e) {
-          print('⚠️ Session creation failed: $e');
-          return null;
-        }
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Swift/iOS">
-    ```swift
-    import Foundation
-
-    class AdmeshSessionManager {
-        static let admeshBase = "https://api.useadmesh.com"
-
-        static func createSession(completion: @escaping (String?) -> Void) {
-            let url = URL(string: "\(admeshBase)/agent/session/new")!
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {
-                    print("⚠️ Session creation failed: \(error?.localizedDescription ?? "Unknown error")")
-                    completion(nil)
-                    return
-                }
-
-                do {
-                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let sessionId = json["session_id"] as? String {
-                        print("✅ Session created: \(sessionId)")
-                        completion(sessionId)
-                    } else {
-                        completion(nil)
-                    }
-                } catch {
-                    print("⚠️ Failed to parse response: \(error)")
-                    completion(nil)
-                }
-            }.resume()
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React Native">
-    ```typescript
-    import AsyncStorage from '@react-native-async-storage/async-storage';
-
-    export async function createAdmeshSession(): Promise<string | null> {
-      try {
-        const response = await fetch('https://api.useadmesh.com/agent/session/new', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const sessionId = data.session_id;
-
-        await AsyncStorage.setItem('admesh_session_id', sessionId);
-        console.log('✅ Session created:', sessionId);
-        return sessionId;
-      } catch (error) {
-        console.error('⚠️ Session creation failed:', error);
-        return null;
-      }
-    }
-    ```
-  </Tab>
-</Tabs>
-
-### Response Format
-
-```json
-{
-  "session_id": "admesh_sess_1760022990_w8RkKA",
-  "created_at": "2024-10-20T10:30:00Z",
-  "expires_at": "2024-10-20T11:30:00Z"
-}
+```bash
+npm install @admesh/weave-node
 ```
 
 ---
 
-## Step 2: Get Recommendations
+## Quick Start
 
-Once you have a valid session, call the `/agent/recommend` endpoint to fetch recommendations for the user's query.
-
-<Tabs>
-  <Tab title="TypeScript/JavaScript">
-    ```typescript
-    export async function getAdmeshRecommendations(query: string) {
-      const ADMESH_BASE = "https://api.useadmesh.com";
-      const sessionId = localStorage.getItem("admesh_session_id");
-      if (!sessionId) throw new Error("No active session");
-
-      const res = await fetch(`${ADMESH_BASE}/agent/recommend`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.REACT_APP_ADMESH_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query, session_id: sessionId, format: "auto" }),
-      });
-
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    }
-    ```
-  </Tab>
-
-  <Tab title="React">
-    ```typescript
-    import { useState, useCallback } from 'react';
-
-    export function useAdmeshRecommendations() {
-      const [recommendations, setRecommendations] = useState(null);
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState<string | null>(null);
-
-      const fetchRecommendations = useCallback(async (query: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-          const sessionId = localStorage.getItem("admesh_session_id");
-          if (!sessionId) throw new Error("No active session");
-
-          const res = await fetch("https://api.useadmesh.com/agent/recommend", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${process.env.REACT_APP_ADMESH_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ query, session_id: sessionId, format: "auto" }),
-          });
-
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-          const data = await res.json();
-          setRecommendations(data);
-          return data;
-        } catch (err) {
-          const message = err instanceof Error ? err.message : "Unknown error";
-          setError(message);
-          console.error("⚠️ Failed to fetch recommendations:", message);
-          return null;
-        } finally {
-          setLoading(false);
-        }
-      }, []);
-
-      return { recommendations, loading, error, fetchRecommendations };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Android (Kotlin)">
-    ```kotlin
-    class RecommendationFormatter {
-        fun formatForLLM(recommendations: List<Map<String, String>>, userQuery: String): String {
-            val formattedRecs = recommendations
-                .map { rec -> "- ${rec["title"]}: ${rec["click_url"]}" }
-                .joinToString("\n")
-
-            return """
-$userQuery
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-$formattedRecs
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-            """.trimIndent()
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Flutter (Dart)">
-    ```dart
-    class RecommendationFormatter {
-      static String formatForLLM(
-        List<Map<String, dynamic>> recommendations,
-        String userQuery,
-      ) {
-        final formattedRecs = recommendations
-            .map((rec) => '- ${rec['title']}: ${rec['click_url']}')
-            .join('\n');
-
-        return '''
-$userQuery
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-$formattedRecs
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-        ''';
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Swift/iOS">
-    ```swift
-    class RecommendationFormatter {
-        static func formatForLLM(
-            recommendations: [[String: Any]],
-            userQuery: String
-        ) -> String {
-            let formattedRecs = recommendations
-                .compactMap { rec -> String? in
-                    guard let title = rec["title"] as? String,
-                          let url = rec["click_url"] as? String else {
-                        return nil
-                    }
-                    return "- \(title): \(url)"
-                }
-                .joined(separator: "\n")
-
-            return """
-\(userQuery)
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-\(formattedRecs)
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-            """
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React Native">
-    ```typescript
-    export function formatRecommendationsForLLM(
-      recommendations: any[],
-      userQuery: string
-    ): string {
-      const formattedRecs = recommendations
-        .map((rec) => `- ${rec.title}: ${rec.click_url}`)
-        .join('\n');
-
-      return `
-${userQuery}
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-${formattedRecs}
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-`;
-    }
-    ```
-  </Tab>
-</Tabs>
-
-### Example Response
-
-```json
-{
-  "session_id": "admesh_sess_1760022990_w8RkKA",
-  "placements": [
-    {
-      "id": "plc_01",
-      "title": "Notion for Teams",
-      "reason": "Recommended for collaboration",
-      "ad_id": "ad_7a2b",
-      "click_url": "https://api.useadmesh.com/click/r/ad_7a2b?...",
-      "exposure_url": "https://api.useadmesh.com/expose/ad_7a2b?..."
-    }
-  ]
-}
-```
-
-### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | Yes | User's search or chat query |
-| `session_id` | string | Yes | Session ID from `/agent/session/new` |
-| `format` | string | No | Layout format: `auto`, `card`, `inline` |
-
----
-
-## Step 3: Format Recommendations for LLM
-
-After receiving AdMesh recommendations, pass them to your LLM or search API.
-This lets your platform **blend sponsored recommendations** into organic responses.
-
-<Tabs>
-  <Tab title="TypeScript/JavaScript">
-    ```typescript
-    function formatRecommendationsForLLM(recommendations: any[], userQuery: string): string {
-      const formattedRecs = recommendations
-        .map((rec) => `- ${rec.title}: ${rec.click_url}`)
-        .join('\n');
-
-      return `
-${userQuery}
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-${formattedRecs}
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-`;
-    }
-    ```
-  </Tab>
-
-  <Tab title="React">
-    ```typescript
-    import { useMemo } from 'react';
-
-    export function useFormattedRecommendations(recommendations: any[], userQuery: string) {
-      return useMemo(() => {
-        if (!recommendations || recommendations.length === 0) return userQuery;
-
-        const formattedRecs = recommendations
-          .map((rec) => `- ${rec.title}: ${rec.click_url}`)
-          .join('\n');
-
-        return `
-${userQuery}
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-
-${formattedRecs}
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-`;
-      }, [recommendations, userQuery]);
-    }
-    ```
-  </Tab>
-
-  <Tab title="Android (Kotlin)">
-    ```kotlin
-    class RecommendationFormatter {
-        fun formatForLLM(recommendations: List<Map<String, String>>, userQuery: String): String {
-            val formattedRecs = recommendations
-                .map { rec -> "- ${rec["title"]}: ${rec["click_url"]}" }
-                .joinToString("\n")
-
-            return """
-$userQuery
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-$formattedRecs
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-            """.trimIndent()
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Flutter (Dart)">
-    ```dart
-    class RecommendationFormatter {
-      static String formatForLLM(
-        List<Map<String, dynamic>> recommendations,
-        String userQuery,
-      ) {
-        final formattedRecs = recommendations
-            .map((rec) => '- ${rec['title']}: ${rec['click_url']}')
-            .join('\n');
-
-        return '''
-$userQuery
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-$formattedRecs
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-        ''';
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Swift/iOS">
-    ```swift
-    class RecommendationFormatter {
-        static func formatForLLM(
-            recommendations: [[String: Any]],
-            userQuery: String
-        ) -> String {
-            let formattedRecs = recommendations
-                .compactMap { rec -> String? in
-                    guard let title = rec["title"] as? String,
-                          let url = rec["click_url"] as? String else {
-                        return nil
-                    }
-                    return "- \(title): \(url)"
-                }
-                .joined(separator: "\n")
-
-            return """
-\(userQuery)
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-\(formattedRecs)
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-            """
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React Native">
-    ```typescript
-    export function formatRecommendationsForLLM(
-      recommendations: any[],
-      userQuery: string
-    ): string {
-      const formattedRecs = recommendations
-        .map((rec) => `- ${rec.title}: ${rec.click_url}`)
-        .join('\n');
-
-      return `
-${userQuery}
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Instructions: Mention these products/services naturally within your answer as relevant suggestions.
-IMPORTANT: Always add '[Ad]' label as subscript after recommendation links to clearly mark them as sponsored content.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-Make recommendations feel organic. Use the exact links provided.
-
-${formattedRecs}
-
-INSTRUCTIONS FOR MENTIONING RECOMMENDATIONS:
-1. Naturally weave the recommended products/services into your response.
-2. Mention them where they fit contextually within your answer.
-3. Use the exact links provided - preserve them exactly as given.
-4. Format mentions as [Product Name](link)<sub>[Ad]</sub>.
-5. Make them sound natural, not forced.
-6. Mention 1–3 depending on relevance.
-7. Keep all tracking links intact.
-8. If you mention a product, include its link in the same sentence.
-9. Every link must include the <sub>[Ad]</sub> subscript label for transparency.
-`;
-    }
-    ```
-  </Tab>
-</Tabs>
-
----
-
-### Example Output
-
-> For workflow automation, you can try [ClickUp](https://api.useadmesh.com/click/r/ad_7a2b?...)<sub>[Ad]</sub> or [Notion](https://api.useadmesh.com/click/r/ad_9b1c?...)<sub>[Ad]</sub> for team documentation.
-
-### Best Practices
-
-✅ **DO:**
-- Weave recommendations naturally into the response
-- Use exact tracking links provided by AdMesh
-- Always include `[Ad]` label for transparency
-- Mention 1–3 products based on relevance
-- Keep links intact with all parameters
-
-❌ **DON'T:**
-- Modify or shorten tracking URLs
-- Hide the `[Ad]` label
-- Force recommendations that don't fit
-- Mention more than 3 products
-- Break the link structure
-
----
-
-## Step 4: Fire Exposure Pixels
-
-After showing recommendations, platforms must **fire the exposure pixel** for each ad.
-This tells AdMesh that the recommendation was displayed (a viewable impression).
-
-### Setup Placeholder Anchor
-
-Use a **placeholder anchor** to signal where AdMesh recommendations appear inside your organic response.
-This does not render ads. It only gives us a stable element to watch for visibility and fire exposure pixels.
-
-```html
-<!-- Placeholder only. Do not render ads here. -->
-<div id="admesh-recommendations" aria-hidden="true" style="width:0;height:0;overflow:hidden;"></div>
-```
-
-Place this anchor right before or right after you inject the LLM response that includes AdMesh links.
-
-### Fire Exposure Pixels
-
-Keep it simple: observe the placeholder. When it is visible, fire each unique `exposure_url` once.
-
-```html
-<script>
-  // recommendations = array you received from /agent/recommend
-  function fireExposureWhenAnchorVisible(recommendations) {
-    const fired = new Set();
-    const anchor = document.getElementById("admesh-recommendations");
-    if (!anchor) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-
-      recommendations.forEach((rec) => {
-        if (fired.has(rec.ad_id)) return;
-        fired.add(rec.ad_id);
-
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(rec.exposure_url);
-        } else {
-          fetch(rec.exposure_url, { method: "GET", keepalive: true, mode: "no-cors" });
-        }
-      });
-
-      observer.disconnect();
-    });
-
-    observer.observe(anchor);
-  }
-
-  // Example usage after you inject the LLM response:
-  // 1) Ensure the anchor exists in DOM
-  // 2) Call the function with the placements you got from AdMesh
-  // fireExposureWhenAnchorVisible(placements);
-</script>
-```
-
-### Ensure Anchor Exists
-
-Insert it right next to the LLM response with one line of JS, then run tracking.
-
-```js
-function ensureAdmeshAnchor(containerSelector = "#llm-output") {
-  const container = document.querySelector(containerSelector);
-  if (!container) return null;
-  let anchor = document.getElementById("admesh-recommendations");
-  if (!anchor) {
-    anchor = document.createElement("div");
-    anchor.id = "admesh-recommendations";
-    anchor.setAttribute("aria-hidden", "true");
-    anchor.style.cssText = "width:0;height:0;overflow:hidden;";
-    container.insertAdjacentElement("afterend", anchor); // or "beforebegin"
-  }
-  return anchor;
-}
-
-// After you render the organic answer:
-ensureAdmeshAnchor();
-fireExposureWhenAnchorVisible(placements);
-```
-
-### Tracking Best Practices
-
-- Keep your own UI. The placeholder is **only** for tracking.
-- Keep the id exactly as provided: `admesh-recommendations`.
-- Place the anchor right where the AdMesh mentions appear in the organic response, so visibility matches what users see.
-- Fire each `exposure_url` once per `ad_id`.
-- Use `sendBeacon` first, fetch as fallback.
-- Do not modify `exposure_url` or any AdMesh links in the organic text.
-
----
-
-## Step 5: Close Session (Optional)
-
-When the user finishes their chat or conversion flow, close the AdMesh session.
-
-<Tabs>
-  <Tab title="TypeScript/JavaScript">
-    ```typescript
-    export async function closeAdmeshSession() {
-      const sessionId = localStorage.getItem("admesh_session_id");
-      if (!sessionId) return;
-
-      try {
-        const response = await fetch("https://api.useadmesh.com/agent/session/close", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("✅ Session closed:", data);
-          localStorage.removeItem("admesh_session_id");
-        } else {
-          console.error("❌ Failed to close session:", response.status);
-        }
-      } catch (error) {
-        console.error("❌ Error closing session:", error);
-        localStorage.removeItem("admesh_session_id");
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React">
-    ```typescript
-    import { useCallback } from 'react';
-
-    export function useAdmeshSessionClose() {
-      const closeSession = useCallback(async () => {
-        const sessionId = localStorage.getItem("admesh_session_id");
-        if (!sessionId) return;
-
-        try {
-          const response = await fetch("https://api.useadmesh.com/agent/session/close", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ session_id: sessionId }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("✅ Session closed:", data);
-            localStorage.removeItem("admesh_session_id");
-            return data;
-          } else {
-            console.error("❌ Failed to close session:", response.status);
-            return null;
-          }
-        } catch (error) {
-          console.error("❌ Error closing session:", error);
-          localStorage.removeItem("admesh_session_id");
-          return null;
-        }
-      }, []);
-
-      return { closeSession };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Android (Kotlin)">
-    ```kotlin
-    import kotlinx.coroutines.*
-    import android.content.SharedPreferences
-    import java.net.URL
-    import java.net.HttpURLConnection
-
-    class AdmeshSessionCloser(private val prefs: SharedPreferences) {
-        companion object {
-            private const val ADMESH_BASE = "https://api.useadmesh.com"
-        }
-
-        suspend fun closeSession(): Boolean = withContext(Dispatchers.IO) {
-            try {
-                val sessionId = prefs.getString("admesh_session_id", null) ?: return@withContext false
-
-                val url = URL("$ADMESH_BASE/agent/session/close")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                val body = """{"session_id":"$sessionId"}"""
-                connection.outputStream.write(body.toByteArray())
-
-                val success = connection.responseCode == HttpURLConnection.HTTP_OK
-                if (success) {
-                    prefs.edit().remove("admesh_session_id").apply()
-                    android.util.Log.d("AdMesh", "✅ Session closed")
-                } else {
-                    android.util.Log.e("AdMesh", "⚠️ Failed to close: ${connection.responseCode}")
-                }
-                success
-            } catch (e: Exception) {
-                android.util.Log.e("AdMesh", "⚠️ Error: ${e.message}")
-                false
-            }
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Flutter (Dart)">
-    ```dart
-    import 'package:http/http.dart' as http;
-    import 'package:shared_preferences/shared_preferences.dart';
-    import 'dart:convert';
-
-    class AdmeshSessionCloser {
-      static const String admeshBase = 'https://api.useadmesh.com';
-
-      static Future<bool> closeSession() async {
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          final sessionId = prefs.getString('admesh_session_id');
-          if (sessionId == null) return false;
-
-          final response = await http.post(
-            Uri.parse('$admeshBase/agent/session/close'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'session_id': sessionId}),
-          );
-
-          if (response.statusCode == 200) {
-            await prefs.remove('admesh_session_id');
-            print('✅ Session closed');
-            return true;
-          } else {
-            print('⚠️ Failed to close: ${response.statusCode}');
-            return false;
-          }
-        } catch (e) {
-          print('⚠️ Error: $e');
-          return false;
-        }
-      }
-    }
-    ```
-  </Tab>
-
-  <Tab title="Swift/iOS">
-    ```swift
-    import Foundation
-
-    class AdmeshSessionCloser {
-        static let admeshBase = "https://api.useadmesh.com"
-
-        static func closeSession(completion: @escaping (Bool) -> Void) {
-            guard let sessionId = UserDefaults.standard.string(forKey: "admesh_session_id") else {
-                completion(false)
-                return
-            }
-
-            let url = URL(string: "\(admeshBase)/agent/session/close")!
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-            let body: [String: String] = ["session_id": sessionId]
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                    UserDefaults.standard.removeObject(forKey: "admesh_session_id")
-                    print("✅ Session closed")
-                    completion(true)
-                } else {
-                    print("⚠️ Failed to close session")
-                    completion(false)
-                }
-            }.resume()
-        }
-    }
-    ```
-  </Tab>
-
-  <Tab title="React Native">
-    ```typescript
-    import AsyncStorage from '@react-native-async-storage/async-storage';
-
-    export async function closeAdmeshSession(): Promise<boolean> {
-      try {
-        const sessionId = await AsyncStorage.getItem('admesh_session_id');
-        if (!sessionId) return false;
-
-        const response = await fetch('https://api.useadmesh.com/agent/session/close', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: sessionId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Session closed:', data);
-          await AsyncStorage.removeItem('admesh_session_id');
-          return true;
-        } else {
-          console.error('❌ Failed to close session:', response.status);
-          return false;
-        }
-      } catch (error) {
-        console.error('❌ Error closing session:', error);
-        await AsyncStorage.removeItem('admesh_session_id');
-        return false;
-      }
-    }
-    ```
-  </Tab>
-</Tabs>
-
-### When to Close
-
-- User closes chat or tab
-- Conversion completes
-- Platform resets context
-- User logs out
-
----
-
-## Session Management
-
-Unlike the **Citation & Product Format** which uses the SDK's automatic session management, the **Weave Ad Format** requires you to manually manage sessions since it's an API-based integration.
-
-This section provides comprehensive guidance on creating, storing, retrieving, and closing sessions for your Weave Ad Format integration.
-
-### Session Lifecycle
-
-A typical session lifecycle looks like this:
-
-```
-1. User starts new conversation
-   ↓
-2. Create session → Get session_id
-   ↓
-3. Store session_id (localStorage, state, etc.)
-   ↓
-4. Use session_id for all API calls (recommendations, exposure pixels)
-   ↓
-5. Retrieve session_id for subsequent requests
-   ↓
-6. Close session when conversation ends
-```
-
-### Creating and Storing Sessions
-
-#### TypeScript/JavaScript
+### Basic Usage
 
 ```typescript
-const ADMESH_BASE = "https://api.useadmesh.com";
+import { AdMeshClient } from '@admesh/weave-node';
 
-// Create a new session
-export async function createAndStoreSession(): Promise<string | null> {
-  try {
-    const response = await fetch(`${ADMESH_BASE}/agent/session/new`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
+const client = new AdMeshClient({
+  apiKey: process.env.ADMESH_API_KEY
+});
 
-    if (!response.ok) {
-      throw new Error(`Failed to create session: ${response.statusText}`);
-    }
+const result = await client.getRecommendationsForWeave({
+  sessionId: 'your-session-id',
+  messageId: 'your-message-id',
+  query: 'best laptops for programming',
+  timeoutMs: 30000
+});
 
-    const { session_id } = await response.json();
-
-    // Store in localStorage for persistence across page reloads
-    localStorage.setItem("admesh_session_id", session_id);
-    console.log("✅ Session created and stored:", session_id);
-
-    return session_id;
-  } catch (error) {
-    console.error("❌ Session creation failed:", error);
-    // Fallback: create temporary session ID
-    const tempSessionId = `admesh_temp_${Date.now()}`;
-    localStorage.setItem("admesh_session_id", tempSessionId);
-    return tempSessionId;
-  }
-}
-
-// Retrieve existing session or create new one
-export async function getOrCreateSession(): Promise<string> {
-  // Check if session already exists
-  const existingSessionId = localStorage.getItem("admesh_session_id");
-
-  if (existingSessionId) {
-    console.log("✅ Using existing session:", existingSessionId);
-    return existingSessionId;
-  }
-
-  // Create new session if none exists
-  const newSessionId = await createAndStoreSession();
-  return newSessionId || `admesh_temp_${Date.now()}`;
+if (result.found) {
+  console.log('Recommendations:', result.recommendations);
+} else {
+  console.log('No recommendations found:', result.error);
 }
 ```
 
-#### React with Hooks
+---
+
+## Integration Guide
+
+### Step 1: Initialize
 
 ```typescript
-import { useState, useCallback, useEffect } from 'react';
-
-export function useAdmeshSessionManagement() {
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Initialize session on component mount
-  useEffect(() => {
-    const initializeSession = async () => {
-      const session = await getOrCreateSession();
-      setSessionId(session);
-    };
-
-    initializeSession();
-  }, []);
-
-  // Create new session
-  const createNewSession = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("https://api.useadmesh.com/agent/session/new", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create session");
-      }
-
-      const { session_id } = await response.json();
-      localStorage.setItem("admesh_session_id", session_id);
-      setSessionId(session_id);
-      console.log("✅ New session created:", session_id);
-
-      return session_id;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
-      console.error("❌ Session creation failed:", message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Get or create session
-  const getOrCreateSession = useCallback(async (): Promise<string> => {
-    const existing = localStorage.getItem("admesh_session_id");
-    if (existing) {
-      setSessionId(existing);
-      return existing;
-    }
-
-    const newId = await createNewSession();
-    return newId || `admesh_temp_${Date.now()}`;
-  }, [createNewSession]);
-
-  // Close session
-  const closeSession = useCallback(async () => {
-    if (!sessionId) return false;
-
-    try {
-      const response = await fetch("https://api.useadmesh.com/agent/session/close", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId })
-      });
-
-      if (response.ok) {
-        localStorage.removeItem("admesh_session_id");
-        setSessionId(null);
-        console.log("✅ Session closed");
-        return true;
-      } else {
-        console.error("❌ Failed to close session:", response.status);
-        return false;
-      }
-    } catch (err) {
-      console.error("❌ Error closing session:", err);
-      // Still remove from storage even if API call fails
-      localStorage.removeItem("admesh_session_id");
-      setSessionId(null);
-      return false;
-    }
-  }, [sessionId]);
-
-  return {
-    sessionId,
-    loading,
-    error,
-    createNewSession,
-    getOrCreateSession,
-    closeSession
-  };
-}
-
-// Usage in component
-export function ChatComponent() {
-  const { sessionId, createNewSession, closeSession } = useAdmeshSessionManagement();
-
-  const handleNewConversation = async () => {
-    await createNewSession();
-    // Reset chat UI, etc.
-  };
-
-  const handleEndConversation = async () => {
-    await closeSession();
-    // Clean up UI, etc.
-  };
-
-  return (
-    <div>
-      <button onClick={handleNewConversation}>New Conversation</button>
-      <button onClick={handleEndConversation}>End Conversation</button>
-      {sessionId && <p>Session: {sessionId}</p>}
-    </div>
-  );
-}
-```
-
-### Best Practices for Session Management
-
-#### 1. When to Create a New Session
-
-Create a new session in these scenarios:
-
-```typescript
-// Scenario 1: User starts a new conversation
-async function startNewConversation() {
-  const sessionId = await createAndStoreSession();
-  resetChatUI();
-  return sessionId;
-}
-
-// Scenario 2: Session expires (401 error)
-async function handleSessionExpired() {
-  console.warn("⚠️ Session expired, creating new one");
-  localStorage.removeItem("admesh_session_id");
-  const newSessionId = await createAndStoreSession();
-  return newSessionId;
-}
-
-// Scenario 3: User logs out
-async function handleUserLogout() {
-  await closeSession();
-  localStorage.removeItem("admesh_session_id");
-  redirectToLogin();
-}
-
-// Scenario 4: Platform resets context
-async function handleContextReset() {
-  const oldSessionId = localStorage.getItem("admesh_session_id");
-  if (oldSessionId) {
-    await closeSession();
-  }
-  const newSessionId = await createAndStoreSession();
-  return newSessionId;
-}
-```
-
-#### 2. Retrieving and Reusing Session IDs
-
-```typescript
-// Always retrieve before making API calls
-async function makeAdmeshRequest(endpoint: string, body: any) {
-  const sessionId = localStorage.getItem("admesh_session_id");
-
-  if (!sessionId) {
-    console.warn("⚠️ No session found, creating new one");
-    const newSessionId = await createAndStoreSession();
-    return makeAdmeshRequest(endpoint, body); // Retry with new session
-  }
-
-  const response = await fetch(`https://api.useadmesh.com${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...body,
-      session_id: sessionId
-    })
-  });
-
-  // Handle 401 (session expired)
-  if (response.status === 401) {
-    console.warn("⚠️ Session expired, creating new one");
-    const newSessionId = await createAndStoreSession();
-    return makeAdmeshRequest(endpoint, body); // Retry with new session
-  }
-
-  return response;
-}
-```
-
-#### 3. Handling Session Expiration
-
-```typescript
-// Wrapper for API calls with automatic retry on 401
-async function makeAdmeshRequestWithRetry(
-  endpoint: string,
-  body: any,
-  retries = 1
-): Promise<Response> {
-  let sessionId = localStorage.getItem("admesh_session_id");
-
-  if (!sessionId) {
-    sessionId = await createAndStoreSession();
-  }
-
-  const response = await fetch(`https://api.useadmesh.com${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...body,
-      session_id: sessionId
-    })
-  });
-
-  // If session expired and we have retries left
-  if (response.status === 401 && retries > 0) {
-    console.warn("⚠️ Session expired, retrying with new session");
-    localStorage.removeItem("admesh_session_id");
-    const newSessionId = await createAndStoreSession();
-
-    // Retry the request
-    return makeAdmeshRequestWithRetry(endpoint, body, retries - 1);
-  }
-
-  return response;
-}
-```
-
-#### 4. Storage Patterns
-
-```typescript
-// Pattern 1: localStorage (browser)
-function storeSessionInLocalStorage(sessionId: string) {
-  localStorage.setItem("admesh_session_id", sessionId);
-}
-
-function getSessionFromLocalStorage(): string | null {
-  return localStorage.getItem("admesh_session_id");
-}
-
-// Pattern 2: React State (in-memory)
-const [sessionId, setSessionId] = useState<string | null>(null);
-
-// Pattern 3: Session Storage (cleared on tab close)
-function storeSessionInSessionStorage(sessionId: string) {
-  sessionStorage.setItem("admesh_session_id", sessionId);
-}
-
-// Pattern 4: IndexedDB (for larger data)
-async function storeSessionInIndexedDB(sessionId: string) {
-  const db = await openDB('admesh', 1, {
-    upgrade(db) {
-      db.createObjectStore('sessions');
-    }
-  });
-  await db.put('sessions', { id: sessionId, createdAt: Date.now() }, 'current');
-}
-
-// Pattern 5: Server-side session (Node.js)
-app.post('/api/chat', (req, res) => {
-  const sessionId = req.session.admesh_session_id || generateNewSessionId();
-  req.session.admesh_session_id = sessionId;
-  // Use sessionId for AdMesh API calls
+const client = new AdMeshClient({
+  apiKey: process.env.ADMESH_API_KEY
 });
 ```
 
-### Error Handling and Fallbacks
+### Step 2: Fetch Recommendations
 
 ```typescript
-// Comprehensive error handling
-async function createSessionWithFallback(): Promise<string> {
+async function getRecs(sessionId, messageId, query) {
+  const result = await client.getRecommendationsForWeave({
+    sessionId,
+    messageId,
+    query,
+    timeoutMs: 30000
+  });
+  return result.found ? result.recommendations : null;
+}
+```
+
+### Step 3: Format for LLM
+
+To help your LLM naturally weave ads into responses, we **recommend passing** `product_title`, `product_description`, and `click_url` for each recommendation.
+
+```typescript
+function formatRecommendationsForLLM(recs, userQuery) {
+  const formatted = recs
+    .map(r => 
+      `- ${r.product_title}
+  Description: ${r.product_description}
+  Link: ${r.click_url}`
+    )
+    .join('\n\n');
+
+  return `
+${userQuery}
+
+=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
+Each recommendation includes title, description, and click URL.
+Pass all three fields to your LLM for best contextual blending.
+Format mentions as: [Product Name](link)<sub>[Ad]</sub>
+
+${formatted}
+`;
+}
+```
+
+**Why this matters:**
+- Including `product_description` helps the LLM understand *why* a product is relevant.  
+- Keeping `click_url` intact ensures correct attribution and tracking.  
+- `product_title` improves readability and accuracy when mentioned in the response.  
+
+### Step 4: Combine with LLM
+
+```typescript
+async function generateLLMResponse(sessionId, messageId, query) {
+  const recs = await getRecs(sessionId, messageId, query);
+  const prompt = recs ? formatRecommendationsForLLM(recs, query) : query;
+  const llmResponse = await callYourLLM(prompt);
+  return llmResponse;
+}
+```
+
+---
+
+## Best Practices
+
+✅ **Do**
+- Provide clear, specific queries  
+- Pass `product_description`, `product_title`, and `click_url` to your LLM  
+- Handle errors gracefully and use fallbacks  
+- Reuse session IDs across messages  
+- Always send exposure events using `exposure_url`
+
+❌ **Don't**
+- Modify tracking links  
+- Skip exposure events  
+- Use very short timeouts  
+- Create new sessions for every message
+
+---
+
+## Example Integration
+
+```typescript
+import express from 'express';
+import { AdMeshClient } from '@admesh/weave-node';
+
+const app = express();
+app.use(express.json());
+
+const admeshClient = new AdMeshClient({
+  apiKey: process.env.ADMESH_API_KEY!
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { sessionId, messageId, query } = req.body;
   try {
-    // Try to create session
-    const response = await fetch("https://api.useadmesh.com/agent/session/new", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      timeout: 5000 // 5 second timeout
+    const result = await admeshClient.getRecommendationsForWeave({
+      sessionId, messageId, query, timeoutMs: 30000
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    let prompt = query;
+    if (result.found && result.recommendations) {
+      const recs = result.recommendations
+        .map(r => `- ${r.product_title}: ${r.click_url}`)
+        .join('\n');
+      prompt = `${query}\n\n=== WEAVE RECOMMENDATIONS ===\n${recs}`;
     }
 
-    const { session_id } = await response.json();
+    const llmResponse = await callYourLLM(prompt);
+    res.json({ response: llmResponse, recommendations: result.recommendations || [] });
 
-    if (!session_id) {
-      throw new Error("No session_id in response");
-    }
-
-    localStorage.setItem("admesh_session_id", session_id);
-    return session_id;
-
-  } catch (error) {
-    console.error("❌ Session creation failed:", error);
-
-    // Fallback 1: Use temporary session ID
-    const tempSessionId = `admesh_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem("admesh_session_id", tempSessionId);
-
-    console.warn("⚠️ Using temporary session ID:", tempSessionId);
-    return tempSessionId;
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-}
+});
 
-// Handle different error types
-async function handleSessionError(error: any, sessionId: string) {
-  if (error.message.includes("401")) {
-    // Session expired
-    console.warn("⚠️ Session expired");
-    localStorage.removeItem("admesh_session_id");
-    return await createSessionWithFallback();
-  } else if (error.message.includes("timeout")) {
-    // Network timeout
-    console.warn("⚠️ Session creation timeout, using temporary ID");
-    return `admesh_temp_${Date.now()}`;
-  } else if (error.message.includes("network")) {
-    // Network error
-    console.warn("⚠️ Network error, using temporary ID");
-    return `admesh_temp_${Date.now()}`;
-  } else {
-    // Unknown error
-    console.error("❌ Unknown error:", error);
-    return sessionId; // Keep existing session
-  }
-}
+app.listen(3000, () => console.log('Server running on port 3000'));
 ```
 
 ---
-
-## Complete Integration Example
-
-Here's a complete end-to-end example in TypeScript:
-
-```typescript
-// 1. Create session
-const sessionId = await createAdmeshSession();
-
-// 2. Get recommendations
-const { placements } = await getAdmeshRecommendations("best project management tools");
-
-// 3. Format for LLM
-const prompt = formatRecommendationsForLLM(placements, "best project management tools");
-
-// 4. Call LLM
-const llmResponse = await callLLM(prompt);
-
-// 5. Render response with anchor
-renderResponse(llmResponse);
-ensureAdmeshAnchor("#response-container");
-
-// 6. Fire exposure pixels
-fireExposureWhenAnchorVisible(placements);
-
-// 7. Close session when done
-await closeAdmeshSession();
-```
-
----
-
-## Summary
-
-✅ **Integration complete!** You now have a fully functional Weave Ad Format integration.
-
-Your platform can now:
-- Create sessions for conversation context
-- Fetch contextual recommendations
-- Format recommendations for your LLM
-- Blend sponsored content naturally into responses
-- Track impressions with exposure pixels
-- Close sessions cleanly
-
----
-
-## Next Steps
-
-- [Citation & Product Format](/platforms/citation-format) - For SDK-based automatic rendering
-- [FAQ](/platforms/faq) - Common questions and troubleshooting
-

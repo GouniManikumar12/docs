@@ -1,133 +1,129 @@
 ---
 title: "Overview"
-description: "Everything platforms need to integrate AdMesh with two simple integration formats"
+description: "AdMesh integration guide for conversational platforms - understand package requirements and choose your integration approach"
 ---
 
-# Platform Overview
+## Introduction
 
-AdMesh lets AI platforms, chatbots, and search systems show **contextual sponsored recommendations** directly inside organic responses.
-You control the UI, while AdMesh handles **ads, tracking, and attribution** behind the scenes.
-
----
-
-## Choose Your Integration
-
-AdMesh offers two complete integration formats. Pick one and follow the comprehensive guide:
-
-| Format | Type | Best For | Setup |
-|--------|------|----------|-------|
-| **Weave Ad Format** | API-based | Custom conversational ads, LLM integration | Moderate |
-| **Citation & Product Format** | SDK-based | Quick setup, automatic rendering | Minimal (3 steps) |
-
-[Compare Formats →](/platforms/choose-integration)
+AdMesh enables conversational platforms (AI assistants, search engines, chat applications) to monetize through contextually relevant product recommendations. We offer flexible integration options to fit your platform's architecture and requirements.
 
 ---
 
-## Quick Start
+## Package Requirements
 
-### For Weave Ad Format (API-Based)
+### Mandatory: `admesh-ui-sdk`
 
-Follow the complete end-to-end guide that includes:
-- Creating sessions
-- Fetching recommendations
-- Formatting for your LLM
-- Firing exposure pixels
-- Closing sessions
+**`admesh-ui-sdk` is required for all AdMesh integrations.**  
+This package provides the core functionality every platform needs:
 
-[Start with Weave Ad Format →](/platforms/weave-ad-format)
+- **Session Management**: Automatically creates and manages user sessions  
+- **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh  
+- **Rendering**: Displays recommendations in your UI with proper formatting  
+- **Tracking**: Automatically tracks exposures, clicks, and conversions  
+- **Transparency**: Adds `[Ad]` labels to comply with advertising standards  
 
-### For Citation & Product Format (SDK-Based)
+The SDK handles all of this automatically, so you don't need to manage these concerns yourself.
 
-Follow the complete end-to-end guide that includes:
-- Creating sessions
-- Installing the SDK
-- Adding a container
-- Fetching and rendering recommendations
-- Closing sessions
-
-[Start with Citation & Product Format →](/platforms/citation-format)
+**Key Features:**
+- Zero-code integration (3 simple steps)  
+- Automatic session lifecycle management  
+- Built-in error handling and fallbacks  
+- Support for multiple ad formats (citation, product cards, etc.)  
+- Configurable theming and styling  
 
 ---
 
----
+### Optional: `admesh-weave-node`
 
-## Integration Flows
+**`admesh-weave-node` is an optional additional package** for developers who want to weave recommendations directly into their application's response text or content (e.g., LLM-generated responses).
 
-### Weave Ad Format Flow
+Use this package if you want to:
+- Integrate recommendations into LLM responses  
+- Have full control over recommendation formatting  
+- Build custom conversational ad experiences  
+- Weave product mentions directly into generated text  
 
-```mermaid
-sequenceDiagram
-participant User
-participant Platform
-participant AdMesh
-participant LLM
-
-User->>Platform: Asks a question
-Platform->>AdMesh: POST /agent/session/new
-AdMesh-->>Platform: Returns session_id
-Platform->>AdMesh: POST /agent/recommend (with session_id)
-AdMesh-->>Platform: Returns recommendations
-Platform->>LLM: Adds Weave Recommendations block + rules
-LLM-->>Platform: Returns contextual response with [Product](link)<sub>[Ad]</sub>
-Platform->>User: Displays blended organic + sponsored response
-Platform->>AdMesh: Fires exposure pixels
-Platform->>AdMesh: (Optional) POST /agent/session/close
-```
-
-### Citation & Product Format Flow
-
-```mermaid
-sequenceDiagram
-participant User
-participant Platform
-participant AdMesh
-participant SDK
-
-User->>Platform: Asks a question
-Platform->>AdMesh: POST /agent/session/new
-AdMesh-->>Platform: Returns session_id
-Platform->>SDK: Initialize SDK with API key
-Platform->>SDK: Call showRecommendations()
-SDK->>AdMesh: Fetches recommendations
-SDK->>Platform: Auto-renders in container
-SDK->>AdMesh: Fires exposure pixels automatically
-Platform->>User: Displays recommendations with tracking
-```
+**Key Features:**
+- Lightweight backend SDK for Node.js  
+- Direct integration with the AdMesh Protocol  
+- Database-backed caching for instant retrieval  
+- Configurable polling with sensible defaults  
+- Full control over recommendation formatting  
 
 ---
 
-## Key Features
+## Integration Decision Guide
 
-✅ **Two Integration Formats** - Choose API-based or SDK-based
-✅ **Complete Guides** - Each format has a comprehensive end-to-end guide
-✅ **6 Language Examples** - TypeScript, React, Kotlin, Dart, Swift, React Native
-✅ **Automatic Tracking** - Exposure pixels, clicks, and conversions
-✅ **Transparency Built-in** - `[Ad]` labels included automatically
-✅ **Session Management** - Group interactions per conversation
-✅ **Error Handling** - Graceful degradation if AdMesh is unavailable
+Choose your integration approach based on your platform's needs.
 
----
+### Citation & Product Format (SDK-Only)
 
-## Need Help?
+**Best for:** Most platforms that want quick, automatic integration
 
-- [Choosing Your Integration](/platforms/choose-integration) - Compare formats
-- [FAQ](/platforms/faq) - Common questions and troubleshooting
-- Email support: mani@useadmesh.com
+**What you get:**
+- Automatic rendering of recommendations  
+- Automatic tracking and transparency labels  
+- Zero-code setup (3 steps)  
+- Multiple format options (citation, product cards, etc.)
 
----
+**Integration steps:**
+1. Install `admesh-ui-sdk`
+2. Initialize the SDK with your API key
+3. Call `showRecommendations()` when you have a user query
 
-## Platform Flexibility
+![Citation Format Integration](/images/citation.gif)
 
-**You can fully design your own UI** ,  grid, carousel, chat bubble, card layout, or anything else.
-There's **no required AdMesh component**.
-
-However, you **must label AdMesh recommendations clearly** so the exposure pixels can be triggered correctly when shown.
-
-This means:
-- Clearly identify the section or cards as **"AdMesh Recommendations"** (for transparency)
-- Ensure we can detect when the AdMesh recommendations are actually visible ,  this is how exposure pixels are triggered
+See [Citation & Product Format](/platforms/citation-format) for detailed integration steps.
 
 ---
 
-**Ready to start?** → [Create Session](/platforms/create-session)
+### Weave Ad Format (SDK + Weave-Node)
 
+**Best for:** Conversational AI platforms that want to weave recommendations into LLM responses
+
+**What you get:**
+- Full control over recommendation formatting  
+- Integration with your LLM pipeline  
+- Custom conversational ad experiences  
+- Recommendations woven directly into generated text  
+
+**Integration steps:**
+1. Install `admesh-ui-sdk` (frontend)
+2. Install `admesh-weave-node` (backend)
+3. Retrieve recommendations from the backend
+4. Format recommendations for your LLM
+5. Pass formatted recommendations to your LLM
+6. Trigger server-side tracking events when recommendations are displayed
+
+![Weave Ad Format Integration](/images/weave.gif)
+
+> **Note:** Weave Ad integration is an advanced implementation for conversational systems.
+> API behavior and schemas may evolve as the feature matures.
+
+See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps.
+
+---
+
+## Comparison Table
+
+| Aspect | Citation & Product | Weave Ad Format |
+|--------|-------------------|-----------------|
+| **Packages** | `admesh-ui-sdk` | `admesh-ui-sdk` + `admesh-weave-node` |
+| **Setup Time** | 5–10 minutes | 30–60 minutes |
+| **Rendering** | Automatic | Manual |
+| **Tracking** | Automatic | Server-side |
+| **Customization** | Limited | Full control |
+| **Best For** | Quick integration | Custom LLM integration |
+| **Code Examples** | Simple | Advanced |
+
+---
+
+## Next Steps
+
+1. **For Citation & Product Format:** Go to [Citation & Product Format](/platforms/citation-format)  
+2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)  
+3. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
+
+---
+
+> **AdMesh empowers platforms to monetize the future of conversation — seamlessly, ethically, and transparently.**

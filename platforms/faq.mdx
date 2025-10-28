@@ -7,10 +7,10 @@ description: "Frequently asked questions from platform integrators about format 
 
 <AccordionGroup data-faq-section="Getting Started">
   <Accordion title="What is AdMesh?" data-faq-item="What is AdMesh?">
-    AdMesh is a conversational advertising platform that enables platforms (like AI assistants, search engines, and chat applications) to monetize through contextually relevant product recommendations. AdMesh provides two integration approaches:
+    AdMesh is a conversational advertising platform that enables platforms (like AI assistants, search engines, and chat applications) to monetize through contextually relevant product recommendations. AdMesh provides two SDKs for integration:
 
-    - **React SDK**: For citation format and product card layouts
-    - **Direct API**: For weave format and custom implementations
+    - **React SDK** (`admesh-ui-sdk`): For frontend integration with citation format and product card layouts
+    - **AdMesh Weave Node SDK** (`admesh-weave-node`): For backend Node.js integration with weave format
   </Accordion>
 
   <Accordion title="How do I choose between weave format and citation format?" data-faq-item="How do I choose between weave format and citation format?">
@@ -18,9 +18,9 @@ description: "Frequently asked questions from platform integrators about format 
     |--------|--------------|-----------------|
     | **What it is** | Inline product cards embedded in conversation | Clickable links within conversational text |
     | **Best for** | Visual-heavy platforms, mobile apps | Text-based platforms, chat interfaces |
-    | **Integration** | Direct API only | React SDK or Direct API |
+    | **Integration** | AdMesh Weave Node SDK (backend) | React SDK (frontend) |
     | **User Experience** | Rich, interactive cards | Minimal, non-intrusive links |
-    | **Implementation** | More complex | Simpler |
+    | **Implementation** | Backend Node.js integration | Frontend React integration |
     | **Performance** | Requires more bandwidth | Lightweight |
 
     **Choose Weave if:**
@@ -36,27 +36,30 @@ description: "Frequently asked questions from platform integrators about format 
     For detailed comparison, see [Choose Integration](/platforms/choose-integration).
   </Accordion>
 
-  <Accordion title="When should I use the React SDK vs. direct API?" data-faq-item="When should I use the React SDK vs. direct API?">
-    | Aspect | React SDK | Direct API |
+  <Accordion title="When should I use the React SDK vs. AdMesh Weave Node SDK?" data-faq-item="When should I use the React SDK vs. AdMesh Weave Node SDK?">
+    | Aspect | React SDK | AdMesh Weave Node SDK |
     |--------|-----------|-----------|
-    | **Supported Formats** | Citation, Product Cards | All formats (Weave, Citation) |
-    | **Best for** | React applications | Any platform/language |
-    | **Setup Time** | 5-10 minutes | 30-60 minutes |
-    | **Customization** | Limited | Full control |
+    | **Supported Formats** | Citation, Product Cards | Weave Format |
+    | **Best for** | Frontend React applications | Backend Node.js applications |
+    | **Setup Time** | 5-10 minutes | 15-30 minutes |
+    | **Customization** | Limited (UI components) | Full control (backend logic) |
     | **Maintenance** | Automatic updates | Manual updates |
-    | **Weave Support** | No | Yes |
+    | **Language** | JavaScript/TypeScript (React) | Node.js (JavaScript/TypeScript) |
+    | **Deployment** | Frontend (browser) | Backend (server) |
 
     **Use React SDK if:**
     - Your platform is built with React
     - You want citation or product card format
-    - You want quick setup
+    - You want quick frontend integration
+    - You need UI components for recommendations
 
-    **Use Direct API if:**
-    - You need weave format
-    - You want full customization
-    - You're not using React
+    **Use AdMesh Weave Node SDK if:**
+    - You need weave format (inline product cards)
+    - Your backend is built with Node.js
+    - You want to embed recommendations in LLM responses
+    - You need backend-side recommendation logic
 
-    For details, see [React SDK](/ui-sdk/installation) or [Direct API](/platforms/overview).
+    For details, see [React SDK](/ui-sdk/installation) or [AdMesh Weave Node SDK](/weave-node/overview).
   </Accordion>
 </AccordionGroup>
 
@@ -87,36 +90,78 @@ description: "Frequently asked questions from platform integrators about format 
     - **Citation Format** - Clickable links within conversational text
     - **Product Card Layouts** - Individual product recommendation cards
 
-    **Not supported:** Weave Format (use Direct API instead)
+    **Not supported:** Weave Format (use AdMesh Weave Node SDK instead)
   </Accordion>
 
   <Accordion title="How do I use the React SDK in my application?" data-faq-item="How do I use the React SDK in my application?">
-    Basic usage:
+    Basic usage with AdMeshProvider:
 
     ```tsx
-    import { AdMeshLayout } from 'admesh-ui-sdk';
+    import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
 
-    export const MyComponent = () => {
-      const recommendations = [
-        {
-          id: 'rec_123',
-          title: 'Product Name',
-          description: 'Product description',
-          url: 'https://example.com/product',
-          price: '$99.99'
-        }
+    export const MyApp = () => {
+      const sessionId = 'user-session-123';
+
+      return (
+        <AdMeshProvider
+          apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+          sessionId={sessionId}
+        >
+          <YourChatComponent />
+        </AdMeshProvider>
+      );
+    };
+
+    export const YourChatComponent = () => {
+      const messages = [
+        { messageId: 'msg_1', role: 'user', content: 'Show me laptops' },
+        { messageId: 'msg_2', role: 'assistant', content: 'Here are some options...' }
       ];
 
       return (
-        <AdMeshLayout
-          recommendations={recommendations}
-          layout="auto"
-        />
+        <div>
+          {messages.map(msg => <div key={msg.messageId}>{msg.content}</div>)}
+          <AdMeshRecommendations messages={messages} format="citation" />
+        </div>
       );
     };
     ```
 
-    For more examples, see [Customization](/ui-sdk/customization).
+    **Key points:**
+    - Wrap your app with `<AdMeshProvider>` and pass `sessionId`
+    - Use `<AdMeshRecommendations>` to display recommendations
+    - The SDK handles message deduplication and recommendation fetching automatically
+
+    For more examples, see [Installation](/ui-sdk/installation).
+  </Accordion>
+
+  <Accordion title="What is the sessionId parameter?" data-faq-item="What is the sessionId parameter?">
+    The `sessionId` parameter identifies a unique user session in AdMesh:
+
+    - **Purpose**: Track recommendations across a conversation
+    - **Format**: Any string (e.g., `'user-session-123'`)
+    - **Scope**: Should be unique per user session
+    - **Lifetime**: Persists for the duration of the conversation
+
+    ### Example:
+    ```tsx
+    // Generate a unique session ID for each user
+    const sessionId = `user-${Date.now()}`;
+
+    <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+      <App />
+    </AdMeshProvider>
+    ```
+
+    ### Best Practices:
+    - Generate a new `sessionId` for each user session
+    - Store it in state or context
+    - Pass the same `sessionId` throughout the conversation
+    - Don't change `sessionId` mid-conversation
+
+    **Note:** This is different from your platform's chat ID. For example, in Perplexica:
+    - `chatId` = Perplexica's internal chat identifier
+    - `sessionId` = AdMesh session identifier (passed to AdMeshProvider)
   </Accordion>
 
   <Accordion title="How do I customize the React SDK styling?" data-faq-item="How do I customize the React SDK styling?">
@@ -163,36 +208,48 @@ description: "Frequently asked questions from platform integrators about format 
 
 <AccordionGroup data-faq-section="Weave Format Integration">
   <Accordion title="How do I integrate weave format?" data-faq-item="How do I integrate weave format?">
-    Weave format requires the Direct API approach:
+    Weave format requires the **AdMesh Weave Node SDK** for backend Node.js integration:
 
-    1. **Get API Key**: Generate from your dashboard
-    2. **Call Recommendation API**: Get recommendations for user query
-    3. **Render Cards**: Display product cards in your UI
-    4. **Track Interactions**: Fire exposure, click, and conversion pixels
+    1. **Install SDK**: `npm install admesh-weave-node`
+    2. **Initialize SDK**: Set up with your API key
+    3. **Call Recommendation API**: Get recommendations for user query
+    4. **Embed in LLM Response**: Integrate recommendations into your LLM response
+    5. **Track Interactions**: Fire exposure, click, and conversion pixels
 
-    For step-by-step guide, see [Weave Format](/platforms/weave-ad-format).
+    **Note:** Weave format is a backend integration for Node.js applications. It embeds product recommendations directly in LLM responses.
+
+    For step-by-step guide, see [AdMesh Weave Node SDK](/weave-node/overview).
   </Accordion>
 
   <Accordion title="What's the weave format API flow?" data-faq-item="What's the weave format API flow?">
+    **Backend (Node.js) Flow:**
     ```
-    1. User Query
+    1. User Query (frontend)
        ↓
-    2. Call /recommend endpoint
+    2. Backend receives query
        ↓
-    3. Receive recommendations with signed URLs
+    3. Backend calls AdMesh /recommend endpoint
        ↓
-    4. Render product cards in UI
+    4. Backend receives recommendations with signed URLs
        ↓
-    5. Fire exposure pixel when card is shown
+    5. Backend embeds recommendations in LLM response
        ↓
-    6. Fire click pixel when user clicks
+    6. Frontend receives response with embedded ads
        ↓
-    7. Fire conversion pixel when user converts
+    7. Frontend fires exposure pixel when ad is shown
+       ↓
+    8. Frontend fires click pixel when user clicks
+       ↓
+    9. Conversions tracked via tracking pixels
     ```
+
+    **Key Point:** Weave format integration happens on the backend (Node.js) using the AdMesh Weave Node SDK. The frontend receives the response with recommendations already embedded.
   </Accordion>
 
   <Accordion title="How do I render weave format cards?" data-faq-item="How do I render weave format cards?">
-    Weave format returns product data that you render as cards:
+    **Backend (Node.js) generates the cards:**
+
+    The AdMesh Weave Node SDK returns product data that your backend embeds in the LLM response:
 
     ```json
     {
@@ -210,15 +267,21 @@ description: "Frequently asked questions from platform integrators about format 
     }
     ```
 
-    Render each recommendation as a card with:
-    - Product image
-    - Title and description
-    - Price
-    - "Visit" button (links to click_url)
+    **Backend responsibility:**
+    - Call AdMesh Weave Node SDK to get recommendations
+    - Format recommendations as product cards
+    - Embed cards in LLM response text
+    - Return complete response to frontend
+
+    **Frontend responsibility:**
+    - Display the LLM response with embedded cards
+    - Fire exposure pixel when card is shown
+    - Fire click pixel when user clicks
+    - Handle card interactions
   </Accordion>
 
   <Accordion title="How do I track weave format interactions?" data-faq-item="How do I track weave format interactions?">
-    Fire tracking pixels:
+    **Frontend tracking (JavaScript):**
 
     ```javascript
     // Fire exposure pixel when card is shown
@@ -231,6 +294,15 @@ description: "Frequently asked questions from platform integrators about format 
     // Conversions are tracked brand-side via localStorage and tracking pixels
     // See brand integration guide for conversion tracking implementation
     ```
+
+    **Backend tracking (Node.js):**
+
+    The AdMesh Weave Node SDK handles backend-side tracking:
+    - Exposure tracking when recommendations are generated
+    - Click tracking via signed URLs
+    - Conversion tracking via tracking pixels
+
+    For detailed tracking implementation, see [AdMesh Weave Node SDK](/weave-node/tracking).
   </Accordion>
 </AccordionGroup>
 

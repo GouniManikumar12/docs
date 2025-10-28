@@ -1,38 +1,150 @@
 ---
 title: "UI SDK Installation"
-description: "Install and set up the AdMesh UI SDK for automatic recommendation rendering and tracking"
+description: "Install and set up the AdMesh UI SDK v1.0.0 for automatic recommendation rendering and tracking"
 ---
 
-## Quick Installation
+## Quick Installation - Provider Pattern (Recommended)
+
+The **Provider Pattern** is the simplest way to integrate AdMesh. It reduces integration complexity by **97%** compared to manual SDK initialization.
 
 <Steps>
   <Step title="Install the Package">
     ```bash
-    npm install admesh-ui-sdk
+    npm install admesh-ui-sdk@latest
     ```
   </Step>
-  <Step title="Initialize the SDK">
+  <Step title="Wrap with AdMeshProvider">
     ```tsx
-    import { AdMeshSDK } from 'admesh-ui-sdk';
+    import { AdMeshProvider } from 'admesh-ui-sdk';
 
-    const admesh = new AdMeshSDK({
-      apiKey: process.env.REACT_APP_ADMESH_API_KEY,
-      debug: false
-    });
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <YourApp />
+    </AdMeshProvider>
+    ```
+
+    This initializes the SDK and manages your session.
+  </Step>
+  <Step title="Add Your Format Component">
+    Choose ONE based on your needs:
+
+    **For Citation/Product Format:**
+    ```tsx
+    import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+    <AdMeshRecommendations messages={messages} format="citation" />
+    ```
+
+    **For Weave Ad Format:**
+    ```tsx
+    import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+    <WeaveAdFormatContainer
+      messageId={msg.id}
+      fallbackUI={<AdMeshRecommendations messages={[msg]} format="citation" />}
+    >
+      {msg.content}
+    </WeaveAdFormatContainer>
     ```
   </Step>
-  <Step title="Render Recommendations">
-    ```tsx
-    <div id="admesh-recommendations"></div>
-
-    await admesh.showRecommendations({
-      query: 'best CRM software',
-      containerId: 'admesh-recommendations',
-      format: 'auto'
-    });
-    ```
+  <Step title="Done!">
+    That's it! The SDK automatically:
+    - Initializes the SDK
+    - Detects new messages
+    - Fetches recommendations
+    - Shows recommendations
+    - Tracks exposures and clicks
   </Step>
 </Steps>
+
+---
+
+## API Reference
+
+### AdMeshProvider - State Management
+
+Initializes the SDK and manages your session. Wrap your entire app with this.
+
+```typescript
+interface AdMeshProviderProps {
+  apiKey: string;           // Required: Your AdMesh API key
+  sessionId: string;        // Required: Session ID for tracking
+  theme?: AdMeshTheme;      // Optional: Custom theme configuration
+  children: React.ReactNode; // Required: Child components
+}
+```
+
+**Example:**
+```tsx
+<AdMeshProvider apiKey="your-key" sessionId="session-123">
+  <YourApp />
+</AdMeshProvider>
+```
+
+---
+
+### AdMeshRecommendations - Citation & Product Formats
+
+Displays recommendations as a separate UI component. Use for Citation or Product format.
+
+```typescript
+interface AdMeshRecommendationsProps {
+  messages: Message[];                           // Required: Array of messages
+  format?: 'citation' | 'product';               // Required: Display format
+  onRecommendationsShown?: (messageId: string) => void;  // Optional: Callback when shown
+  onError?: (error: Error) => void;              // Optional: Error callback
+}
+```
+
+**Example:**
+```tsx
+<AdMeshRecommendations
+  messages={messages}
+  format="citation"
+/>
+```
+
+---
+
+### WeaveAdFormatContainer - Weave Ad Format
+
+Wraps your LLM response content and automatically detects AdMesh links. Use for Weave format.
+
+```typescript
+interface WeaveAdFormatContainerProps {
+  messageId: string;                    // Required: Unique message ID
+  fallbackUI?: React.ReactNode;         // Optional: UI to show if no links detected
+  children: React.ReactNode;            // Required: Your content (LLM response)
+}
+```
+
+**Example:**
+```tsx
+<WeaveAdFormatContainer
+  messageId="msg-123"
+  fallbackUI={<AdMeshRecommendations messages={[msg]} format="citation" />}
+>
+  {msg.content}
+</WeaveAdFormatContainer>
+```
+
+### useAdMesh Hook
+
+```typescript
+const {
+  sdk,                    // AdMeshSDK instance
+  sessionId,              // Session ID
+  apiKey,                 // API key
+  theme,                  // Theme configuration
+  processedMessageIds,    // Set of processed message IDs
+  markMessageAsProcessed, // Function to mark message as processed
+  isMessageProcessed      // Function to check if message was processed
+} = useAdMesh();
+```
+
+---
 
 ## Package Requirements
 
@@ -64,30 +176,43 @@ description: "Install and set up the AdMesh UI SDK for automatic recommendation 
     ```
   </Accordion>
 </AccordionGroup>
-
-## Weave Mode: Automatic Link Enhancement
-
-The SDK automatically enhances and tracks AdMesh links in Weave (LLM) responses.
-
-**Example:**  
-Input: `[Mixpanel](https://tracking.useadmesh.com/click/abc123)`  
-Output: `[Mixpanel](https://tracking.useadmesh.com/click/abc123)<sub>[Ad]</sub>`
-
-This behavior includes:  
-- Adding `[Ad]` labels  
-- Firing exposure pixels automatically  
-- Validating links against session data  
+---
 
 ## Format Types
 
-Supported `format` values for `showRecommendations()`:
+The `AdMeshRecommendations` component supports two display formats:
 
-| Format | Description |
-|---------|-------------|
-| **auto** | Automatically selects the best layout |
-| **product** | Displays SaaS/software recommendations as product cards |
-| **ecommerce** | Optimized for physical product listings |
-| **citation** | Inline citations for conversational interfaces |
+| Format | Description | Best For |
+|---------|-------------|----------|
+| **citation** | Inline citations with product links | Conversational interfaces, chat apps |
+| **product** | Product cards with details | SaaS/software recommendations |
+
+## Weave Ad Format (Advanced)
+
+For integrating recommendations directly into LLM responses, use the `WeaveAdFormatContainer` component:
+
+```tsx
+import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<WeaveAdFormatContainer
+  messageId={message.id}
+  fallbackUI={
+    <AdMeshRecommendations
+      messages={[message]}
+      format="citation"
+    />
+  }
+>
+  {/* Your LLM response content */}
+  {message.content}
+</WeaveAdFormatContainer>
+```
+
+This component:
+- Automatically detects AdMesh links in your content
+- Adds `[Ad]` labels for transparency
+- Fires exposure pixels when links are detected
+- Shows fallback recommendations if no links are found
 
 ---
 
@@ -117,15 +242,24 @@ await admesh.showRecommendations({
 
 ### Session Management
 
-You can use your own session IDs or let the SDK handle them automatically.
+Your platform is responsible for creating and managing sessions. Use the static helper methods:
 
 ```tsx
 const admesh = new AdMeshSDK({ apiKey: process.env.REACT_APP_ADMESH_API_KEY });
 
-const sessionId = admesh.getSessionId();
-const newSession = admesh.createNewSession();
-admesh.setSessionId('custom-session');
-admesh.closeSession();
+// Generate session ID
+const sessionId = AdMeshSDK.createSession();
+
+// Generate message ID for each query
+const messageId = AdMeshSDK.createMessageId(sessionId);
+
+// Pass to SDK
+await admesh.showRecommendations({
+  query: userQuery,
+  containerId: 'recommendations',
+  session_id: sessionId,
+  message_id: messageId
+});
 ```
 
 ---
@@ -152,16 +286,20 @@ await admesh.showRecommendations({
 
 <AccordionGroup>
   <Accordion title="Recommendations Not Rendering">
-    Check your API key and ensure a valid container element exists.
-    ```tsx
-    const admesh = new AdMeshSDK({ apiKey: 'your-key', debug: true });
-    ```
+    **Check:**
+    - API key is valid and set in environment variables
+    - `sessionId` prop is provided to `AdMeshProvider`
+    - Messages array is not empty
+    - Component is wrapped inside `AdMeshProvider`
   </Accordion>
   <Accordion title="Tracking Not Working">
-    Tracking is automatic — do not manually fire pixels or modify tracking URLs.
+    Tracking is automatic — do not manually fire pixels or modify tracking URLs. The SDK handles all tracking internally.
   </Accordion>
-  <Accordion title="Session Management Issues">
-    Verify that `sessionId` is persistent between user interactions.
+  <Accordion title="WeaveAdFormatContainer Not Detecting Links">
+    Ensure:
+    - Links are in the format: `[text](https://...useadmesh.com/...)`
+    - Content is rendered before the component checks for links
+    - `messageId` prop is provided
   </Accordion>
 </AccordionGroup>
 

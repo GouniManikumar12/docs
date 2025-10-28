@@ -58,6 +58,8 @@ ADMESH_API_KEY=your-api-key-here
 
 ### Initialize the Client
 
+The AdMeshClient requires only your API key to initialize. All other settings are configured internally for optimal performance.
+
 ```typescript
 import { AdMeshClient } from 'admesh-weave-node';
 
@@ -66,13 +68,11 @@ const admesh = new AdMeshClient({
 });
 ```
 
-### Configuration Options
+### How It Works
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `apiKey` | string | Yes | Your AdMesh API key |
-| `timeout` | number | No | Request timeout in milliseconds (default: 5000) |
-| `retries` | number | No | Retry attempts for failed requests (default: 3) |
+- **API Endpoint:** Automatically configured to `https://api.useadmesh.com` (production)
+- **Debug Mode:** Automatically enabled in development environments (`NODE_ENV === 'development'`)
+- **Timeouts & Retries:** Configured internally with sensible defaults for reliability
 
 ---
 

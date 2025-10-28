@@ -1,41 +1,88 @@
 ---
 title: "Weave Ad Format"
-description: "Integrate AdMesh recommendations into LLM responses using admesh-weave-node"
+description: "Integrate AdMesh recommendations directly into LLM responses using WeaveAdFormatContainer"
 ---
 
 ## Overview
 
-The **Weave Ad Format** enables you to weave AdMesh recommendations directly into your LLM generated responses. Using `@admesh/weave-node`, you get:
+The **Weave Ad Format** uses the `WeaveAdFormatContainer` component to embed AdMesh links directly in your LLM responses. This is for platforms that want to weave recommendations into generated text.
 
-- **Fast retrieval** - efficiently retrieves recommendations with low latency
-- **Simple integration** - clean API with minimal configuration
-- **Full control** - format recommendations exactly how you want
-- **LLM integration** - pass recommendations to your LLM for natural weaving
-- **Graceful fallback** - works seamlessly even if recommendations are not available
+**What you get:**
+- Automatic link detection in your content
+- Automatic tracking (exposures and clicks)
+- Transparency labels (`[Ad]` added automatically)
+- Fallback recommendations if no links detected
+- Simple component-based integration
 
-**Setup time:** 15 to 30 minutes | **Code complexity:** Simple
+**Setup time:** 5-10 minutes | **Code complexity:** Minimal
+
+---
+
+![Weave Ad Format Integration](/images/weave.gif)
+
+---
+
+## Component: WeaveAdFormatContainer
+
+The `WeaveAdFormatContainer` component is specifically designed for **Weave Ad Format**. It wraps your LLM response content and automatically detects AdMesh links.
+
+**Use this component if:**
+- You embed AdMesh links directly in LLM responses
+- You want automatic link detection
+- You want fallback recommendations if no links present
+- You want automatic tracking and transparency labels
+
+**Don't use this component if:**
+- You want a separate recommendations panel (use `AdMeshRecommendations` instead)
+- You want Citation or Product format (use `AdMeshRecommendations` instead)
+
+---
 
 ## When to Use Weave Ad Format
 
 Use Weave Ad Format if you want to:
-- Weave recommendations into LLM generated responses
-- Have full control over recommendation formatting
-- Build custom conversational ad experiences
-- Integrate recommendations into your backend LLM pipeline
+- Embed AdMesh links directly in LLM responses
+- Show recommendations only when no links are present
+- Have automatic link detection and tracking
+- Build conversational ad experiences
 
 ---
 
 ## Installation
 
 ```bash
-npm install @admesh/weave-node
+Frontend(React):
+npm install admesh-ui-sdk@latest
+
+Backend(Node.js):
+npm install @admesh/weave-node@latest
 ```
 
 ---
 
-## Quick Start
+## End-to-End Integration Flow
 
-### Basic Usage
+The Weave Ad Format requires **both backend and frontend integration**:
+
+1. **Backend** fetches recommendations and passes them to your LLM
+2. **LLM** weaves recommendations into the response as AdMesh links
+3. **Frontend** detects those links and handles tracking
+
+---
+
+## Backend Integration
+
+### Step 1: Install `admesh-weave-node`
+
+The backend package handles fetching recommendations and formatting them for your LLM:
+
+```bash
+npm install @admesh/weave-node@latest
+```
+
+### Step 2: Fetch Recommendations and Pass to LLM
+
+Use `AdMeshClient` to fetch recommendations, then pass them to your LLM:
 
 ```typescript
 import { AdMeshClient } from '@admesh/weave-node';
@@ -44,146 +91,228 @@ const client = new AdMeshClient({
   apiKey: process.env.ADMESH_API_KEY
 });
 
-const result = await client.getRecommendationsForWeave({
-  sessionId: 'your-session-id',
-  messageId: 'your-message-id',
-  query: 'best laptops for programming',
-  timeoutMs: 30000
-});
-
-if (result.found) {
-  console.log('Recommendations:', result.recommendations);
-} else {
-  console.log('No recommendations found:', result.error);
-}
-```
-
----
-
-## Integration Guide
-
-### Step 1: Initialize
-
-```typescript
-const client = new AdMeshClient({
-  apiKey: process.env.ADMESH_API_KEY
-});
-```
-
-### Step 2: Fetch Recommendations
-
-```typescript
-async function getRecs(sessionId, messageId, query) {
+async function generateLLMResponse(userQuery: string, sessionId: string, messageId: string) {
+  // Step 1: Fetch AdMesh recommendations
   const result = await client.getRecommendationsForWeave({
-    sessionId,
-    messageId,
-    query,
-    timeoutMs: 30000
+    sessionId: sessionId,
+    messageId: messageId,
+    query: userQuery
   });
-  return result.found ? result.recommendations : null;
-}
-```
 
-### Step 3: Format for LLM
+  // Step 2: Format recommendations for your LLM
+  let recommendationsContext = '';
+  if (result.found) {
+    recommendationsContext = result.recommendations
+      .map(r => `- ${r.product_title}: ${r.click_url}`)
+      .join('\n');
+  }
 
-To help your LLM naturally weave ads into responses, we **recommend passing** `product_title`, `product_description`, and `click_url` for each recommendation.
+  // Step 3: Pass to LLM with recommendations
+  const llmResponse = await callYourLLM(
+    userQuery + '\n\nRecommendations:\n' + recommendationsContext
+  );
 
-```typescript
-function formatRecommendationsForLLM(recs, userQuery) {
-  const formatted = recs
-    .map(r => 
-      `- ${r.product_title}
-  Description: ${r.product_description}
-  Link: ${r.click_url}`
-    )
-    .join('\n\n');
-
-  return `
-${userQuery}
-
-=== WEAVE RECOMMENDATIONS (Integrate these naturally into your response) ===
-Each recommendation includes title, description, and click URL.
-Pass all three fields to your LLM for best contextual blending.
-Format mentions as: [Product Name](link)<sub>[Ad]</sub>
-
-${formatted}
-`;
-}
-```
-
-**Why this matters:**
-- Including `product_description` helps the LLM understand *why* a product is relevant.  
-- Keeping `click_url` intact ensures correct attribution and tracking.  
-- `product_title` improves readability and accuracy when mentioned in the response.  
-
-### Step 4: Combine with LLM
-
-```typescript
-async function generateLLMResponse(sessionId, messageId, query) {
-  const recs = await getRecs(sessionId, messageId, query);
-  const prompt = recs ? formatRecommendationsForLLM(recs, query) : query;
-  const llmResponse = await callYourLLM(prompt);
+  // Step 4: Return response (LLM has woven AdMesh links into the text)
   return llmResponse;
 }
 ```
+
+**What happens:**
+- ✅ Backend fetches recommendations from AdMesh
+- ✅ Backend passes recommendations to your LLM
+- ✅ LLM naturally weaves them into the response as links
+- ✅ Response contains AdMesh tracking links (e.g., `https://tracking.useadmesh.com/click/abc123`)
+
+---
+
+## Frontend Integration
+
+### Step 1: Wrap Your LLM Response with WeaveAdFormatContainer
+
+```tsx
+import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<WeaveAdFormatContainer
+  messageId={message.id}
+  fallbackUI={
+    <AdMeshRecommendations
+      messages={[message]}
+      format="citation"
+    />
+  }
+>
+  {/* Your content here - use any markdown renderer or plain text */}
+  <div>{message.content}</div>
+</WeaveAdFormatContainer>
+```
+
+### Step 2: Component Handles Everything Automatically
+
+The `WeaveAdFormatContainer` automatically:
+- Detects AdMesh links in your content (from backend)
+- Adds `[Ad]` labels for transparency
+- Fires exposure pixels when links are detected
+- Shows fallback recommendations if no links found
+
+**What the component does:**
+1. Scans your LLM response for AdMesh tracking links
+2. If links found: Shows content with `[Ad]` labels + fires exposure pixels
+3. If no links: Shows fallback recommendations UI
 
 ---
 
 ## Best Practices
 
 ✅ **Do**
-- Provide clear, specific queries  
-- Pass `product_description`, `product_title`, and `click_url` to your LLM  
-- Handle errors gracefully and use fallbacks  
-- Reuse session IDs across messages  
-- Always send exposure events using `exposure_url`
+- Wrap LLM responses with `WeaveAdFormatContainer`
+- Provide `messageId` for tracking
+- Use `fallbackUI` for when no links are detected
+- Keep AdMesh links intact in your LLM response
+- Let the SDK handle tracking automatically
 
 ❌ **Don't**
-- Modify tracking links  
-- Skip exposure events  
-- Use very short timeouts  
+- Modify or remove AdMesh tracking links
+- Manually fire tracking pixels
+- Remove `[Ad]` labels added by the SDK
 - Create new sessions for every message
+- Modify the component's internal link detection
 
 ---
 
-## Example Integration
+## Complete End-to-End Example
+
+This example shows the complete flow: backend fetches recommendations → LLM weaves them → frontend detects and tracks.
+
+### Backend (Node.js/Express)
 
 ```typescript
-import express from 'express';
 import { AdMeshClient } from '@admesh/weave-node';
 
-const app = express();
-app.use(express.json());
-
-const admeshClient = new AdMeshClient({
-  apiKey: process.env.ADMESH_API_KEY!
+const client = new AdMeshClient({
+  apiKey: process.env.ADMESH_API_KEY
 });
 
+// API endpoint that your frontend calls
 app.post('/api/chat', async (req, res) => {
-  const { sessionId, messageId, query } = req.body;
+  const { userQuery, sessionId, messageId } = req.body;
+
   try {
-    const result = await admeshClient.getRecommendationsForWeave({
-      sessionId, messageId, query, timeoutMs: 30000
+    // Step 1: Fetch AdMesh recommendations
+    const result = await client.getRecommendationsForWeave({
+      sessionId: sessionId,
+      messageId: messageId,
+      query: userQuery
     });
 
-    let prompt = query;
-    if (result.found && result.recommendations) {
-      const recs = result.recommendations
+    // Step 2: Format recommendations for LLM
+    let recommendationsContext = '';
+    if (result.found) {
+      recommendationsContext = result.recommendations
         .map(r => `- ${r.product_title}: ${r.click_url}`)
         .join('\n');
-      prompt = `${query}\n\n=== WEAVE RECOMMENDATIONS ===\n${recs}`;
     }
 
-    const llmResponse = await callYourLLM(prompt);
-    res.json({ response: llmResponse, recommendations: result.recommendations || [] });
+    // Step 3: Call your LLM with recommendations
+    const llmResponse = await callYourLLM(
+      userQuery + '\n\nRecommendations:\n' + recommendationsContext
+    );
 
-  } catch (err) {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    // Step 4: Return response (now contains AdMesh links)
+    res.json({ response: llmResponse });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
-
-app.listen(3000, () => console.log('Server running on port 3000'));
 ```
+
+### Frontend (React)
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshProvider, WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+function ChatWithWeaveFormat() {
+  const [messages, setMessages] = useState([]);
+  const sessionId = 'user-session-123';
+
+  const handleNewMessage = async (userQuery) => {
+    // Add user message
+    const userMessage = {
+      messageId: `msg-${Date.now()}`,
+      role: 'user',
+      content: userQuery
+    };
+
+    const messageId = `msg-${Date.now() + 1}`;
+
+    try {
+      // Step 1: Call backend to get LLM response with embedded AdMesh links
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userQuery: userQuery,
+          sessionId: sessionId,
+          messageId: messageId
+        })
+      });
+
+      const data = await response.json();
+
+      // Step 2: Create assistant message with LLM response
+      const assistantMessage = {
+        messageId: messageId,
+        role: 'assistant',
+        content: data.response  // Contains AdMesh links from backend
+      };
+
+      setMessages([...messages, userMessage, assistantMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  return (
+    <AdMeshProvider apiKey={process.env.REACT_APP_ADMESH_API_KEY} sessionId={sessionId}>
+      <div className="chat-container">
+        {messages.map((msg) => (
+          <div key={msg.messageId} className={`message ${msg.role}`}>
+            {msg.role === 'assistant' ? (
+              // Step 3: Frontend wraps response with WeaveAdFormatContainer
+              // Component detects AdMesh links and handles tracking
+              <WeaveAdFormatContainer
+                messageId={msg.messageId}
+                fallbackUI={
+                  <AdMeshRecommendations
+                    messages={[msg]}
+                    format="citation"
+                  />
+                }
+              >
+                {/* Render your content here - use any markdown renderer or plain HTML */}
+                <div className="message-content">{msg.content}</div>
+              </WeaveAdFormatContainer>
+            ) : (
+              <div className="message-content">{msg.content}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </AdMeshProvider>
+  );
+}
+
+export default ChatWithWeaveFormat;
+```
+
+<Note>
+This example shows the complete end-to-end flow:
+
+1. **Backend** fetches recommendations and passes them to your LLM
+2. **LLM** naturally weaves recommendations into the response as links
+3. **Frontend** detects those links and handles tracking automatically
+
+The `WeaveAdFormatContainer` works with any content type.
+</Note>
 
 ---

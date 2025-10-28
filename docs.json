@@ -112,36 +112,5 @@
      "cursor",
      "vscode"
    ]
-  },
-  
-  "footer": {
-    "socials": {
-      "x": "https://x.com/useadmesh",
-      "linkedin": "https://linkedin.com/company/admesh"
-          },
-    "links": [
-      {
-        "header": "Resources",
-        "items": [
-          {
-            "label": "Dashboard",
-            "href": "https://useadmesh.com"
-          },
-          {
-            "label": "Try AdPlex",
-            "href": "https://tryadplex.com"
-          }
-        ]
-      },
-      {
-        "header": "Support",
-        "items": [
-          {
-            "label": "Contact Us",
-            "href": "mailto:mani@useadmesh.com"
-          }
-        ]
-      }
-    ]
   }
 }

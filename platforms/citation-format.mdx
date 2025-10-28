@@ -1,60 +1,84 @@
 ---
 title: "Citation & Product Format"
-description: "Display recommendations as inline citations or product cards with automatic tracking using admesh-ui-sdk"
+description: "Display recommendations as inline citations or product cards with automatic tracking using admesh-ui-sdk v1.0.0"
 ---
 
 ## Overview
 
-The **Citation & Product Format** is the easiest way to integrate AdMesh. Using `admesh-ui-sdk`, you get:
+The **Citation & Product Format** uses the `AdMeshRecommendations` component to display recommendations as a separate UI element. This is the easiest way to integrate AdMesh.
 
-- **Zero-code rendering** - SDK handles all UI rendering automatically  
-- **Automatic tracking** - impressions, clicks, and conversions tracked automatically  
-- **Transparency labels** - `[Ad]` labels added automatically for compliance  
-- **Session aware** - uses your existing session and message IDs, with helper methods available if you do not have them  
-- **Multiple formats** - citation, product cards, and more  
+**What you get:**
+- ✅ Automatic rendering of recommendations
+- ✅ Automatic tracking (impressions and clicks)
+- ✅ Transparency labels (`[Ad]` added automatically)
+- ✅ Session-aware tracking
+- ✅ Multiple format options (citation or product cards)
 
 **Setup time:** 5-10 minutes | **Code complexity:** Minimal
 
 ---
 
-## Quick Start
+![Citation Format Integration](/images/citation.gif)
+
+---
+## Component: AdMeshRecommendations
+
+The `AdMeshRecommendations` component is specifically designed for **Citation and Product formats**. It displays recommendations as a separate UI element (not embedded in your content).
+
+**Use this component if:**
+- ✅ You want a separate recommendations panel
+- ✅ You want Citation format (inline citations with links)
+- ✅ You want Product format (product cards)
+- ✅ You want automatic rendering and tracking
+
+**Don't use this component if:**
+- ❌ You want to embed links directly in LLM responses (use `WeaveAdFormatContainer` instead)
+
+---
+
+## Quick Start - Provider Pattern (Recommended)
+
+The **Provider Pattern** is the simplest approach - just 3 lines of code!
 
 <Steps>
   <Step title="Install the SDK">
     ```bash
-    npm install admesh-ui-sdk
+    npm install admesh-ui-sdk@latest
     ```
   </Step>
 
-  <Step title="Initialize the SDK">
+  <Step title="Wrap with AdMeshProvider">
     ```tsx
-    import { AdMeshSDK } from 'admesh-ui-sdk';
+    import { AdMeshProvider } from 'admesh-ui-sdk';
 
-    const admesh = new AdMeshSDK({
-      apiKey: 'your-api-key'
-    });
+    <AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+      <YourChatComponent messages={messages} />
+    </AdMeshProvider>
     ```
   </Step>
 
-  <Step title="Add Container">
-    ```html
-    <div id="admesh-recommendations"></div>
-    ```
-  </Step>
-
-  <Step title="Render Recommendations">
+  <Step title="Add AdMeshRecommendations Component">
     ```tsx
-    // Pass your own sessionId and messageId for accurate attribution
-    await admesh.showRecommendations({
-      query: 'best project management tools',
-      containerId: 'admesh-recommendations',
-      format: 'citation',
-      sessionId: 'your-session-id',
-      messageId: 'your-message-id'
-    });
+    import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+    <AdMeshRecommendations
+      messages={messages}
+      format="citation"  // or "product"
+    />
     ```
+  </Step>
+
+  <Step title="Done!">
+    The SDK automatically:
+    - Initializes the SDK
+    - Detects new messages
+    - Fetches recommendations
+    - Shows recommendations
+    - Tracks exposures and clicks
   </Step>
 </Steps>
+
+
 
 ---
 
@@ -65,13 +89,10 @@ The **Citation & Product Format** is the easiest way to integrate AdMesh. Using 
 Displays a summary with embedded product links. Ideal for conversational interfaces.
 
 ```tsx
-await admesh.showRecommendations({
-  query: 'best project management tools',
-  containerId: 'admesh-recommendations',
-  format: 'citation',
-  sessionId: 'your-session-id',
-  messageId: 'your-message-id'
-});
+<AdMeshRecommendations
+  messages={messages}
+  format="citation"
+/>
 ```
 
 **Output:**
@@ -86,51 +107,53 @@ await admesh.showRecommendations({
 Displays product recommendation cards with key details. Suitable for SaaS or software listings.
 
 ```tsx
-await admesh.showRecommendations({
-  query: 'best CRM software',
-  containerId: 'admesh-recommendations',
-  format: 'product',
-  sessionId: 'your-session-id',
-  messageId: 'your-message-id'
-});
+<AdMeshRecommendations
+  messages={messages}
+  format="product"
+/>
 ```
 
 ---
 
 ## Session Management
 
-AdMesh does not manage user sessions automatically.  
-It integrates with your platform's existing session and message lifecycle.
-
-When calling the SDK, pass your own `sessionId` and `messageId` to maintain continuity across user interactions.
+The `AdMeshProvider` manages sessions automatically using the `sessionId` prop you provide. Each message in your messages array should have a unique `messageId`.
 
 ```tsx
-await admesh.showRecommendations({
-  query: 'best project management tools',
-  containerId: 'admesh-recommendations',
-  format: 'citation',
-  sessionId: 'your-session-id',
-  messageId: 'your-message-id'
-});
+<AdMeshProvider
+  apiKey="your-api-key"
+  sessionId="user-session-123"  // Unique session ID
+>
+  <YourChatComponent messages={messages} />
+  <AdMeshRecommendations messages={messages} format="citation" />
+</AdMeshProvider>
 ```
 
-If your platform does not use sessions yet, helper methods are available.
+**Message structure:**
+```typescript
+interface Message {
+  messageId: string;  // Unique ID for each message
+  role: 'user' | 'assistant';
+  content: string;
+}
+```
+
+If your platform doesn't have session IDs yet, use the helper methods:
 
 ```tsx
 import { AdMeshSDK } from 'admesh-ui-sdk';
 
-const admesh = new AdMeshSDK({ apiKey: 'your-api-key' });
+// Generate IDs
+const sessionId = AdMeshSDK.createSession();
+const messageId = AdMeshSDK.createMessageId(sessionId);
 
-// Generate IDs when you do not have your own
-const sessionId = admesh.createNewSession();
-const messageId = admesh.createNewMessage();
-
-// Optionally set or retrieve IDs
-admesh.setSessionId(sessionId);
-const currentSession = admesh.getSessionId();
+// Use in provider
+<AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+  ...
+</AdMeshProvider>
 ```
 
-> **Best practice:** always pass your own `sessionId` and `messageId` when available. This ensures accurate tracking, attribution, and context continuity.
+> **Best practice:** Always pass your own `sessionId` and `messageId` when available. This ensures accurate tracking and context continuity.
 
 ---
 
@@ -193,64 +216,64 @@ No additional setup is required.
 ## Complete Integration Example
 
 ```tsx
-import React, { useState, useEffect } from 'react';
-import { AdMeshSDK } from 'admesh-ui-sdk';
+import React, { useState } from 'react';
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
 
 function ChatWithRecommendations() {
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
-  const [admesh, setAdmesh] = useState<AdMeshSDK | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const sessionId = 'user-session-123';
 
-  useEffect(() => {
-    const sdk = new AdMeshSDK({ apiKey: 'your-api-key' });
-    setAdmesh(sdk);
-  }, []);
+  const handleSendMessage = async () => {
+    if (!query.trim()) return;
 
-  const showRecommendations = async () => {
-    if (!query.trim() || !admesh) return;
+    // Add user message
+    const userMessage = {
+      messageId: `msg-${Date.now()}`,
+      role: 'user',
+      content: query
+    };
 
-    setLoading(true);
-    setError(null);
+    // Simulate assistant response
+    const assistantMessage = {
+      messageId: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: 'Here are some recommendations for you...'
+    };
 
-    try {
-      await admesh.showRecommendations({
-        query,
-        containerId: 'admesh-recommendations',
-        format: 'citation',
-        sessionId: 'your-session-id',
-        messageId: 'your-message-id'
-      });
-    } catch {
-      setError('Failed to load recommendations. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setMessages([...messages, userMessage, assistantMessage]);
+    setQuery('');
   };
 
   return (
-    <div className="chat-container">
-      <div className="chat-input">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && showRecommendations()}
-          placeholder="Ask for product recommendations..."
-          disabled={loading || !admesh}
-        />
-        <button
-          onClick={showRecommendations}
-          disabled={loading || !query.trim() || !admesh}
-        >
-          {loading ? 'Loading...' : 'Get Recommendations'}
-        </button>
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <div className="chat-container">
+        <div className="messages">
+          {messages.map((msg) => (
+            <div key={msg.messageId} className={`message ${msg.role}`}>
+              {msg.content}
+            </div>
+          ))}
+        </div>
+
+        <div className="chat-input">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Ask for product recommendations..."
+          />
+          <button onClick={handleSendMessage}>Send</button>
+        </div>
+
+        {/* Recommendations automatically display here */}
+        <AdMeshRecommendations messages={messages} />
       </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <div id="admesh-recommendations" />
-    </div>
+    </AdMeshProvider>
   );
 }
 
@@ -279,44 +302,29 @@ export default ChatWithRecommendations;
 
 <AccordionGroup>
   <Accordion title="Recommendations Not Showing">
-    **Possible causes:**
-    - Container element missing  
-    - API key not configured  
-    - Invalid query  
-
-    ```tsx
-    const admesh = new AdMeshSDK({ apiKey: 'your-api-key' });
-    const container = document.getElementById('admesh-recommendations');
-    if (!container) console.error('Container not found');
-    ```
+    **Check:**
+    - API key is valid and set in environment variables
+    - `sessionId` prop is provided to `AdMeshProvider`
+    - Messages array is not empty
+    - Component is wrapped inside `AdMeshProvider`
   </Accordion>
 
   <Accordion title="API Key Issues">
-    **Possible causes:**
-    - Missing or invalid key  
-    - Environment variable misconfigured  
-
-    ```tsx
-    const admesh = new AdMeshSDK({ apiKey: 'your-api-key' });
-    ```
+    **Check:**
+    - API key is valid and active
+    - Environment variable is set correctly
+    - No extra spaces or quotes in the key
   </Accordion>
 
   <Accordion title="Tracking Not Working">
-    Tracking is managed automatically by the SDK.  
-    Do not modify tracking logic or URLs manually.
+    Tracking is managed automatically by the SDK. Do not modify tracking logic or URLs manually. The SDK handles all tracking internally.
   </Accordion>
 
-  <Accordion title="Session Management Issues">
-    **Possible causes:**
-    - Session expired  
-    - Multiple SDK instances  
-
-    ```tsx
-    const admesh = new AdMeshSDK({ apiKey: 'your-api-key' });
-    const sessionId = admesh.getSessionId();
-    admesh.createNewSession();
-    admesh.closeSession();
-    ```
+  <Accordion title="Messages Not Updating">
+    Ensure:
+    - Each message has a unique `messageId`
+    - Messages array is updated when new messages arrive
+    - Component is re-rendering with new messages
   </Accordion>
 </AccordionGroup>
 

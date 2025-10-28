@@ -5,6 +5,127 @@ description: "Ready-to-use code examples for different languages and frameworks"
 ## Quick Examples
 
 <AccordionGroup>
+  <Accordion title="React - Provider Pattern (Recommended)">
+
+### Simple Chat with Recommendations
+
+The **Provider Pattern** is the easiest way to integrate AdMesh in React. Just 3 lines of code!
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+function ChatApp() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const sessionId = 'user-session-123';
+
+  const handleSendMessage = () => {
+    if (!input.trim()) return;
+
+    const userMessage = {
+      messageId: `msg-${Date.now()}`,
+      role: 'user',
+      content: input
+    };
+
+    const assistantMessage = {
+      messageId: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: 'Here are some recommendations based on your query...'
+    };
+
+    setMessages([...messages, userMessage, assistantMessage]);
+    setInput('');
+  };
+
+  return (
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <div className="chat-container">
+        <div className="messages">
+          {messages.map((msg) => (
+            <div key={msg.messageId} className={`message ${msg.role}`}>
+              {msg.content}
+            </div>
+          ))}
+        </div>
+
+        <div className="input-area">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Ask anything..."
+          />
+          <button onClick={handleSendMessage}>Send</button>
+        </div>
+
+        {/* Recommendations automatically display here */}
+        <AdMeshRecommendations messages={messages} />
+      </div>
+    </AdMeshProvider>
+  );
+}
+
+export default ChatApp;
+```
+
+### With Error Handling and Callbacks
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+function AdvancedChatApp() {
+  const [messages, setMessages] = useState([]);
+  const [error, setError] = useState<string | null>(null);
+  const sessionId = 'user-session-123';
+
+  const handleRecommendationsShown = (messageId: string) => {
+    console.log('Recommendations shown for message:', messageId);
+    // Track analytics, update UI, etc.
+  };
+
+  const handleError = (err: Error) => {
+    console.error('Failed to show recommendations:', err);
+    setError('Could not load recommendations. Please try again.');
+  };
+
+  return (
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <div className="chat-container">
+        {error && <div className="error-banner">{error}</div>}
+
+        <div className="messages">
+          {messages.map((msg) => (
+            <div key={msg.messageId} className={`message ${msg.role}`}>
+              {msg.content}
+            </div>
+          ))}
+        </div>
+
+        <AdMeshRecommendations
+          messages={messages}
+          format="citation"
+          onRecommendationsShown={handleRecommendationsShown}
+          onError={handleError}
+        />
+      </div>
+    </AdMeshProvider>
+  );
+}
+
+export default AdvancedChatApp;
+```
+
+  </Accordion>
+
   <Accordion title="JavaScript/Node.js">
 
 ### Basic Function
@@ -76,44 +197,6 @@ export default async function handler(req, res) {
 
   const data = await response.json();
   res.json(data.response.recommendations);
-}
-```
-
-### React Frontend Component
-```tsx
-import React, { useState } from 'react';
-import { AdMeshLayout } from 'admesh-ui-sdk';
-
-function RecommendationSearch() {
-  const [recommendations, setRecommendations] = useState([]);
-
-  const searchRecommendations = async (query) => {
-    const response = await fetch('/api/recommendations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
-    });
-    
-    const recs = await response.json();
-    setRecommendations(recs);
-  };
-
-  return (
-    <div>
-      <input 
-        placeholder="Search for products..."
-        onKeyPress={(e) => {
-          if (e.key === 'Enter') searchRecommendations(e.target.value);
-        }}
-      />
-      
-      <AdMeshLayout
-        recommendations={recommendations}
-        layout="auto"
-        onRecommendationClick={(adId, admeshLink) => window.open(admeshLink)}
-      />
-    </div>
-  );
 }
 ```
 

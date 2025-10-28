@@ -1,40 +1,65 @@
 ---
 title: "Quick Start for Platforms"
-description: "Get up and running in 5 minutes with AdMesh"
+description: "Get up and running in 5 minutes with AdMesh v1.0.0"
 ---
 
-Follow these 5 steps to integrate AdMesh recommendations into your product.
+## 🚀 Quick Start
 
-| Step | Action | Docs |
-|------|---------|------|
-| 1️⃣ | **Create Session** ,  Start a new conversation context | [Create Session](/platforms/create-session) |
-| 2️⃣ | **Get Recommendations** ,  Fetch contextual ads for a query | [Get Recommendations](/platforms/get-recommendations) |
-| 3️⃣ | **Inline Recommendations** ,  Pass AdMesh offers to your LLM | [Weave Inline Recommendations](/platforms/inline-recommendations) |
-| 4️⃣ | **Fire Exposure Pixels** ,  Track impressions when showing ads | [Fire Exposure Pixel](/platforms/fire-exposure-pixel) |
-| 5️⃣ | **Close Session** ,  End or expire the session cleanly | [Close Session](/platforms/close-session) |
+The fastest way to integrate AdMesh is with the **Provider Pattern** - just **3 lines of code**!
 
----
+### Step 1: Install
+```bash
+npm install admesh-ui-sdk@latest
+```
 
-```mermaid
-sequenceDiagram
-participant User
-participant Platform
-participant AdMesh
-participant LLM
+### Step 2: Wrap with AdMeshProvider
+```tsx
+import { AdMeshProvider } from 'admesh-ui-sdk';
 
-User->>Platform: Asks a question
-Platform->>AdMesh: POST /agent/session/new
-AdMesh-->>Platform: Returns session_id
-Platform->>AdMesh: POST /agent/recommend (with session_id)
-AdMesh-->>Platform: Returns recommendations
-Platform->>LLM: Adds Inline Recommendations block + rules
-LLM-->>Platform: Returns contextual response with [Product](link)<sub>[Ad]</sub>
-Platform->>User: Displays blended organic + sponsored response
-Platform->>AdMesh: Fires exposure pixels
-Platform->>AdMesh: (Optional) POST /agent/session/close
+<AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+  <YourApp />
+</AdMeshProvider>
+```
+
+### Step 3: Choose Your Format Component
+
+**Option A: Citation Format (Separate Panel)**
+```tsx
+import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<AdMeshRecommendations messages={messages} format="citation" />
+```
+
+**Option B: Product Format (Separate Panel)**
+```tsx
+import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<AdMeshRecommendations messages={messages} format="product" />
+```
+
+**Option C: Weave Ad Format (Embedded in LLM Response)**
+```tsx
+import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<WeaveAdFormatContainer
+  messageId={message.id}
+  fallbackUI={<AdMeshRecommendations messages={[message]} format="citation" />}
+>
+  {message.content}
+</WeaveAdFormatContainer>
 ```
 
 ---
 
-**Ready to start?** → [Create Session](/platforms/create-session)
+## Which Format Should I Use?
+
+| Format | Use If | Component |
+|--------|--------|-----------|
+| **Citation** | You want inline citations in a separate panel | `AdMeshRecommendations` |
+| **Product** | You want product cards in a separate panel | `AdMeshRecommendations` |
+| **Weave** | You embed links directly in LLM responses | `WeaveAdFormatContainer` |
+
+---
+
+**Ready to start?** → Check the [Installation Guide](/ui-sdk/installation) for more details
 

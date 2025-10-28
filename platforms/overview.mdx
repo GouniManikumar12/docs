@@ -13,63 +13,116 @@ AdMesh enables conversational platforms (AI assistants, search engines, chat app
 
 ### Mandatory: `admesh-ui-sdk`
 
-**`admesh-ui-sdk` is required for all AdMesh integrations.**  
+**`admesh-ui-sdk` is required for all AdMesh integrations.**
 This package provides the core functionality every platform needs:
 
-- **Session Management**: Automatically creates and manages user sessions  
-- **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh  
-- **Rendering**: Displays recommendations in your UI with proper formatting  
-- **Tracking**: Automatically tracks exposures, clicks, and conversions  
-- **Transparency**: Adds `[Ad]` labels to comply with advertising standards  
+- **Session Management**: Automatically creates and manages user sessions
+- **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh
+- **Rendering**: Displays recommendations in your UI with proper formatting
+- **Tracking**: Automatically tracks exposures, clicks, and conversions
+- **Transparency**: Adds `[Ad]` labels to comply with advertising standards
 
 The SDK handles all of this automatically, so you don't need to manage these concerns yourself.
 
 **Key Features:**
-- Zero-code integration (3 simple steps)  
-- Automatic session lifecycle management  
-- Built-in error handling and fallbacks  
-- Support for multiple ad formats (citation, product cards, etc.)  
-- Configurable theming and styling  
+- **Provider Pattern**: 3-line integration with automatic everything
+- Zero-code integration (3 simple steps)
+- Automatic session lifecycle management
+- Built-in error handling and fallbacks
+- Support for multiple ad formats (citation, product cards, etc.)
+- Configurable theming and styling
 
 ---
 
-### Optional: `admesh-weave-node`
+## Three Core Components
 
-**`admesh-weave-node` is an optional additional package** for developers who want to weave recommendations directly into their application's response text or content (e.g., LLM-generated responses).
+The `admesh-ui-sdk` provides three components for different integration needs:
 
-Use this package if you want to:
-- Integrate recommendations into LLM responses  
-- Have full control over recommendation formatting  
-- Build custom conversational ad experiences  
-- Weave product mentions directly into generated text  
+### 1. **AdMeshProvider** - State Management
+Wraps your application and manages SDK initialization, session tracking, and state.
 
-**Key Features:**
-- Lightweight backend SDK for Node.js  
-- Direct integration with the AdMesh Protocol  
-- Database-backed caching for instant retrieval  
-- Configurable polling with sensible defaults  
-- Full control over recommendation formatting  
+```tsx
+<AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+  <YourApp />
+</AdMeshProvider>
+```
+
+**Responsibilities:**
+- ✅ Initializes the SDK
+- ✅ Manages user sessions
+- ✅ Tracks message lifecycle
+- ✅ Handles errors
+
+---
+
+### 2. **AdMeshRecommendations** - Citation & Product Formats
+Displays recommendations as a separate UI component. Use this for Citation or Product format.
+
+```tsx
+<AdMeshRecommendations
+  messages={messages}
+  format="citation"  // or "product"
+/>
+```
+
+**When to use:**
+- ✅ You want a separate recommendations panel
+- ✅ You want Citation format (inline citations)
+- ✅ You want Product format (product cards)
+- ✅ You want automatic rendering and tracking
+
+**Formats supported:**
+- `format="citation"` - Inline citations with product links
+- `format="product"` - Product cards with details
+
+---
+
+### 3. **WeaveAdFormatContainer** - Weave Ad Format
+Wraps your LLM response content and automatically detects AdMesh links. Use this for Weave format.
+
+```tsx
+<WeaveAdFormatContainer
+  messageId={msg.id}
+  fallbackUI={<AdMeshRecommendations messages={[msg]} format="citation" />}
+>
+  {msg.content}
+</WeaveAdFormatContainer>
+```
+
+**When to use:**
+- ✅ You embed AdMesh links directly in LLM responses
+- ✅ You want automatic link detection
+- ✅ You want fallback recommendations if no links present
+- ✅ You want automatic tracking and transparency labels
+
+**What it does:**
+- Detects AdMesh links in your content
+- Adds `[Ad]` labels automatically
+- Fires exposure pixels when links detected
+- Shows fallback UI if no links found
 
 ---
 
 ## Integration Decision Guide
 
-Choose your integration approach based on your platform's needs.
+Choose your component based on your platform's needs.
 
-### Citation & Product Format (SDK-Only)
+### Citation & Product Format
 
 **Best for:** Most platforms that want quick, automatic integration
 
+**Use:** `AdMeshRecommendations` component
+
 **What you get:**
-- Automatic rendering of recommendations  
-- Automatic tracking and transparency labels  
-- Zero-code setup (3 steps)  
-- Multiple format options (citation, product cards, etc.)
+- Automatic rendering of recommendations
+- Automatic tracking and transparency labels
+- Zero-code setup (3 steps)
+- Multiple format options (citation, product cards)
 
 **Integration steps:**
 1. Install `admesh-ui-sdk`
-2. Initialize the SDK with your API key
-3. Call `showRecommendations()` when you have a user query
+2. Wrap app with `AdMeshProvider`
+3. Add `AdMeshRecommendations` component
 
 ![Citation Format Integration](/images/citation.gif)
 
@@ -77,51 +130,66 @@ See [Citation & Product Format](/platforms/citation-format) for detailed integra
 
 ---
 
-### Weave Ad Format (SDK + Weave-Node)
+### Weave Ad Format
 
-**Best for:** Conversational AI platforms that want to weave recommendations into LLM responses
+**Best for:** Conversational AI platforms that embed AdMesh links directly in LLM responses
+
+**Use:** `WeaveAdFormatContainer` component
 
 **What you get:**
-- Full control over recommendation formatting  
-- Integration with your LLM pipeline  
-- Custom conversational ad experiences  
-- Recommendations woven directly into generated text  
+- Automatic link detection in LLM responses
+- Automatic exposure tracking
+- Fallback recommendations when no links present
+- Transparency labels added automatically
+- Simple component-based integration
 
 **Integration steps:**
-1. Install `admesh-ui-sdk` (frontend)
-2. Install `admesh-weave-node` (backend)
-3. Retrieve recommendations from the backend
-4. Format recommendations for your LLM
-5. Pass formatted recommendations to your LLM
-6. Trigger server-side tracking events when recommendations are displayed
+1. Install `admesh-ui-sdk`
+2. Wrap app with `AdMeshProvider`
+3. Wrap LLM response with `WeaveAdFormatContainer`
+4. Provide `fallbackUI` with `AdMeshRecommendations`
 
 ![Weave Ad Format Integration](/images/weave.gif)
-
-> **Note:** Weave Ad integration is an advanced implementation for conversational systems.
-> API behavior and schemas may evolve as the feature matures.
 
 See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps.
 
 ---
 
-## Comparison Table
+## Component Comparison
 
-| Aspect | Citation & Product | Weave Ad Format |
-|--------|-------------------|-----------------|
-| **Packages** | `admesh-ui-sdk` | `admesh-ui-sdk` + `admesh-weave-node` |
-| **Setup Time** | 5–10 minutes | 30–60 minutes |
-| **Rendering** | Automatic | Manual |
-| **Tracking** | Automatic | Server-side |
-| **Customization** | Limited | Full control |
-| **Best For** | Quick integration | Custom LLM integration |
-| **Code Examples** | Simple | Advanced |
+| Aspect | AdMeshRecommendations | WeaveAdFormatContainer |
+|--------|----------------------|------------------------|
+| **Purpose** | Display recommendations | Detect & track links |
+| **Formats** | Citation, Product | Weave Ad Format |
+| **Rendering** | Automatic UI | Wraps your content |
+| **Link Detection** | N/A | Automatic |
+| **Fallback UI** | N/A | Supported |
+| **Tracking** | Automatic | Automatic |
+| **Setup Time** | 2 minutes | 2 minutes |
+| **Best For** | Separate recommendations | Embedded in responses |
+
+---
+
+## Quick Reference
+
+**Choose AdMeshRecommendations if:**
+- You want a separate recommendations panel
+- You want Citation format (inline citations)
+- You want Product format (product cards)
+- You want automatic rendering
+
+**Choose WeaveAdFormatContainer if:**
+- You embed AdMesh links in LLM responses
+- You want automatic link detection
+- You want fallback recommendations
+- You want automatic tracking
 
 ---
 
 ## Next Steps
 
-1. **For Citation & Product Format:** Go to [Citation & Product Format](/platforms/citation-format)  
-2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)  
+1. **For Citation & Product Format:** Go to [Citation & Product Format](/platforms/citation-format)
+2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)
 3. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
 
 ---

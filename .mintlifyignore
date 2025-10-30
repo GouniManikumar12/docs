@@ -1,0 +1,5 @@
+# Mintlify Ignore File
+# Ensure images are NOT ignored
+!images/
+!images/**
+

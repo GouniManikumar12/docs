@@ -1,20 +1,21 @@
 ---
 title: "Weave Ad Format"
-description: "Integrate AdMesh recommendations directly into LLM responses using WeaveAdFormatContainer"
+description: "Embed AdMesh links directly into LLM responses with event-driven detection and automatic tracking"
 ---
 
 ## Overview
 
-The **Weave Ad Format** uses the `WeaveAdFormatContainer` component to embed AdMesh links directly in your LLM responses. This is for platforms that want to weave recommendations into generated text.
+The **Weave Ad Format** embeds AdMesh links directly into your LLM responses using an **event-driven architecture**. Your backend weaves recommendations into the response, and the frontend automatically detects them, adds transparency labels, and tracks engagement.
 
 **What you get:**
-- Automatic link detection in your content
-- Automatic tracking (exposures and clicks)
-- Transparency labels (`[Ad]` added automatically)
-- Fallback recommendations if no links detected
-- Simple component-based integration
+- ✅ Event-driven link detection (no race conditions)
+- ✅ Automatic exposure tracking when links are detected
+- ✅ Transparency labels (`[Ad]` added automatically)
+- ✅ "Why this ad?" tooltips on hover
+- ✅ Fallback recommendations if no links detected
+- ✅ Zero duplicate API calls
 
-**Setup time:** 5-10 minutes | **Code complexity:** Minimal
+**Setup time:** 15-20 minutes | **Code complexity:** Moderate
 
 ---
 
@@ -22,59 +23,69 @@ The **Weave Ad Format** uses the `WeaveAdFormatContainer` component to embed AdM
 
 ---
 
-## Component: WeaveAdFormatContainer
+## How It Works
 
-The `WeaveAdFormatContainer` component is specifically designed for **Weave Ad Format**. It wraps your LLM response content and automatically detects AdMesh links.
+The Weave Ad Format uses an **event-driven architecture** to eliminate race conditions and ensure accurate link detection:
 
-**Use this component if:**
-- You embed AdMesh links directly in LLM responses
-- You want automatic link detection
-- You want fallback recommendations if no links present
-- You want automatic tracking and transparency labels
+### The Flow
 
-**Don't use this component if:**
-- You want a separate recommendations panel (use `AdMeshRecommendations` instead)
-- You want Citation or Product format (use `AdMeshRecommendations` instead)
+1. **Backend Integration** → Your backend fetches recommendations using `admesh-weave-node` and passes them to your LLM
+2. **LLM Weaving** → Your LLM naturally weaves AdMesh links into the response text
+3. **Streaming Starts** → Your chat component dispatches `streamingStart` event with assistant message ID
+4. **Response Streams** → LLM response chunks stream to frontend (may or may not contain AdMesh links)
+5. **Streaming Completes** → Your chat component dispatches `streamingComplete` event
+6. **Link Detection** → `WeaveAdFormatContainer` waits for event, then scans for AdMesh links
+7. **Conditional Rendering:**
+   - **Links found** → Adds `[Ad]` labels, fires exposure tracking, shows tooltips (no fallback)
+   - **No links found** → Renders fallback recommendations (citation or product format)
+
+### Why Event-Driven?
+
+Traditional timeout-based detection causes race conditions:
+- ❌ Timeout expires before streaming completes → false negative (shows fallback when links exist)
+- ❌ Multiple detection cycles → duplicate API calls
+- ❌ Unpredictable timing → inconsistent behavior
+
+Event-driven detection solves this:
+- ✅ Waits for streaming to complete before detecting links
+- ✅ Single detection cycle per message
+- ✅ Predictable, reliable behavior
+- ✅ Zero duplicate API calls
 
 ---
 
-## When to Use Weave Ad Format
+## Component: WeaveAdFormatContainer
 
-Use Weave Ad Format if you want to:
-- Embed AdMesh links directly in LLM responses
-- Show recommendations only when no links are present
-- Have automatic link detection and tracking
-- Build conversational ad experiences
+The `WeaveAdFormatContainer` component wraps your LLM response content and uses event-driven detection to handle AdMesh links.
+
+**Use this component if:**
+- ✅ You embed AdMesh links directly in LLM responses
+- ✅ You want automatic link detection with event-driven timing
+- ✅ You want fallback recommendations if no links present
+- ✅ You want automatic tracking and transparency labels
+
+**Don't use this component if:**
+- ❌ You want a separate recommendations panel (use [Citation & Product Format](/platforms/citation-format) instead)
 
 ---
 
 ## Installation
 
 ```bash
-Frontend(React):
+# Frontend (React)
 npm install admesh-ui-sdk@latest
 
-Backend(Node.js):
+# Backend (Node.js)
 npm install @admesh/weave-node@latest
 ```
 
 ---
 
-## End-to-End Integration Flow
+## Backend Integration (admesh-weave-node)
 
-The Weave Ad Format requires **both backend and frontend integration**:
+Your backend is responsible for fetching recommendations and passing them to your LLM. The LLM then weaves these recommendations into the response text.
 
-1. **Backend** fetches recommendations and passes them to your LLM
-2. **LLM** weaves recommendations into the response as AdMesh links
-3. **Frontend** detects those links and handles tracking
-
----
-
-## Backend Integration
-
-### Step 1: Install `admesh-weave-node`
-
-The backend package handles fetching recommendations and formatting them for your LLM:
+### Step 1: Install admesh-weave-node
 
 ```bash
 npm install @admesh/weave-node@latest
@@ -82,7 +93,7 @@ npm install @admesh/weave-node@latest
 
 ### Step 2: Fetch Recommendations and Pass to LLM
 
-Use `AdMeshClient` to fetch recommendations, then pass them to your LLM:
+Use `AdMeshClient` to fetch recommendations before calling your LLM:
 
 ```typescript
 import { AdMeshClient } from '@admesh/weave-node';
@@ -119,69 +130,162 @@ async function generateLLMResponse(userQuery: string, sessionId: string, message
 
 **What happens:**
 - ✅ Backend fetches recommendations from AdMesh
-- ✅ Backend passes recommendations to your LLM
+- ✅ Backend passes recommendations to your LLM as context
 - ✅ LLM naturally weaves them into the response as links
-- ✅ Response contains AdMesh tracking links (e.g., `https://tracking.useadmesh.com/click/abc123`)
+- ✅ Response contains AdMesh tracking links (e.g., `http://localhost:8000/click/r/abc123...`)
+
+<Note>
+See the [admesh-weave-node documentation](/weave-node/installation) for complete backend integration details.
+</Note>
 
 ---
 
-## Frontend Integration
+## Frontend Integration (admesh-ui-sdk)
 
-### Step 1: Wrap Your LLM Response with WeaveAdFormatContainer
+The frontend integration has **three parts**:
+1. Wrap your app with `AdMeshProvider`
+2. Wrap LLM response content with `WeaveAdFormatContainer`
+3. Dispatch streaming events from your chat component
+
+### Step 1: Wrap Your App with AdMeshProvider
 
 ```tsx
-import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+import { AdMeshProvider } from 'admesh-ui-sdk';
 
+<AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+  <YourChatComponent />
+</AdMeshProvider>
+```
+
+### Step 2: Wrap LLM Response Content with WeaveAdFormatContainer
+
+In your message rendering component (e.g., `MessageBox.tsx`):
+
+```tsx
+import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
+
+// For each assistant message
 <WeaveAdFormatContainer
-  messageId={message.id}
-  fallbackUI={
-    <AdMeshRecommendations
-      messages={[message]}
-      format="citation"
-    />
-  }
+  messageId={message.messageId}  // Assistant message ID from backend
+  query={userQuery}              // User's query that prompted this response
+  fallbackFormat="citation"      // or "product"
 >
-  {/* Your content here - use any markdown renderer or plain text */}
-  <div>{message.content}</div>
+  {/* Your LLM response content - use any markdown renderer or plain HTML */}
+  <Markdown>{message.content}</Markdown>
 </WeaveAdFormatContainer>
 ```
 
-### Step 2: Component Handles Everything Automatically
+**Required props:**
+- `messageId`: The **assistant message ID** (from backend, not user message ID)
+- `query`: The user's query that prompted this response
+- `fallbackFormat`: `"citation"` or `"product"` (format for fallback recommendations)
 
-The `WeaveAdFormatContainer` automatically:
-- Detects AdMesh links in your content (from backend)
-- Adds `[Ad]` labels for transparency
-- Fires exposure pixels when links are detected
-- Shows fallback recommendations if no links found
+### Step 3: Dispatch Streaming Events from Chat Component
 
-**What the component does:**
-1. Scans your LLM response for AdMesh tracking links
-2. If links found: Shows content with `[Ad]` labels + fires exposure pixels
-3. If no links: Shows fallback recommendations UI
+In your chat component (e.g., `ChatWindow.tsx`), dispatch events during the streaming flow:
+
+```tsx
+import {
+  dispatchStreamingStartEvent,
+  dispatchStreamingCompleteEvent
+} from 'admesh-ui-sdk';
+
+async function sendMessage(userQuery: string) {
+  let assistantMessageId = '';
+  let streamingStartDispatched = false;
+
+  // Call your backend API
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ query: userQuery, sessionId, messageId })
+  });
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value);
+    const data = JSON.parse(chunk);
+
+    // Capture assistant message ID from backend
+    if (data.messageId) {
+      assistantMessageId = data.messageId;
+
+      // Dispatch streamingStart event when you first get the assistant message ID
+      if (!streamingStartDispatched && assistantMessageId) {
+        dispatchStreamingStartEvent(assistantMessageId, sessionId);
+        streamingStartDispatched = true;
+      }
+    }
+
+    // ... handle streaming chunks ...
+  }
+
+  // Dispatch streamingComplete event when streaming finishes
+  if (assistantMessageId) {
+    dispatchStreamingCompleteEvent(assistantMessageId, sessionId);
+  }
+}
+```
+
+**Critical: Use Assistant Message ID**
+
+The events MUST use the **assistant message ID** (from backend), not the user message ID:
+
+```tsx
+// ❌ WRONG - Using user message ID
+const userMessageId = crypto.randomBytes(7).toString('hex');
+dispatchStreamingStartEvent(userMessageId, sessionId);
+
+// ✅ CORRECT - Using assistant message ID from backend
+const assistantMessageId = data.messageId; // From backend response
+dispatchStreamingStartEvent(assistantMessageId, sessionId);
+```
+
+### What Happens Automatically
+
+Once you've completed the integration, `WeaveAdFormatContainer` automatically:
+
+1. **Waits for `streamingComplete` event** (no premature detection)
+2. **Scans for AdMesh links** in the LLM response
+3. **If links found:**
+   - Adds `[Ad]` labels next to links
+   - Fires exposure tracking pixels
+   - Shows "Why this ad?" tooltips on hover
+   - Does NOT render fallback recommendations
+4. **If no links found:**
+   - Renders fallback recommendations (citation or product format)
+   - Makes single API call to fetch recommendations
 
 ---
 
 ## Best Practices
 
-✅ **Do**
-- Wrap LLM responses with `WeaveAdFormatContainer`
-- Provide `messageId` for tracking
-- Use `fallbackUI` for when no links are detected
+✅ **DO:**
+- Dispatch `streamingStart` event when you receive assistant message ID from backend
+- Dispatch `streamingComplete` event when streaming finishes
+- Use **assistant message ID** (from backend) in events, not user message ID
+- Wrap each assistant message with `WeaveAdFormatContainer`
+- Provide the user's query in the `query` prop
 - Keep AdMesh links intact in your LLM response
 - Let the SDK handle tracking automatically
 
-❌ **Don't**
+❌ **DON'T:**
+- Use user message ID in streaming events (must use assistant message ID)
+- Dispatch events before you have the assistant message ID
 - Modify or remove AdMesh tracking links
 - Manually fire tracking pixels
 - Remove `[Ad]` labels added by the SDK
 - Create new sessions for every message
-- Modify the component's internal link detection
 
 ---
 
 ## Complete End-to-End Example
 
-This example shows the complete flow: backend fetches recommendations → LLM weaves them → frontend detects and tracks.
+This example shows the complete event-driven flow based on the Perplexica reference implementation.
 
 ### Backend (Node.js/Express)
 
@@ -192,16 +296,21 @@ const client = new AdMeshClient({
   apiKey: process.env.ADMESH_API_KEY
 });
 
-// API endpoint that your frontend calls
+// Streaming API endpoint
 app.post('/api/chat', async (req, res) => {
-  const { userQuery, sessionId, messageId } = req.body;
+  const { query, sessionId, messageId } = req.body;
+
+  // Set up streaming response
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
 
   try {
     // Step 1: Fetch AdMesh recommendations
     const result = await client.getRecommendationsForWeave({
       sessionId: sessionId,
       messageId: messageId,
-      query: userQuery
+      query: query
     });
 
     // Step 2: Format recommendations for LLM
@@ -212,61 +321,133 @@ app.post('/api/chat', async (req, res) => {
         .join('\n');
     }
 
-    // Step 3: Call your LLM with recommendations
-    const llmResponse = await callYourLLM(
-      userQuery + '\n\nRecommendations:\n' + recommendationsContext
+    // Step 3: Stream LLM response with recommendations
+    const llmStream = await callYourLLMStreaming(
+      query + '\n\nRecommendations:\n' + recommendationsContext
     );
 
-    // Step 4: Return response (now contains AdMesh links)
-    res.json({ response: llmResponse });
+    // Generate assistant message ID
+    const assistantMessageId = generateMessageId();
+
+    // Send message ID first
+    res.write(JSON.stringify({
+      type: 'messageId',
+      messageId: assistantMessageId
+    }) + '\n');
+
+    // Stream LLM chunks
+    for await (const chunk of llmStream) {
+      res.write(JSON.stringify({
+        type: 'message',
+        data: chunk,
+        messageId: assistantMessageId
+      }) + '\n');
+    }
+
+    res.end();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 ```
 
-### Frontend (React)
+### Frontend - Chat Component (ChatWindow.tsx)
 
 ```tsx
 import React, { useState } from 'react';
-import { AdMeshProvider, WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
+import {
+  AdMeshProvider,
+  dispatchStreamingStartEvent,
+  dispatchStreamingCompleteEvent
+} from 'admesh-ui-sdk';
+import MessageBox from './MessageBox';
 
-function ChatWithWeaveFormat() {
+function ChatWindow() {
   const [messages, setMessages] = useState([]);
   const sessionId = 'user-session-123';
 
-  const handleNewMessage = async (userQuery) => {
+  const sendMessage = async (userQuery: string) => {
     // Add user message
-    const userMessage = {
-      messageId: `msg-${Date.now()}`,
+    const userMessageId = crypto.randomBytes(7).toString('hex');
+    setMessages(prev => [...prev, {
+      messageId: userMessageId,
       role: 'user',
       content: userQuery
-    };
+    }]);
 
-    const messageId = `msg-${Date.now() + 1}`;
+    // Track assistant message ID and streaming state
+    let assistantMessageId = '';
+    let streamingStartDispatched = false;
 
     try {
-      // Step 1: Call backend to get LLM response with embedded AdMesh links
+      // Call backend API
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userQuery: userQuery,
+          query: userQuery,
           sessionId: sessionId,
-          messageId: messageId
+          messageId: userMessageId
         })
       });
 
-      const data = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      // Step 2: Create assistant message with LLM response
-      const assistantMessage = {
-        messageId: messageId,
-        role: 'assistant',
-        content: data.response  // Contains AdMesh links from backend
-      };
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      setMessages([...messages, userMessage, assistantMessage]);
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+
+          const data = JSON.parse(line);
+
+          // Capture assistant message ID from backend
+          if (data.messageId) {
+            assistantMessageId = data.messageId;
+
+            // Dispatch streamingStart event when we first get the assistant message ID
+            if (!streamingStartDispatched && assistantMessageId) {
+              console.log('[ChatWindow] 📢 Dispatching streamingStart:', assistantMessageId);
+              dispatchStreamingStartEvent(assistantMessageId, sessionId);
+              streamingStartDispatched = true;
+            }
+          }
+
+          // Handle message chunks
+          if (data.type === 'message') {
+            setMessages(prev => {
+              const existing = prev.find(m => m.messageId === assistantMessageId);
+              if (existing) {
+                return prev.map(m =>
+                  m.messageId === assistantMessageId
+                    ? { ...m, content: m.content + data.data }
+                    : m
+                );
+              } else {
+                return [...prev, {
+                  messageId: assistantMessageId,
+                  role: 'assistant',
+                  content: data.data,
+                  userQuery: userQuery // Store user query for WeaveAdFormatContainer
+                }];
+              }
+            });
+          }
+        }
+      }
+
+      // Dispatch streamingComplete event when streaming finishes
+      if (assistantMessageId) {
+        console.log('[ChatWindow] 📢 Dispatching streamingComplete:', assistantMessageId);
+        dispatchStreamingCompleteEvent(assistantMessageId, sessionId);
+      }
     } catch (error) {
       console.error('Error:', error);
     }
@@ -276,43 +457,140 @@ function ChatWithWeaveFormat() {
     <AdMeshProvider apiKey={process.env.REACT_APP_ADMESH_API_KEY} sessionId={sessionId}>
       <div className="chat-container">
         {messages.map((msg) => (
-          <div key={msg.messageId} className={`message ${msg.role}`}>
-            {msg.role === 'assistant' ? (
-              // Step 3: Frontend wraps response with WeaveAdFormatContainer
-              // Component detects AdMesh links and handles tracking
-              <WeaveAdFormatContainer
-                messageId={msg.messageId}
-                fallbackUI={
-                  <AdMeshRecommendations
-                    messages={[msg]}
-                    format="citation"
-                  />
-                }
-              >
-                {/* Render your content here - use any markdown renderer or plain HTML */}
-                <div className="message-content">{msg.content}</div>
-              </WeaveAdFormatContainer>
-            ) : (
-              <div className="message-content">{msg.content}</div>
-            )}
-          </div>
+          <MessageBox key={msg.messageId} message={msg} />
         ))}
       </div>
     </AdMeshProvider>
   );
 }
 
-export default ChatWithWeaveFormat;
+export default ChatWindow;
+```
+
+### Frontend - Message Component (MessageBox.tsx)
+
+```tsx
+import React from 'react';
+import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
+import Markdown from 'markdown-to-jsx';
+
+function MessageBox({ message }) {
+  if (message.role === 'user') {
+    return <div className="user-message">{message.content}</div>;
+  }
+
+  // For assistant messages, wrap with WeaveAdFormatContainer
+  return (
+    <WeaveAdFormatContainer
+      messageId={message.messageId}  // Assistant message ID from backend
+      query={message.userQuery}      // User query stored with assistant message
+      fallbackFormat="citation"      // or "product"
+    >
+      <Markdown>{message.content}</Markdown>
+    </WeaveAdFormatContainer>
+  );
+}
+
+export default MessageBox;
 ```
 
 <Note>
-This example shows the complete end-to-end flow:
-
-1. **Backend** fetches recommendations and passes them to your LLM
-2. **LLM** naturally weaves recommendations into the response as links
-3. **Frontend** detects those links and handles tracking automatically
-
-The `WeaveAdFormatContainer` works with any content type.
+**Reference Implementation:** This example is based on the Perplexica integration. See:
+- `perplexica-backend/src/routes/chat.ts` - Backend streaming implementation
+- `perplexica/src/components/ChatWindow.tsx` - Event dispatching
+- `perplexica/src/components/MessageBox.tsx` - WeaveAdFormatContainer usage
 </Note>
 
 ---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Fallback recommendations showing even when links exist">
+    **Cause:** Events are being dispatched with user message ID instead of assistant message ID.
+
+    **Solution:**
+    ```tsx
+    // ❌ WRONG
+    const userMessageId = crypto.randomBytes(7).toString('hex');
+    dispatchStreamingStartEvent(userMessageId, sessionId);
+
+    // ✅ CORRECT
+    const assistantMessageId = data.messageId; // From backend
+    dispatchStreamingStartEvent(assistantMessageId, sessionId);
+    ```
+
+    The `messageId` in events MUST match the `messageId` prop in `WeaveAdFormatContainer`.
+  </Accordion>
+
+  <Accordion title="Links not being detected">
+    **Check:**
+    - Backend is successfully weaving AdMesh links into LLM response
+    - Links are in the format: `http://localhost:8000/click/r/...` or `https://tracking.useadmesh.com/click/...`
+    - `streamingComplete` event is being dispatched after streaming finishes
+    - Assistant message ID is being used in events (not user message ID)
+  </Accordion>
+
+  <Accordion title="Duplicate API calls">
+    **Cause:** Multiple detection cycles or timeout-based detection still running.
+
+    **Solution:**
+    - Ensure you're using the latest version of `admesh-ui-sdk` (v1.0.7+)
+    - Verify `streamingComplete` event is dispatched only once per message
+    - Check console logs for multiple "Setting up listener" messages
+  </Accordion>
+
+  <Accordion title="Events not being received">
+    **Check:**
+    - `streamingStart` event is dispatched when you receive assistant message ID
+    - `streamingComplete` event is dispatched when streaming finishes
+    - Both events use the same `messageId` (assistant message ID)
+    - Both events use the same `sessionId`
+    - Events are dispatched BEFORE the component unmounts
+  </Accordion>
+
+  <Accordion title="[Ad] labels not appearing">
+    **Check:**
+    - AdMesh links are present in the LLM response
+    - Links are being detected (check console logs)
+    - WeaveResponseProcessor is initialized correctly
+    - No CSS conflicts hiding the labels
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Key Takeaways
+
+✅ **Event-Driven Architecture**
+- Eliminates race conditions and duplicate API calls
+- Waits for streaming to complete before detecting links
+- Predictable, reliable behavior
+
+✅ **Two-Part Integration**
+- Backend: Fetch recommendations with `admesh-weave-node` and pass to LLM
+- Frontend: Wrap responses with `WeaveAdFormatContainer` and dispatch events
+
+✅ **Critical: Use Assistant Message ID**
+- Events MUST use assistant message ID (from backend)
+- NOT user message ID (generated in frontend)
+- Must match the `messageId` prop in `WeaveAdFormatContainer`
+
+✅ **Automatic Handling**
+- Link detection happens automatically after `streamingComplete` event
+- Exposure tracking fires automatically when links detected
+- Fallback recommendations render automatically when no links found
+- Zero manual tracking required
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Backend SDK (admesh-weave-node)" icon="server" href="/backend-sdk/weave-node">
+    Complete backend integration guide
+  </Card>
+  <Card title="Citation & Product Format" icon="list" href="/platforms/citation-format">
+    Alternative format for separate recommendations panel
+  </Card>
+</CardGroup>

@@ -1,240 +1,317 @@
 ---
 title: "Installation & Setup"
-description: "Install and configure admesh-weave-node for backend integration with AdMesh Protocol"
+description: "Install and configure admesh-weave-node for backend recommendation fetching"
 ---
 
 ## Overview
 
-The **admesh-weave-node** SDK enables backend systems to fetch personalized product or service recommendations through the AdMesh Protocol. It’s ideal for developers who want to integrate context-aware suggestions into AI assistants, chatbots, or content generation workflows.
+The **admesh-weave-node** SDK is a backend Node.js package that fetches personalized recommendations from AdMesh. Use it to retrieve recommendations that your LLM can naturally weave into responses.
 
-This SDK is optional — you can use it if you need full control over recommendation formatting or wish to weave sponsored mentions naturally into LLM-generated responses.
+**When to use this SDK:**
+- You want to embed recommendations directly in LLM responses (Weave Ad Format)
+- You need backend control over recommendation fetching
+- You're building a custom LLM integration
 
----
-
-## Prerequisites
-
-Before installing, ensure you have:
-
-- **Node.js 16.x or higher** (LTS recommended)
-- **npm 7.x or higher**, **yarn 1.22.x**, or **pnpm 8.x**
-- An **AdMesh API Key** from your dashboard
-- A **backend environment** such as Express.js, Fastify, or Next.js API routes
+**When NOT to use this SDK:**
+- You only need frontend recommendations (use admesh-ui-sdk instead)
+- You want a separate recommendations panel (use Citation/Product Format with admesh-ui-sdk)
 
 ---
 
-## Installation
+## Quick Start
 
-### Step 1: Install the Package
-
-Using npm:
+Install the package:
 ```bash
-npm install admesh-weave-node
+npm install @admesh/weave-node@latest
 ```
 
-Using yarn:
-```bash
-yarn add admesh-weave-node
-```
-
-Using pnpm:
-```bash
-pnpm add admesh-weave-node
-```
-
-### Step 2: Set Your API Key
-
-Store your API key in an environment variable:
-
-```bash
-# .env
-ADMESH_API_KEY=your-api-key-here
-```
-
-> Never hardcode or expose your API key publicly. Always store it securely in environment variables or a secrets manager.
-
----
-
-## Configuration
-
-### Initialize the Client
-
-The AdMeshClient requires only your API key to initialize. All other settings are configured internally for optimal performance.
-
+Initialize the client:
 ```typescript
-import { AdMeshClient } from 'admesh-weave-node';
+import { AdMeshClient } from '@admesh/weave-node';
 
-const admesh = new AdMeshClient({
+const client = new AdMeshClient({
   apiKey: process.env.ADMESH_API_KEY
 });
 ```
 
-### How It Works
-
-- **API Endpoint:** Automatically configured to `https://api.useadmesh.com` (production)
-- **Debug Mode:** Automatically enabled in development environments (`NODE_ENV === 'development'`)
-- **Timeouts & Retries:** Configured internally with sensible defaults for reliability
-
----
-
-## Fetching Recommendations
-
-Retrieve personalized recommendations with the `getRecommendationsForWeave()` method.
-
+Fetch recommendations:
 ```typescript
-const result = await admesh.getRecommendationsForWeave({
-  sessionId: 'session-123',
-  messageId: 'msg-456',
-  query: 'best tools for project management'
+const result = await client.getRecommendationsForWeave({
+  sessionId: sessionId,
+  messageId: messageId,
+  query: userQuery
 });
 
 if (result.found) {
-  console.log('Recommendations:', result.recommendations);
+  const context = result.recommendations
+    .map(r => \`- \${r.product_title}: \${r.click_url}\`)
+    .join('\\n');
 }
 ```
 
-### Example Response
+---
+
+## Requirements
+
+- Node.js 16.x or higher (LTS recommended)
+- API key from AdMesh dashboard
+- TypeScript support included
+- Works with Express, Fastify, Next.js API routes, etc.
+
+---
+
+## Installation Methods
+
+npm (recommended):
+```bash
+npm install @admesh/weave-node@latest
+```
+
+Yarn:
+```bash
+yarn add @admesh/weave-node@latest
+```
+
+pnpm:
+```bash
+pnpm add @admesh/weave-node@latest
+```
+
+---
+
+## Core Concepts
+
+### AdMeshClient
+
+The main client for fetching recommendations. Initialize once and reuse across your application.
 
 ```typescript
-interface RecommendationResult {
+import { AdMeshClient } from '@admesh/weave-node';
+
+const client = new AdMeshClient({
+  apiKey: process.env.ADMESH_API_KEY
+});
+```
+
+**Security:** Never hardcode your API key. Always use environment variables or a secrets manager.
+
+### Session and Message IDs
+
+AdMesh uses IDs to track user interactions:
+
+- **Session ID**: Unique identifier for a user's conversation session
+- **Message ID**: Unique identifier for each individual message/query
+
+```typescript
+// Your application generates these IDs
+const sessionId = crypto.randomBytes(16).toString('hex');
+const messageId = crypto.randomBytes(7).toString('hex');
+```
+
+Your backend is responsible for generating and managing session and message IDs. The SDK accepts these IDs but does not generate them.
+
+---
+
+## API Methods
+
+### getRecommendationsForWeave()
+
+Fetches recommendations for a given query that can be woven into LLM responses.
+
+```typescript
+interface GetRecommendationsForWeaveRequest {
+  sessionId: string;  // User's session ID
+  messageId: string;  // Current message ID
+  query: string;      // User's query
+}
+
+interface GetRecommendationsForWeaveResponse {
   found: boolean;
   recommendations: Recommendation[];
 }
 
 interface Recommendation {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  category: string;
-  relevanceScore: number;
+  ad_id: string;           // Unique ad identifier
+  product_title: string;   // Product/service title
+  product_description: string; // Product description
+  click_url: string;       // Tracking URL for clicks
+  exposure_url: string;    // Tracking URL for exposures
+}
+```
+
+**Example:**
+```typescript
+const result = await client.getRecommendationsForWeave({
+  sessionId: 'session-abc123',
+  messageId: 'msg-xyz789',
+  query: 'best project management tools'
+});
+
+if (result.found) {
+  console.log(\`Found \${result.recommendations.length} recommendations\`);
+  result.recommendations.forEach(rec => {
+    console.log(\`- \${rec.product_title}: \${rec.click_url}\`);
+  });
 }
 ```
 
 ---
 
-## Example: Express.js Integration
+## Integration Example
 
-Here’s a sample integration for a backend chat endpoint:
+Here's a complete example showing how to fetch recommendations and pass them to your LLM:
 
 ```typescript
 import express from 'express';
-import { AdMeshClient } from 'admesh-weave-node';
+import { AdMeshClient } from '@admesh/weave-node';
 
 const app = express();
 app.use(express.json());
 
-const admesh = new AdMeshClient({
+const client = new AdMeshClient({
   apiKey: process.env.ADMESH_API_KEY
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { sessionId, messageId, userQuery } = req.body;
+  const { sessionId, messageId, query } = req.body;
 
   try {
-    const result = await admesh.getRecommendationsForWeave({
-      sessionId,
-      messageId,
-      query: userQuery
+    // Step 1: Fetch AdMesh recommendations
+    const result = await client.getRecommendationsForWeave({
+      sessionId: sessionId,
+      messageId: messageId,
+      query: query
     });
 
-    const recommendations = result.recommendations || [];
-    const context = recommendations
-      .map(r => `- ${r.title}: ${r.description} (${r.url})`)
-      .join('\n');
+    // Step 2: Format recommendations for your LLM
+    let recommendationsContext = '';
+    if (result.found) {
+      recommendationsContext = result.recommendations
+        .map(r => \`- \${r.product_title}: \${r.click_url}\`)
+        .join('\\n');
+    }
 
-    // Combine with your LLM query
-    const llmPrompt = `${userQuery}\n\n${context}`;
+    // Step 3: Pass to your LLM with recommendations
+    const llmPrompt = \`\${query}\\n\\nRecommendations:\\n\${recommendationsContext}\`;
     const llmResponse = await callYourLLM(llmPrompt);
 
+    // Step 4: Return response (LLM has woven AdMesh links into the text)
     res.json({ response: llmResponse });
   } catch (error) {
+    console.error('Error:', error);
     res.status(500).json({ error: 'Failed to process request' });
   }
 });
+
+app.listen(3000);
 ```
 
----
-
-## Tracking Events
-
-Track impressions, clicks, or conversions to measure engagement. These methods are optional but recommended.
-
-```typescript
-// Track exposure
-await admesh.trackExposure({
-  sessionId: 'session-123',
-  messageId: 'msg-456',
-  recommendationIds: ['rec-001']
-});
-
-// Track click
-await admesh.trackClick({
-  sessionId: 'session-123',
-  recommendationId: 'rec-001'
-});
-
-// Track conversion
-await admesh.trackConversion({
-  sessionId: 'session-123',
-  recommendationId: 'rec-001',
-  conversionValue: 99.99
-});
-```
+**Complete Integration:** This example shows backend integration only. For frontend integration to detect and track the embedded links, see the Weave Ad Format guide.
 
 ---
 
 ## Error Handling
 
+Always wrap API calls in try-catch blocks:
+
 ```typescript
 try {
-  const result = await admesh.getRecommendationsForWeave({
+  const result = await client.getRecommendationsForWeave({
     sessionId,
     messageId,
     query
   });
+  
+  if (result.found) {
+    // Process recommendations
+  } else {
+    // No recommendations found for this query
+    console.log('No recommendations available');
+  }
 } catch (error) {
-  console.error('Error retrieving recommendations:', error.message);
+  console.error('Error fetching recommendations:', error.message);
+  // Handle error appropriately
 }
 ```
 
-Common error types include:
+**Common scenarios:**
+- result.found === false: No recommendations available for the query (not an error)
+- Network errors: Retry with exponential backoff
+- Invalid API key: Check environment variables
 
-| Error Code | Description |
-|-------------|-------------|
-| `TIMEOUT` | Request took too long |
-| `INVALID_API_KEY` | API key missing or incorrect |
-| `RATE_LIMITED` | Too many requests — retry later |
+---
+
+## TypeScript Support
+
+The SDK is written in TypeScript and includes full type definitions:
+
+```typescript
+import type {
+  AdMeshClient,
+  GetRecommendationsForWeaveRequest,
+  GetRecommendationsForWeaveResponse,
+  Recommendation
+} from '@admesh/weave-node';
+```
+
+All methods and interfaces are fully typed for the best developer experience.
 
 ---
 
 ## Troubleshooting
 
-### No Recommendations Returned
-- Use a more specific query (e.g., “best CRM for startups”)
-- Verify your AdMesh account has active offers
+### No recommendations returned
 
-### Timeout Errors
-- Increase the `timeout` value in your configuration
-- Ensure your server has internet access
+**Possible causes:**
+- Query is too generic (try more specific queries)
+- No active campaigns match the query
+- API key is invalid
 
-### API Key Errors
-- Check that `ADMESH_API_KEY` is correctly set in `.env`
-- Verify the key’s validity in your dashboard
+**Solution:**
+- Use more specific queries (e.g., "best CRM for startups" instead of "software")
+- Check that your AdMesh account has active campaigns
+- Verify API key in environment variables
+
+### API key errors
+
+**Check:**
+- ADMESH_API_KEY is set in environment variables
+- API key is valid (check dashboard)
+- No extra whitespace in the key value
+
+**Example:**
+```bash
+# .env
+ADMESH_API_KEY=your-api-key-here
+```
+
+### TypeScript errors
+
+**Solution:**
+- Ensure TypeScript 4.0 or higher
+- Import types explicitly: import type { Recommendation } from '@admesh/weave-node'
+- Check tsconfig.json includes "moduleResolution": "node"
+
+### Network/timeout errors
+
+**Check:**
+- Server has internet access
+- No firewall blocking outbound requests
+- Network is stable
+
+**Solution:**
+- Implement retry logic with exponential backoff
+- Check server network configuration
 
 ---
 
 ## Next Steps
 
-<CardGroup cols={2}>
-  <Card title="Weave Ad Format" icon="wand-magic-sparkles" href="/platforms/weave-ad-format">
-    Learn how to weave recommendations into LLM responses.
-  </Card>
-  <Card title="Frontend SDK" icon="react" href="/ui-sdk/installation">
-    Explore frontend components for displaying recommendations.
-  </Card>
-</CardGroup>
+**Weave Ad Format Guide:** Complete integration guide for embedding recommendations in LLM responses - /platforms/weave-ad-format
+
+**Frontend SDK:** Install admesh-ui-sdk to detect and track embedded links on the frontend - /ui-sdk/installation
 
 ---
 
-**You’re ready to start integrating.**  
-Install `admesh-weave-node`, retrieve recommendations, and enhance your backend with AdMesh-powered contextual ads.
+**You're ready to start integrating.**  
+Install @admesh/weave-node, fetch recommendations, and pass them to your LLM for natural weaving into responses.

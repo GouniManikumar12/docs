@@ -23,27 +23,32 @@ import { AdMeshProvider } from 'admesh-ui-sdk';
 
 ### Step 3: Choose Your Format Component
 
-**Option A: Citation Format (Separate Panel)**
+**Option A: Citation Format (Separate Panel - Global)**
 ```tsx
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
 <AdMeshRecommendations messages={messages} format="citation" />
 ```
 
-**Option B: Product Format (Separate Panel)**
+**Option B: Product Format (Separate Panel - Global)**
 ```tsx
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
 <AdMeshRecommendations messages={messages} format="product" />
 ```
 
-**Option C: Weave Ad Format (Embedded in LLM Response)**
+**Option C: Weave Ad Format (Embedded in LLM Response - Recommended)**
 ```tsx
 import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
 
 <WeaveAdFormatContainer
-  messageId={message.id}
-  fallbackUI={<AdMeshRecommendations messages={[message]} format="citation" />}
+  messageId={message.messageId}
+  fallbackUI={
+    <AdMeshRecommendations
+      format="citation"
+      messageId={message.messageId}
+    />
+  }
 >
   {message.content}
 </WeaveAdFormatContainer>

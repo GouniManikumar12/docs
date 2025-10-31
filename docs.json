@@ -49,6 +49,11 @@
                 "group": "Node/Express.js",
                 "pages": [
                   "weave-node/installation"                ]
+              },
+              {
+                "group": "Python",
+                "pages": [
+                  "weave-python/installation"                ]
               }
             ]
           },

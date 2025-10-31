@@ -1,0 +1,327 @@
+---
+title: "Installation & Setup"
+description: "Install and configure admesh-weave-python for backend recommendation fetching"
+---
+
+## Overview
+
+The **admesh-weave-python** SDK is a backend Python package that fetches personalized recommendations from AdMesh. Use it to retrieve recommendations that your LLM can naturally weave into responses.
+
+**When to use this SDK:**
+- You want to embed recommendations directly in LLM responses (Weave Ad Format)
+- You need backend control over recommendation fetching
+- You're building a custom LLM integration with Python
+
+**When NOT to use this SDK:**
+- You only need frontend recommendations (use admesh-ui-sdk instead)
+- You want a separate recommendations panel (use Citation/Product Format with admesh-ui-sdk)
+
+---
+
+## Quick Start
+
+Install the package:
+```bash
+pip install admesh-weave-python
+```
+
+Initialize the client:
+```python
+from admesh_weave import AdMeshClient
+
+client = AdMeshClient(api_key="your-api-key")
+```
+
+Fetch recommendations:
+```python
+result = await client.get_recommendations_for_weave(
+    session_id=session_id,
+    message_id=message_id,
+    query=user_query
+)
+
+if result["found"]:
+    context = "\n".join([
+        f"- {r['product_title']}: {r['click_url']}"
+        for r in result["recommendations"]
+    ])
+```
+
+---
+
+## Requirements
+
+- Python 3.8 or higher
+- API key from AdMesh dashboard
+- Full type hints included
+- Works with FastAPI, Flask, Django, etc.
+
+---
+
+## Installation Methods
+
+pip (recommended):
+```bash
+pip install admesh-weave-python
+```
+
+Poetry:
+```bash
+poetry add admesh-weave-python
+```
+
+pipenv:
+```bash
+pipenv install admesh-weave-python
+```
+
+---
+
+## Core Concepts
+
+### AdMeshClient
+
+The main client for fetching recommendations. Initialize once and reuse across your application.
+
+```python
+from admesh_weave import AdMeshClient
+
+client = AdMeshClient(api_key="your-api-key")
+```
+
+**Configuration options:**
+- `api_key` (required): Your AdMesh API key from the dashboard
+- `api_base_url` (optional): Custom API endpoint (defaults to production)
+
+### Session and Message IDs
+
+Every recommendation request requires:
+- **session_id**: Unique identifier for the user's conversation session
+- **message_id**: Unique identifier for each message in the conversation
+- **query**: The user's search query (required for contextual recommendations)
+
+```python
+import uuid
+
+session_id = str(uuid.uuid4())  # Generate once per conversation
+message_id = str(uuid.uuid4())  # Generate for each message
+```
+
+---
+
+## Basic Usage
+
+### Async Usage (Recommended)
+
+```python
+from admesh_weave import AdMeshClient
+
+client = AdMeshClient(api_key="your-api-key")
+
+async def handle_user_query(user_query: str, session_id: str, message_id: str):
+    # Fetch recommendations
+    result = await client.get_recommendations_for_weave(
+        session_id=session_id,
+        message_id=message_id,
+        query=user_query,
+        timeout_ms=30000
+    )
+    
+    if result["found"]:
+        recommendations = result["recommendations"]
+        # Pass to your LLM
+        return format_llm_response(user_query, recommendations)
+    else:
+        # No recommendations available
+        return format_llm_response(user_query, [])
+```
+
+### Synchronous Usage
+
+```python
+from admesh_weave import AdMeshClient
+
+client = AdMeshClient(api_key="your-api-key")
+
+def handle_user_query(user_query: str, session_id: str, message_id: str):
+    # Fetch recommendations (sync)
+    result = client.get_recommendations_for_weave_sync(
+        session_id=session_id,
+        message_id=message_id,
+        query=user_query
+    )
+    
+    if result["found"]:
+        recommendations = result["recommendations"]
+        return format_llm_response(user_query, recommendations)
+```
+
+---
+
+## Integration Examples
+
+### FastAPI Example
+
+```python
+from fastapi import FastAPI, HTTPException
+from admesh_weave import AdMeshClient
+from pydantic import BaseModel
+
+app = FastAPI()
+client = AdMeshClient(api_key="your-api-key")
+
+class ChatRequest(BaseModel):
+    session_id: str
+    message_id: str
+    query: str
+
+@app.post("/api/chat")
+async def chat(request: ChatRequest):
+    try:
+        result = await client.get_recommendations_for_weave(
+            session_id=request.session_id,
+            message_id=request.message_id,
+            query=request.query
+        )
+        
+        return {
+            "found": result["found"],
+            "recommendations": result.get("recommendations", [])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### Flask Example
+
+```python
+from flask import Flask, request, jsonify
+from admesh_weave import AdMeshClient
+
+app = Flask(__name__)
+client = AdMeshClient(api_key="your-api-key")
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json
+    
+    result = client.get_recommendations_for_weave_sync(
+        session_id=data['session_id'],
+        message_id=data['message_id'],
+        query=data['query']
+    )
+    
+    return jsonify({
+        "found": result["found"],
+        "recommendations": result.get("recommendations", [])
+    })
+```
+
+---
+
+## Environment Variables
+
+Store your API key securely using environment variables:
+
+```bash
+# .env
+ADMESH_API_KEY=your-api-key-here
+```
+
+```python
+import os
+from admesh_weave import AdMeshClient
+
+client = AdMeshClient(api_key=os.environ["ADMESH_API_KEY"])
+```
+
+---
+
+## API Reference
+
+### get_recommendations_for_weave()
+
+Async method to fetch recommendations.
+
+**Parameters:**
+- `session_id` (str, required): Session identifier
+- `message_id` (str, required): Message identifier
+- `query` (str, required): User's search query
+- `timeout_ms` (int, optional): Request timeout in milliseconds (default: 12000)
+
+**Returns:**
+```python
+{
+    "found": bool,
+    "recommendations": List[dict],  # If found=True
+    "query": str,
+    "request_id": str,
+    "error": str  # If found=False
+}
+```
+
+### get_recommendations_for_weave_sync()
+
+Synchronous version of `get_recommendations_for_weave()`. Same parameters and return type.
+
+---
+
+## Troubleshooting
+
+### No recommendations returned
+
+**Possible causes:**
+- Query is too generic or vague
+- No active campaigns match the query
+- API key is invalid
+
+**Solution:**
+- Use more specific queries (e.g., "best CRM for startups" instead of "software")
+- Check that your AdMesh account has active campaigns
+- Verify API key in environment variables
+
+### API key errors
+
+**Check:**
+- `ADMESH_API_KEY` is set in environment variables
+- API key is valid (check dashboard)
+- No extra whitespace in the key value
+
+**Example:**
+```python
+import os
+print(f"API Key: {os.environ.get('ADMESH_API_KEY', 'NOT SET')}")
+```
+
+### Type errors
+
+**Solution:**
+- Ensure Python 3.8 or higher
+- Install type stubs if using mypy: `pip install types-httpx`
+- Check that all required parameters are provided
+
+### Network/timeout errors
+
+**Check:**
+- Server has internet access
+- No firewall blocking outbound requests
+- Network is stable
+
+**Solution:**
+- Increase timeout: `timeout_ms=60000`
+- Implement retry logic with exponential backoff
+- Check server network configuration
+
+---
+
+## Next Steps
+
+**Weave Ad Format Guide:** Complete integration guide for embedding recommendations in LLM responses - /platforms/weave-ad-format
+
+**Frontend SDK:** Install admesh-ui-sdk to detect and track embedded links on the frontend - /ui-sdk/installation
+
+---
+
+**You're ready to start integrating.**  
+Install admesh-weave-python, fetch recommendations, and pass them to your LLM for natural weaving into responses.
+

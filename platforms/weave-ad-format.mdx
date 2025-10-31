@@ -25,7 +25,7 @@ The Weave Ad Format uses an **event-driven architecture** to eliminate race cond
 
 ### The Flow
 
-1. **Backend Integration** → Your backend fetches recommendations using `admesh-weave-node` and passes them to your LLM
+1. **Backend Integration** → Your backend fetches recommendations using the backend SDK (`admesh-weave-node` or `admesh-weave-python`) and passes them to your LLM
 2. **LLM Weaving** → Your LLM naturally weaves AdMesh links into the response text
 3. **Streaming Starts** → Your chat component dispatches `streamingStart` event with assistant message ID
 4. **Response Streams** → LLM response chunks stream to frontend (may or may not contain AdMesh links)
@@ -67,7 +67,9 @@ The `WeaveAdFormatContainer` component wraps your LLM response content and uses 
 
 ## Installation
 
-```bash
+<CodeGroup>
+
+```bash Node.js
 # Frontend (React)
 npm install admesh-ui-sdk@latest
 
@@ -75,23 +77,43 @@ npm install admesh-ui-sdk@latest
 npm install @admesh/weave-node@latest
 ```
 
+```bash Python
+# Frontend (React)
+npm install admesh-ui-sdk@latest
+
+# Backend (Python)
+pip install admesh-weave-python
+```
+
+</CodeGroup>
+
 ---
 
-## Backend Integration (admesh-weave-node)
+## Backend Integration
 
 Your backend is responsible for fetching recommendations and passing them to your LLM. The LLM then weaves these recommendations into the response text.
 
-### Step 1: Install admesh-weave-node
+### Step 1: Install Backend SDK
 
-```bash
+<CodeGroup>
+
+```bash Node.js
 npm install @admesh/weave-node@latest
 ```
+
+```bash Python
+pip install admesh-weave-python
+```
+
+</CodeGroup>
 
 ### Step 2: Fetch Recommendations and Pass to LLM
 
 Use `AdMeshClient` to fetch recommendations before calling your LLM:
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 import { AdMeshClient } from '@admesh/weave-node';
 
 const client = new AdMeshClient({
@@ -103,7 +125,7 @@ async function generateLLMResponse(userQuery: string, sessionId: string, message
   const result = await client.getRecommendationsForWeave({
     sessionId: sessionId,
     messageId: messageId,
-    query: userQuery
+    query: userQuery  // Required: User's search query
   });
 
   // Step 2: Format recommendations for your LLM
@@ -124,6 +146,39 @@ async function generateLLMResponse(userQuery: string, sessionId: string, message
 }
 ```
 
+```python Python
+from admesh_weave import AdMeshClient
+import os
+
+client = AdMeshClient(api_key=os.environ["ADMESH_API_KEY"])
+
+async def generate_llm_response(user_query: str, session_id: str, message_id: str):
+    # Step 1: Fetch AdMesh recommendations
+    result = await client.get_recommendations_for_weave(
+        session_id=session_id,
+        message_id=message_id,
+        query=user_query  # Required: User's search query
+    )
+
+    # Step 2: Format recommendations for your LLM
+    recommendations_context = ""
+    if result["found"]:
+        recommendations_context = "\n".join([
+            f"- {r['product_title']}: {r['click_url']}"
+            for r in result["recommendations"]
+        ])
+
+    # Step 3: Pass to LLM with recommendations
+    llm_response = await call_your_llm(
+        user_query + "\n\nRecommendations:\n" + recommendations_context
+    )
+
+    # Step 4: Return response (LLM has woven AdMesh links into the text)
+    return llm_response
+```
+
+</CodeGroup>
+
 **What happens:**
 - ✅ Backend fetches recommendations from AdMesh
 - ✅ Backend passes recommendations to your LLM as context
@@ -131,7 +186,7 @@ async function generateLLMResponse(userQuery: string, sessionId: string, message
 - ✅ Response contains AdMesh tracking links (e.g., `http://localhost:8000/click/r/abc123...`)
 
 <Note>
-See the [admesh-weave-node documentation](/weave-node/installation) for complete backend integration details.
+See the [Node.js SDK documentation](/weave-node/installation) or [Python SDK documentation](/weave-python/installation) for complete backend integration details.
 </Note>
 
 ---
@@ -283,9 +338,11 @@ Once you've completed the integration, `WeaveAdFormatContainer` automatically:
 
 This example shows the complete event-driven flow based on the Perplexica reference implementation.
 
-### Backend (Node.js/Express)
+### Backend
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js/Express
 import { AdMeshClient } from '@admesh/weave-node';
 
 const client = new AdMeshClient({
@@ -306,7 +363,7 @@ app.post('/api/chat', async (req, res) => {
     const result = await client.getRecommendationsForWeave({
       sessionId: sessionId,
       messageId: messageId,
-      query: query
+      query: query  // Required
     });
 
     // Step 2: Format recommendations for LLM
@@ -346,6 +403,76 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 ```
+
+```python Python/FastAPI
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from admesh_weave import AdMeshClient
+import os
+import json
+
+app = FastAPI()
+client = AdMeshClient(api_key=os.environ["ADMESH_API_KEY"])
+
+@app.post("/api/chat")
+async def chat(request: dict):
+    query = request["query"]
+    session_id = request["sessionId"]
+    message_id = request["messageId"]
+
+    async def generate():
+        try:
+            # Step 1: Fetch AdMesh recommendations
+            result = await client.get_recommendations_for_weave(
+                session_id=session_id,
+                message_id=message_id,
+                query=query  # Required
+            )
+
+            # Step 2: Format recommendations for LLM
+            recommendations_context = ""
+            if result["found"]:
+                recommendations_context = "\n".join([
+                    f"- {r['product_title']}: {r['click_url']}"
+                    for r in result["recommendations"]
+                ])
+
+            # Step 3: Stream LLM response with recommendations
+            llm_stream = await call_your_llm_streaming(
+                query + "\n\nRecommendations:\n" + recommendations_context
+            )
+
+            # Generate assistant message ID
+            assistant_message_id = generate_message_id()
+
+            # Send message ID first
+            yield json.dumps({
+                "type": "messageId",
+                "messageId": assistant_message_id
+            }) + "\n"
+
+            # Stream LLM chunks
+            async for chunk in llm_stream:
+                yield json.dumps({
+                    "type": "message",
+                    "data": chunk,
+                    "messageId": assistant_message_id
+                }) + "\n"
+
+        except Exception as e:
+            yield json.dumps({"error": str(e)}) + "\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive"
+        }
+    )
+```
+
+</CodeGroup>
 
 ### Frontend - Chat Component (ChatWindow.tsx)
 

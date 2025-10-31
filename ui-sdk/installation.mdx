@@ -1,5 +1,5 @@
 ---
-title: "UI SDK Installation"
+title: "React"
 description: "Install and set up admesh-ui-sdk for automatic recommendation rendering and tracking"
 ---
 
@@ -33,7 +33,16 @@ Get started with AdMesh in 3 simple steps:
     ```tsx
     import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
-    <AdMeshRecommendations messages={messages} format="citation" />
+    {messages.map((msg) => (
+      msg.role === 'assistant' && (
+        <AdMeshRecommendations
+          key={msg.messageId}
+          messageId={msg.messageId}
+          query={msg.query}  // Required
+          format="citation"
+        />
+      )
+    ))}
     ```
 
     **Weave Ad Format** - Embedded links in LLM responses
@@ -118,8 +127,9 @@ Displays recommendations in a separate panel. Use for **Citation** or **Product*
 
 ```typescript
 interface AdMeshRecommendationsProps {
-  messages: Message[];                    // Array of messages
-  format: 'citation' | 'product';         // Display format
+  messageId: string;                      // Message ID (required)
+  query: string;                          // User's query (required)
+  format?: 'citation' | 'product';        // Display format (default: 'citation')
   onRecommendationsShown?: (messageId: string) => void;
   onError?: (error: Error) => void;
 }
@@ -129,10 +139,16 @@ interface AdMeshRecommendationsProps {
 ```tsx
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
-<AdMeshRecommendations
-  messages={messages}
-  format="citation"
-/>
+{messages.map((msg) => (
+  msg.role === 'assistant' && (
+    <AdMeshRecommendations
+      key={msg.messageId}
+      messageId={msg.messageId}
+      query={msg.query}  // Required
+      format="citation"
+    />
+  )
+))}
 ```
 
 <Card title="Citation & Product Format Guide" icon="list" href="/platforms/citation-format">
@@ -302,6 +318,201 @@ All components and utilities are fully typed for the best developer experience.
     The SDK handles all tracking internally.
   </Accordion>
 </AccordionGroup>
+
+---
+
+## Styling & Customization
+
+The AdMesh UI SDK includes a simple, framework-agnostic styling system that ensures your components look clean and consistent—no matter where they're embedded (Next.js, React, Vite, or custom platforms).
+
+### Key Features
+
+<CardGroup cols={2}>
+  <Card title="Style Isolation" icon="shield">
+    Prevents CSS conflicts with host frameworks like Tailwind or Bootstrap.
+  </Card>
+  <Card title="Consistent Look" icon="layout">
+    Same visual quality across all environments.
+  </Card>
+  <Card title="Custom Themes" icon="palette">
+    Easily adjust colors, borders, and typography.
+  </Card>
+  <Card title="Light & Dark Modes" icon="sun">
+    Built-in theme switching with simple configuration.
+  </Card>
+</CardGroup>
+
+### Default Styling
+
+By default, the SDK injects its own scoped styles automatically. No CSS import is needed.
+
+```tsx
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+<AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+  <AdMeshRecommendations
+    messageId={messageId}
+    query={userQuery}
+    format="citation"
+  />
+</AdMeshProvider>
+```
+
+### Custom Theming
+
+You can customize the appearance by passing a theme to the `AdMeshProvider`:
+
+```tsx
+import { AdMeshProvider } from 'admesh-ui-sdk';
+
+const customTheme = {
+  mode: 'dark',
+  primaryColor: '#3b82f6',
+  accentColor: '#ffffff',
+  borderRadius: '0.5rem',
+  fontFamily: 'Inter, sans-serif'
+};
+
+<AdMeshProvider
+  apiKey="your-api-key"
+  sessionId={sessionId}
+  theme={customTheme}
+>
+  <YourApp />
+</AdMeshProvider>
+```
+
+### Theme Options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `mode` | `'light' \| 'dark'` | `'light'` | Color scheme mode |
+| `primaryColor` | `string` | `'#3b82f6'` | Primary brand color |
+| `accentColor` | `string` | `'#8b5cf6'` | Accent color for highlights |
+| `backgroundColor` | `string` | `'#ffffff'` | Background color |
+| `textColor` | `string` | `'#1f2937'` | Primary text color |
+| `borderRadius` | `string` | `'0.5rem'` | Border radius for components |
+| `fontFamily` | `string` | `'system-ui'` | Font family |
+| `shadowMd` | `string` | `'0 4px 12px rgba(0,0,0,0.08)'` | Medium shadow |
+
+### CSS Variables
+
+You can also override AdMesh styling with standard CSS variables:
+
+```css
+:root {
+  --admesh-primary-color: #3b82f6;
+  --admesh-border-radius: 10px;
+  --admesh-font-family: 'Inter', sans-serif;
+  --admesh-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+```
+
+### Example Themes
+
+<AccordionGroup>
+  <Accordion title="Dark Theme">
+  ```tsx
+  const darkTheme = {
+    mode: 'dark',
+    primaryColor: '#0ea5e9',
+    backgroundColor: '#1f2937',
+    textColor: '#f9fafb'
+  };
+
+  <AdMeshProvider theme={darkTheme} apiKey="..." sessionId="...">
+    <YourApp />
+  </AdMeshProvider>
+  ```
+  </Accordion>
+
+  <Accordion title="Brand Theme">
+  ```tsx
+  const brandTheme = {
+    primaryColor: '#6366f1',
+    accentColor: '#8b5cf6',
+    borderRadius: '0.75rem',
+    fontFamily: 'Poppins, sans-serif'
+  };
+
+  <AdMeshProvider theme={brandTheme} apiKey="..." sessionId="...">
+    <YourApp />
+  </AdMeshProvider>
+  ```
+  </Accordion>
+
+  <Accordion title="Minimal Theme">
+  ```tsx
+  const minimalTheme = {
+    primaryColor: '#000',
+    backgroundColor: '#fff',
+    borderRadius: '0px',
+    shadowMd: 'none'
+  };
+
+  <AdMeshProvider theme={minimalTheme} apiKey="..." sessionId="...">
+    <YourApp />
+  </AdMeshProvider>
+  ```
+  </Accordion>
+</AccordionGroup>
+
+### Framework Integration
+
+#### Next.js + Tailwind
+
+AdMesh styles are isolated from Tailwind classes, so you can safely use both:
+
+```tsx
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+export default function Recommendations() {
+  return (
+    <AdMeshProvider apiKey={process.env.NEXT_PUBLIC_ADMESH_API_KEY} sessionId={sessionId}>
+      <div className="p-4 bg-white rounded-lg">
+        <AdMeshRecommendations
+          messageId={messageId}
+          query={userQuery}
+          format="citation"
+        />
+      </div>
+    </AdMeshProvider>
+  );
+}
+```
+
+#### React + Bootstrap
+
+```tsx
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+export default function App() {
+  return (
+    <AdMeshProvider apiKey={process.env.REACT_APP_ADMESH_API_KEY} sessionId={sessionId}>
+      <div className="container">
+        <AdMeshRecommendations
+          messageId={messageId}
+          query={userQuery}
+          format="citation"
+        />
+      </div>
+    </AdMeshProvider>
+  );
+}
+```
+
+### Styling Best Practices
+
+✅ **DO:**
+- Use the `theme` prop on `AdMeshProvider` for global styling
+- Leverage CSS variables for fine-grained control
+- Test your theme in both light and dark modes
+- Keep styles consistent with your brand
+
+❌ **DON'T:**
+- Directly modify AdMesh component classes (they may change)
+- Override internal styles with `!important` (use theme API instead)
+- Mix multiple theming approaches (choose one method)
 
 ---
 

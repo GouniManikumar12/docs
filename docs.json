@@ -39,21 +39,17 @@
             "group": "SDKs",
             "pages": [
               {
-                "group": "React",
+                "group": "Frontend",
                 "pages": [
-                  "ui-sdk/installation",
-                  "ui-sdk/styling-customization"
-                                ]
+                  "ui-sdk/installation"
+                ]
               },
               {
-                "group": "Node/Express.js",
+                "group": "Backend",
                 "pages": [
-                  "weave-node/installation"                ]
-              },
-              {
-                "group": "Python",
-                "pages": [
-                  "weave-python/installation"                ]
+                  "weave-node/installation",
+                  "weave-python/installation"
+                ]
               }
             ]
           },

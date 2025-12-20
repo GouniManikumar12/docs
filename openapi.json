@@ -76,11 +76,11 @@
                         "intent_type": "product_discovery",
                         "categories": ["ad_networks", "digital_marketing", "advertising_platforms"],
                         "intent_group": "commercial",
-                        "layout_type": "citation"
+                        "layout_type": "tail"
                       },
                       "response": {
                         "summary": "Here are ad_networks tools that match your goal: The user wants to find and evaluate leading ad networks for potential use.",
-                        "citation_summary": "If you're looking for a top-notch ad network, consider [AdMesh](https://api.useadmesh.com/click/r/b1e5d17f-4f76-4669-800c-163398db0cc5?utm_product=0c9521fb-e60a-443d-84c7-14ce37b1063e&utm_redirect=https%3A%2F%2Fuseadmesh.com%2F&utm_rec=feca26b8-a468-461f-9d14-b8e8951588e1&utm_session=sess_1760022990_w8RkKA&utm_agent=w8RkKArkAad2KEfm3J7kwlvFDzb2&test=true). It's a trusted platform known for excellent earning potential and relevant to your marketing interests.",
+                        "tail_summary": "If you're looking for a top-notch ad network, consider [AdMesh](https://api.useadmesh.com/click/r/b1e5d17f-4f76-4669-800c-163398db0cc5?utm_product=0c9521fb-e60a-443d-84c7-14ce37b1063e&utm_redirect=https%3A%2F%2Fuseadmesh.com%2F&utm_rec=feca26b8-a468-461f-9d14-b8e8951588e1&utm_session=sess_1760022990_w8RkKA&utm_agent=w8RkKArkAad2KEfm3J7kwlvFDzb2&test=true). It's a trusted platform known for excellent earning potential and relevant to your marketing interests.",
                         "recommendations": [
                           {
                             "product_id": "0c9521fb-e60a-443d-84c7-14ce37b1063e",
@@ -117,7 +117,7 @@
                             "query": "Best ad_networks tools similar to AdMesh"
                           }
                         ],
-                        "layout_type": "citation"
+                        "layout_type": "tail"
                       },
                       "tokens_used": 500,
                       "model_used": "openai/gpt-4o"
@@ -316,8 +316,8 @@
               "layout_type": {
                 "type": "string",
                 "description": "Recommended layout for displaying results",
-                "enum": ["auto", "grid", "list", "citation", "ecommerce"],
-                "example": "citation"
+                "enum": ["auto", "grid", "list", "tail", "ecommerce"],
+                "example": "tail"
               }
             }
           },
@@ -330,9 +330,9 @@
                 "description": "Summary of the recommendations",
                 "example": "Here are ad_networks tools that match your goal: The user wants to find and evaluate leading ad networks for potential use."
               },
-              "citation_summary": {
+              "tail_summary": {
                 "type": "string",
-                "description": "Citation-style summary with embedded links (when layout_type is 'citation')",
+                "description": "Tail-style summary with embedded links (when layout_type is 'tail')",
                 "example": "If you're looking for a top-notch ad network, consider [AdMesh](https://api.useadmesh.com/click/r/...). It's a trusted platform known for excellent earning potential and relevant to your marketing interests."
               },
               "recommendations": {
@@ -364,8 +364,8 @@
               "layout_type": {
                 "type": "string",
                 "description": "Recommended layout type for the response",
-                "enum": ["auto", "grid", "list", "citation", "ecommerce"],
-                "example": "citation"
+                "enum": ["auto", "grid", "list", "tail", "ecommerce"],
+                "example": "tail"
               }
             }
           },

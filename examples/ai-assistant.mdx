@@ -199,7 +199,7 @@ const AIAssistant: React.FC = () => {
                 <h4>Recommended for you:</h4>
                 <AdMeshLayout
                   recommendations={message.recommendations}
-                  layout="citation"
+                  layout="tail"
                   onRecommendationClick={(adId, admeshLink) => {
                     window.open(admeshLink, '_blank');
                   }}

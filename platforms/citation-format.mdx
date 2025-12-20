@@ -12,7 +12,7 @@ The **Citation & Product Format** displays recommendations as a **separate UI el
 - ✅ Automatic tracking (impressions and clicks)
 - ✅ Transparency labels (`[Ad]` added automatically)
 - ✅ Session-aware tracking
-- ✅ Multiple format options (citation or product cards)
+- ✅ Multiple format options (tail or product cards)
 
 **Setup time:** 5-10 minutes | **Code complexity:** Minimal
 
@@ -24,7 +24,7 @@ The `AdMeshRecommendations` component is specifically designed for **Citation an
 
 **Use this component if:**
 - ✅ You want a separate recommendations panel
-- ✅ You want Citation format (inline citations with links)
+- ✅ You want Tail format (inline tail with links)
 - ✅ You want Product format (product cards)
 - ✅ You want automatic rendering and tracking
 
@@ -66,7 +66,7 @@ The **Provider Pattern** is the simplest approach - just 3 lines of code!
           <AdMeshRecommendations
             messageId={msg.messageId}
             query={msg.query}  // Required: User's original query
-            format="citation"  // or "product"
+            format="tail"  // or "product"
           />
         )}
       </div>
@@ -90,7 +90,7 @@ The **Provider Pattern** is the simplest approach - just 3 lines of code!
 
 ## Format Types
 
-### Citation Format
+### Tail Format
 
 Displays a summary with embedded product links. Ideal for conversational interfaces.
 

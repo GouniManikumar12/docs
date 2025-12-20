@@ -219,7 +219,7 @@ import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 <WeaveAdFormatContainer
   messageId={message.messageId}  // Assistant message ID from backend
   query={userQuery}              // User's query that prompted this response
-  fallbackFormat="citation"      // or "product"
+  fallbackFormat="tail"      // or "product"
 >
   {/* Your LLM response content - use any markdown renderer or plain HTML */}
   <Markdown>{message.content}</Markdown>
@@ -229,7 +229,7 @@ import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 **Required props:**
 - `messageId`: The **assistant message ID** (from backend, not user message ID)
 - `query`: The user's query that prompted this response
-- `fallbackFormat`: `"citation"` or `"product"` (format for fallback recommendations)
+- `fallbackFormat`: `"tail"` or `"product"` (format for fallback recommendations)
 
 ### Step 3: Dispatch Streaming Events from Chat Component
 
@@ -607,7 +607,7 @@ function MessageBox({ message }) {
     <WeaveAdFormatContainer
       messageId={message.messageId}  // Assistant message ID from backend
       query={message.userQuery}      // User query stored with assistant message
-      fallbackFormat="citation"      // or "product"
+      fallbackFormat="tail"      // or "product"
     >
       <Markdown>{message.content}</Markdown>
     </WeaveAdFormatContainer>

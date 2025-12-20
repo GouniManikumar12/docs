@@ -27,7 +27,7 @@ import { AdMeshProvider } from 'admesh-ui-sdk';
 ```tsx
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
-<AdMeshRecommendations messages={messages} format="citation" />
+<AdMeshRecommendations messages={messages} format="tail" />
 ```
 
 **Option B: Product Format (Separate Panel - Global)**
@@ -45,7 +45,7 @@ import { WeaveAdFormatContainer, AdMeshRecommendations } from 'admesh-ui-sdk';
   messageId={message.messageId}
   fallbackUI={
     <AdMeshRecommendations
-      format="citation"
+      format="tail"
       messageId={message.messageId}
     />
   }

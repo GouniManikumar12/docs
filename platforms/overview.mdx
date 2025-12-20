@@ -61,7 +61,7 @@ Displays recommendations as a separate UI component. Use this for Citation or Pr
 ```tsx
 <AdMeshRecommendations
   messages={messages}
-  format="citation"  // or "product"
+  format="tail"  // or "product"
 />
 ```
 
@@ -72,8 +72,9 @@ Displays recommendations as a separate UI component. Use this for Citation or Pr
 - ✅ You want automatic rendering and tracking
 
 **Formats supported:**
-- `format="citation"` - Inline citations with product links
+- `format="tail"` - Inline tail with product links
 - `format="product"` - Product cards with details
+- `format="bridge"` - Followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search (setup prompts and documentation URLs)
 
 ---
 
@@ -83,7 +84,7 @@ Wraps your LLM response content and automatically detects AdMesh links. Use this
 ```tsx
 <WeaveAdFormatContainer
   messageId={msg.id}
-  fallbackUI={<AdMeshRecommendations messages={[msg]} format="citation" />}
+  fallbackUI={<AdMeshRecommendations messages={[msg]} format="tail" />}
 >
   {msg.content}
 </WeaveAdFormatContainer>
@@ -117,7 +118,7 @@ Choose your component based on your platform's needs.
 - Automatic rendering of recommendations
 - Automatic tracking and transparency labels
 - Zero-code setup (3 steps)
-- Multiple format options (citation, product cards)
+- Multiple format options (citation, product cards, bridge format for followup sponsored recommendations)
 
 **Integration steps:**
 1. Install `admesh-ui-sdk`
@@ -156,7 +157,7 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 | Aspect | AdMeshRecommendations | WeaveAdFormatContainer |
 |--------|----------------------|------------------------|
 | **Purpose** | Display recommendations | Detect & track links |
-| **Formats** | Citation, Product | Weave Ad Format |
+| **Formats** | Citation, Product, Bridge (followup sponsored recommendations) | Weave Ad Format |
 | **Rendering** | Automatic UI | Wraps your content |
 | **Link Detection** | N/A | Automatic |
 | **Fallback UI** | N/A | Supported |
@@ -172,6 +173,7 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 - You want a separate recommendations panel
 - You want Citation format (inline citations)
 - You want Product format (product cards)
+- You want Bridge format (followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search)
 - You want automatic rendering
 
 **Choose WeaveAdFormatContainer if:**

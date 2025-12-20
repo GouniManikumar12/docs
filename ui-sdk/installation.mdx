@@ -39,7 +39,7 @@ Get started with AdMesh in 3 simple steps:
           key={msg.messageId}
           messageId={msg.messageId}
           query={msg.query}  // Required
-          format="citation"
+          format="tail"
         />
       )
     ))}
@@ -52,7 +52,7 @@ Get started with AdMesh in 3 simple steps:
     <WeaveAdFormatContainer
       messageId={message.messageId}
       query={userQuery}
-      fallbackFormat="citation"
+      fallbackFormat="tail"
     >
       <YourLLMResponse />
     </WeaveAdFormatContainer>
@@ -129,7 +129,7 @@ Displays recommendations in a separate panel. Use for **Citation** or **Product*
 interface AdMeshRecommendationsProps {
   messageId: string;                      // Message ID (required)
   query: string;                          // User's query (required)
-  format?: 'citation' | 'product';        // Display format (default: 'citation')
+  format?: 'tail' | 'product';        // Display format (default: 'tail')
   onRecommendationsShown?: (messageId: string) => void;
   onError?: (error: Error) => void;
 }
@@ -165,7 +165,7 @@ Wraps LLM response content and detects embedded AdMesh links. Use for **Weave Ad
 interface WeaveAdFormatContainerProps {
   messageId: string;                      // Assistant message ID
   query: string;                          // User's query
-  fallbackFormat: 'citation' | 'product'; // Fallback format if no links found
+  fallbackFormat: 'tail' | 'product'; // Fallback format if no links found
   children: React.ReactNode;              // LLM response content
   onLinksDetected?: (count: number) => void;
   onNoLinksDetected?: () => void;
@@ -473,7 +473,7 @@ export default function Recommendations() {
         <AdMeshRecommendations
           messageId={messageId}
           query={userQuery}
-          format="citation"
+          format="tail"
         />
       </div>
     </AdMeshProvider>
@@ -493,7 +493,7 @@ export default function App() {
         <AdMeshRecommendations
           messageId={messageId}
           query={userQuery}
-          format="citation"
+          format="tail"
         />
       </div>
     </AdMeshProvider>

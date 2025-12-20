@@ -1,0 +1,357 @@
+---
+title: "Bridge Ad Format"
+description: "Followup sponsored recommendations with setup prompts and documentation URLs for Vibe Coding Platforms, AI IDEs, and AI search"
+---
+
+## Overview
+
+The **Bridge Ad Format** is designed for **followup sponsored recommendations** that appear after initial responses. It's primarily built for **Vibe Coding Platforms** and **AI IDEs**, and can also be shown in **AI search as followup suggestions**. This format provides setup instructions and documentation links that help AI assistants guide users through product setup and integration.
+
+**What you get:**
+- ✅ Followup sponsored recommendations after initial responses
+- ✅ Setup prompts for AI agent configuration
+- ✅ Documentation URLs for product setup guides
+- ✅ Automatic tracking (impressions and clicks)
+- ✅ Transparency labels (`[Ad]` added automatically)
+- ✅ Session-aware tracking
+
+**Primary Use Cases:**
+- **Vibe Coding Platforms**: Show sponsored followup recommendations with setup instructions
+- **AI IDEs**: Display followup suggestions for developer tools and technical products
+- **AI Search**: Present followup sponsored recommendations in search results
+
+**Setup time:** 5-10 minutes | **Code complexity:** Minimal
+
+---
+
+## What is Bridge Format?
+
+Bridge format is specifically designed for **followup sponsored recommendations** that appear after initial responses. It's primarily built for **Vibe Coding Platforms** and **AI IDEs**, where users need setup instructions and configuration guidance. It can also be shown in **AI search as followup suggestions**.
+
+Instead of traditional ad formats, bridge format returns:
+
+- **`bridge_content`** (required): Setup prompt or configuration instructions for AI agents
+- **`documentation_url`** (optional): Link to product documentation or setup guide
+
+This format is ideal when:
+- ✅ You want to show followup sponsored recommendations after initial responses
+- ✅ You're building Vibe Coding Platforms or AI IDEs
+- ✅ You want to display followup suggestions in AI search results
+- ✅ You need AI agents to provide setup instructions
+- ✅ You want to guide users through product configuration
+- ✅ You want to link to detailed documentation
+- ✅ You're building developer tools or technical products
+
+---
+
+## Component: AdMeshRecommendations
+
+The `AdMeshRecommendations` component supports bridge format when you specify `format="bridge"`. This format is perfect for displaying followup sponsored recommendations in Vibe Coding Platforms, AI IDEs, and AI search.
+
+**Use this format if:**
+- ✅ You want to show followup sponsored recommendations after initial responses
+- ✅ You're building Vibe Coding Platforms or AI IDEs
+- ✅ You want to display followup suggestions in AI search results
+- ✅ You want setup prompts for AI agent configuration
+- ✅ You need to provide documentation links
+- ✅ You're building developer-focused tools
+- ✅ You want AI assistants to guide users through setup
+
+---
+
+## Quick Start
+
+<Steps>
+  <Step title="Install the SDK">
+    ```bash
+    npm install admesh-ui-sdk@latest
+    ```
+  </Step>
+
+  <Step title="Wrap with AdMeshProvider">
+    ```tsx
+    import { AdMeshProvider } from 'admesh-ui-sdk';
+
+    <AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+      <YourChatComponent messages={messages} />
+    </AdMeshProvider>
+    ```
+  </Step>
+
+  <Step title="Add AdMeshRecommendations with Bridge Format">
+    ```tsx
+    import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+    // Display bridge format as followup sponsored recommendations
+    // Perfect for Vibe Coding Platforms, AI IDEs, and AI search
+    {messages.map((msg) => (
+      <div key={msg.messageId}>
+        {msg.content}
+        {/* Show bridge format as followup recommendations after assistant response */}
+        {msg.role === 'assistant' && (
+          <AdMeshRecommendations
+            messageId={msg.messageId}
+            query={msg.query}  // Required: User's original query
+            format="bridge"  // Bridge format for followup sponsored recommendations
+          />
+        )}
+      </div>
+    ))}
+    ```
+  </Step>
+
+  <Step title="Handle Bridge Format Response">
+    The bridge format returns followup sponsored recommendations with:
+    - `bridge_content`: Setup prompt or configuration instructions
+    - `documentation_url`: Link to product documentation (optional)
+    
+    These recommendations appear after initial responses, perfect for Vibe Coding Platforms, AI IDEs, and AI search followup suggestions. Your AI agent can use this content to guide users through setup.
+  </Step>
+</Steps>
+
+---
+
+## Bridge Format Structure
+
+When you request bridge format, the API returns recommendations in this structure:
+
+```json
+{
+  "format": "bridge",
+  "bridge_content": "To set up Nimbus CRM Pro, install the package using npm install @nimbus/crm-pro. Then configure your API key in the environment variables. See the documentation for detailed setup instructions.",
+  "documentation_url": "https://docs.nimbus.com/getting-started"
+}
+```
+
+### Fields
+
+- **`format`**: Always `"bridge"` for bridge format
+- **`bridge_content`** (required): Setup prompt or configuration instructions for AI agents
+- **`documentation_url`** (optional): Link to product documentation or setup guide
+
+---
+
+## Usage Example
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+interface Message {
+  messageId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  query?: string;
+}
+
+function ChatWithBridgeFormat() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputQuery, setInputQuery] = useState('');
+  const sessionId = 'user-session-123';
+
+  const handleSendMessage = async () => {
+    if (!inputQuery.trim()) return;
+
+    const userMessage: Message = {
+      messageId: `msg-${Date.now()}`,
+      role: 'user',
+      content: inputQuery,
+      query: inputQuery
+    };
+
+    const assistantMessage: Message = {
+      messageId: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: 'I can help you set up the recommended tool...',
+      query: inputQuery
+    };
+
+    setMessages([...messages, userMessage, assistantMessage]);
+    setInputQuery('');
+  };
+
+  return (
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <div className="chat-container">
+        <div className="messages">
+          {messages.map((msg) => (
+            <div key={msg.messageId} className={`message ${msg.role}`}>
+              <div className="message-content">{msg.content}</div>
+
+              {/* Show bridge format as followup sponsored recommendations */}
+              {/* Perfect for Vibe Coding Platforms, AI IDEs, and AI search */}
+              {msg.role === 'assistant' && msg.query && (
+                <AdMeshRecommendations
+                  messageId={msg.messageId}
+                  query={msg.query}
+                  format="bridge"
+                  onRecommendationsShown={(id) => {
+                    console.log('Bridge followup recommendations shown for:', id);
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="chat-input">
+          <input
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Ask for setup instructions..."
+          />
+          <button onClick={handleSendMessage}>Send</button>
+        </div>
+      </div>
+    </AdMeshProvider>
+  );
+}
+
+export default ChatWithBridgeFormat;
+```
+
+---
+
+## API Request Format
+
+When requesting bridge format, include `allowed_formats: ["bridge"]` in your API request:
+
+```typescript
+const response = await fetch('/api/recommendations', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: userQuery,
+    session_id: sessionId,
+    allowed_formats: ["bridge"]  // Request bridge format
+  })
+});
+```
+
+---
+
+## Customizing Bridge Format Display
+
+You can customize how bridge format recommendations are displayed:
+
+```tsx
+<AdMeshRecommendations
+  messageId={msg.messageId}
+  query={msg.query}
+  format="bridge"
+  onRecommendationsShown={(messageId) => {
+    console.log('Bridge recommendations shown for message:', messageId);
+  }}
+  onError={(error) => {
+    console.error('Error fetching bridge recommendations:', error);
+  }}
+/>
+```
+
+---
+
+## Best Practices
+
+✅ **DO:**
+- Use bridge format for followup sponsored recommendations after initial responses
+- Perfect for Vibe Coding Platforms, AI IDEs, and AI search followup suggestions
+- Always provide the `query` parameter (required for contextual recommendations)
+- Use bridge format for developer tools and technical products
+- Display `documentation_url` when available
+- Let AI agents use `bridge_content` to guide users through setup
+- Pass your own `sessionId` and `messageId` for accurate tracking
+
+❌ **DON'T:**
+- Omit the `query` parameter (recommendations won't be contextual)
+- Use bridge format for consumer products (use tail or product_card instead)
+- Use bridge format as primary recommendations (it's designed for followup suggestions)
+- Modify the `bridge_content` text
+- Remove transparency labels
+
+---
+
+## When to Use Bridge Format
+
+**Use Bridge Format when:**
+- ✅ Building **Vibe Coding Platforms** - show followup sponsored recommendations
+- ✅ Building **AI IDEs** - display followup suggestions for developer tools
+- ✅ Building **AI Search** - present followup sponsored recommendations in search results
+- ✅ You want followup sponsored recommendations after initial responses
+- ✅ Building developer tools or APIs
+- ✅ Providing setup instructions for technical products
+- ✅ Guiding users through configuration steps
+- ✅ Linking to documentation and guides
+- ✅ AI agents need structured setup prompts
+
+**Don't use Bridge Format when:**
+- ❌ You need primary recommendations (use tail or product_card instead)
+- ❌ Marketing consumer products (use tail or product_card)
+- ❌ Simple product recommendations (use citation or product format)
+- ❌ Embedding links in responses (use weave format)
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Bridge Format Not Showing">
+    **Check:**
+    - `format="bridge"` is specified
+    - `query` prop is provided and not empty (required)
+    - `messageId` prop is provided
+    - API key is valid and set correctly
+    - `allowed_formats: ["bridge"]` is included in API request
+
+    **Common issue:**
+    ```tsx
+    // ❌ WRONG - Missing format specification
+    <AdMeshRecommendations
+      messageId={msg.messageId}
+      query={msg.query}
+    />
+
+    // ✅ CORRECT - Bridge format specified
+    <AdMeshRecommendations
+      messageId={msg.messageId}
+      query={msg.query}
+      format="bridge"
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Bridge Content Not Available">
+    Bridge format requires brand agents to configure:
+    - `default_setup_prompt`: Setup instructions for the product
+    - `bridge_documentation_url`: Link to documentation
+
+    If bridge content is not available, the system will generate a basic prompt from product information.
+  </Accordion>
+
+  <Accordion title="Documentation URL Missing">
+    The `documentation_url` field is optional. If not provided by the brand agent, recommendations will only include `bridge_content`.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="UI SDK Installation" icon="download" href="/ui-sdk/installation">
+    Complete frontend SDK installation and setup
+  </Card>
+  <Card title="Citation & Product Format" icon="file-text" href="/platforms/citation-format">
+    Learn about other ad formats
+  </Card>
+  <Card title="Weave Ad Format" icon="link" href="/platforms/weave-ad-format">
+    Embed links directly in responses
+  </Card>
+  <Card title="FAQ" icon="question" href="/platforms/faq">
+    Common questions and troubleshooting
+  </Card>
+</CardGroup>

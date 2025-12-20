@@ -32,7 +32,8 @@
             "pages": [
               "platforms/overview",
               "platforms/citation-format",
-              "platforms/weave-ad-format"
+              "platforms/weave-ad-format",
+              "platforms/bridge-format"
             ]
           },
           {
@@ -57,7 +58,9 @@
             "group": "Core Concepts",
             "pages": [
               "contextual-relevance-score",
-              "cost-per-exposure"
+              "cost-per-exposure",
+              "cpm-vs-cpx",
+              "how-billing-works"
             ]
           },
           {

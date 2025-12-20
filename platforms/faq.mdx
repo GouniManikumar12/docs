@@ -121,7 +121,7 @@ description: "Frequently asked questions from platform integrators about format 
       return (
         <div>
           {messages.map(msg => <div key={msg.messageId}>{msg.content}</div>)}
-          <AdMeshRecommendations messages={messages} format="citation" />
+          <AdMeshRecommendations messages={messages} format="tail" />
         </div>
       );
     };
@@ -323,7 +323,7 @@ description: "Frequently asked questions from platform integrators about format 
 
     <AdMeshLayout
       recommendations={recommendations}
-      layout="citation"
+      layout="tail"
     />
     ```
 

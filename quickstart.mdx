@@ -31,11 +31,11 @@ curl -X POST "https://api.useadmesh.com/agent/recommend" \
     "intent_type": "product_discovery",
     "categories": ["ad_networks", "digital_marketing", "advertising_platforms"],
     "intent_group": "commercial",
-    "layout_type": "citation"
+    "layout_type": "tail"
   },
   "response": {
     "summary": "Here are ad_networks tools that match your goal: The user wants to find and evaluate leading ad networks for potential use.",
-    "citation_summary": "If you're looking for a top-notch ad network, consider [AdMesh](https://api.useadmesh.com/click/r/b1e5d17f-4f76-4669-800c-163398db0cc5?utm_product=0c9521fb-e60a-443d-84c7-14ce37b1063e&utm_redirect=https%3A%2F%2Fuseadmesh.com%2F&utm_rec=feca26b8-a468-461f-9d14-b8e8951588e1&utm_session=sess_1760022990_w8RkKA&utm_agent=w8RkKArkAad2KEfm3J7kwlvFDzb2&test=true). It's a trusted platform known for excellent earning potential and relevant to your marketing interests.",
+    "tail_summary": "If you're looking for a top-notch ad network, consider [AdMesh](https://api.useadmesh.com/click/r/b1e5d17f-4f76-4669-800c-163398db0cc5?utm_product=0c9521fb-e60a-443d-84c7-14ce37b1063e&utm_redirect=https%3A%2F%2Fuseadmesh.com%2F&utm_rec=feca26b8-a468-461f-9d14-b8e8951588e1&utm_session=sess_1760022990_w8RkKA&utm_agent=w8RkKArkAad2KEfm3J7kwlvFDzb2&test=true). It's a trusted platform known for excellent earning potential and relevant to your marketing interests.",
     "recommendations": [
       {
         "product_id": "0c9521fb-e60a-443d-84c7-14ce37b1063e",
@@ -72,7 +72,7 @@ curl -X POST "https://api.useadmesh.com/agent/recommend" \
         "query": "Best ad_networks tools similar to AdMesh"
       }
     ],
-    "layout_type": "citation"
+    "layout_type": "tail"
   },
   "tokens_used": 500,
   "model_used": "openai/gpt-4o"
@@ -87,7 +87,7 @@ The API returns a comprehensive response structure that includes:
 - **`intent`**: Detected user intent with goal, purchase intent, categories, and recommended layout
 - **`response`**: Main response containing:
   - **`summary`**: Text summary of recommendations
-  - **`citation_summary`**: Markdown-formatted summary with embedded links (when layout_type is "citation")
+  - **`tail_summary`**: Markdown-formatted summary with embedded links (when layout_type is "tail")
   - **`recommendations`**: Array of product recommendations with detailed metadata
   - **`followup_suggestions`**: Suggested follow-up queries for continued conversation
   - **`layout_type`**: Recommended UI layout for displaying results

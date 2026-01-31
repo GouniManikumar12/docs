@@ -19,7 +19,12 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
           "Authorization": `Bearer ${process.env.REACT_APP_ADMESH_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query, session_id: sessionId, format: "auto" }),
+        body: JSON.stringify({ 
+          query, 
+          session_id: sessionId, 
+          message_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          format: "auto" 
+        }),
       });
 
       if (res.status === 401) {
@@ -54,7 +59,12 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
               "Authorization": `Bearer ${process.env.REACT_APP_ADMESH_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ query, session_id: sessionId, format: "auto" }),
+            body: JSON.stringify({ 
+              query, 
+              session_id: sessionId, 
+              message_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              format: "auto" 
+            }),
           });
 
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -100,7 +110,8 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
                 connection.setRequestProperty("Authorization", "Bearer $API_KEY")
                 connection.setRequestProperty("Content-Type", "application/json")
 
-                val body = """{"query":"$query","session_id":"$sessionId","format":"auto"}"""
+                val messageId = "msg_${System.currentTimeMillis()}_${java.util.UUID.randomUUID().toString().substring(0, 9)}"
+                val body = """{"query":"$query","session_id":"$sessionId","message_id":"$messageId","format":"auto"}"""
                 connection.outputStream.write(body.toByteArray())
 
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -145,6 +156,7 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
             body: jsonEncode({
               'query': query,
               'session_id': sessionId,
+              'message_id': 'msg_${DateTime.now().millisecondsSinceEpoch}_${Uuid().v4().substring(0, 9)}',
               'format': 'auto',
             }),
           );
@@ -186,9 +198,11 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+            let messageId = "msg_\(Int(Date().timeIntervalSince1970 * 1000))_\(UUID().uuidString.prefix(9))"
             let body: [String: Any] = [
                 "query": query,
                 "session_id": sessionId,
+                "message_id": messageId,
                 "format": "auto"
             ]
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -235,6 +249,7 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
           body: JSON.stringify({
             query,
             session_id: sessionId,
+            message_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             format: 'auto',
           }),
         });
@@ -255,31 +270,122 @@ Once you have a valid session, call the `/agent/recommend` endpoint.
   </Tab>
 </Tabs>
 
-## Example Response
-
-```json
-{
-  "session_id": "admesh_sess_1760022990_w8RkKA",
-  "placements": [
-    {
-      "id": "plc_01",
-      "title": "Notion for Teams",
-      "reason": "Recommended for collaboration",
-      "ad_id": "ad_7a2b",
-      "click_url": "https://api.useadmesh.com/click/r/ad_7a2b?...",
-      "exposure_url": "https://api.useadmesh.com/expose/ad_7a2b?..."
-    }
-  ]
-}
-```
-
-## Parameters
+## Request Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | User's search or chat query |
 | `session_id` | string | Yes | Session ID from `/agent/session/new` |
-| `format` | string | No | Layout format: `auto`, `card`, `inline` |
+| `message_id` | string | Yes | Unique message ID for deduplication across platforms. Format: `msg_{timestamp}_{random}` |
+| `format` | string | No | Layout format: `auto`, `card`, `inline`. Defaults to `auto` |
+| `source` | string | No | Source of the request: `"admesh_ui_sdk"` (frontend SDK) or `"admesh_weave_node"` (backend weave integration). Defaults to `"admesh_ui_sdk"` |
+
+<Note>
+**Important**: `message_id` is required for deduplication. Generate a unique ID for each message in the format: `msg_{timestamp}_{random_string}`. This ensures recommendations are not duplicated across multiple requests for the same message.
+</Note>
+
+## Example Response
+
+The response follows the finalized minimal schema structure:
+
+```json
+{
+  "session_id": "admesh_sess_1760022990_w8RkKA",
+  "message_id": "msg_1760022990_abc123",
+  "recommendations": [
+    {
+      "product_id": "prod_123",
+      "ad_id": "ad_7a2b",
+      "recommendation_id": "rec_xyz789",
+      "product_title": "Notion for Teams",
+      "tail_summary": "Notion is a powerful workspace tool designed for teams...",
+      "product_summary": "All-in-one workspace for notes, docs, and collaboration",
+      "weave_summary": "Recommended for collaboration and team productivity",
+      "exposure_url": "https://api.useadmesh.com/expose/ad_7a2b?...",
+      "click_url": "https://api.useadmesh.com/click/r/ad_7a2b?...",
+      "product_logo": {
+        "url": "https://cdn.example.com/notion-logo.png"
+      },
+      "categories": ["productivity", "collaboration"],
+      "contextual_relevance_score": 0.87,
+      "trust_score": 85.5,
+      "model_used": "openai/gpt-4o",
+      "creative_input": {
+        "brand_name": "Notion",
+        "product_name": "Notion for Teams",
+        "short_description": "All-in-one workspace for notes, docs, and collaboration",
+        "long_description": "Notion is a powerful workspace tool designed for teams who need to organize their work, collaborate effectively, and stay productive.",
+        "value_props": [
+          "Unified workspace",
+          "Real-time collaboration",
+          "Customizable templates"
+        ],
+        "context_snippet": "For teams needing better organization and collaboration",
+        "cta_label": "Start Free Trial",
+        "cta_url": "https://notion.so/signup",
+        "assets": {
+          "logo_url": "https://cdn.example.com/notion-logo.png",
+          "image_urls": ["https://cdn.example.com/notion-screenshot.png"],
+          "resource_urls": ["https://notion.so/signup"]
+        },
+        "offer_summary": "Special offer: 50% off first year for teams"
+      }
+    }
+  ]
+}
+```
+
+## Response Schema
+
+### Top-Level Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `session_id` | string | Yes | Session ID from the request |
+| `message_id` | string | Yes | Message ID from the request (for deduplication) |
+| `recommendations` | array | Yes | Array of recommendation objects |
+
+### Recommendation Object (14 Core Fields)
+
+Each recommendation object contains the following fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `product_id` | string | Yes | Unique product identifier |
+| `ad_id` | string | Yes | Unique ad identifier |
+| `recommendation_id` | string | Yes | Unique recommendation identifier |
+| `product_title` | string | Yes | Product name (renamed from `title`) |
+| `tail_summary` | string | No | Tail format summary text (moved from top-level) |
+| `product_summary` | string | No | Product summary text (moved from top-level) |
+| `weave_summary` | string | No | Weave format summary for inline integration |
+| `exposure_url` | string | Yes | URL to fire when ad is viewed (MRC-compliant) |
+| `click_url` | string | Yes | URL to redirect to when ad is clicked |
+| `product_logo` | object | No | Product logo object with `url` field |
+| `categories` | array | No | Product categories |
+| `contextual_relevance_score` | number | No | Relevance score (0.0-1.0) |
+| `trust_score` | number | No | Trust score (0-100) |
+| `model_used` | string | No | AI model used for generation |
+| `creative_input` | object | No | Full creative input structure (see below) |
+
+### Creative Input Object (Optional)
+
+The `creative_input` object contains detailed creative information:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `brand_name` | string | Yes | Brand or advertiser name |
+| `product_name` | string | Yes | Product or offer name |
+| `short_description` | string | Yes | 1-2 sentence summary (max 200 chars) |
+| `long_description` | string | Yes | 2-4 sentence description (max 500 chars) |
+| `value_props` | array | Yes | Value propositions (bullet points) |
+| `context_snippet` | string | Yes | 60-100 character contextual hint for weave format |
+| `cta_label` | string | Yes | Call-to-action label |
+| `cta_url` | string | Yes | Call-to-action URL |
+| `assets` | object | Yes | Creative assets (logo, images, resource URLs) |
+| `offer_summary` | string | No | Special offer summary (when available) |
+| `product_id` | string | No | Product identifier |
+| `categories` | array | No | Product categories |
+| `fallback_formats` | array | No | Fallback ad formats if preferred unavailable |
 
 ---
 

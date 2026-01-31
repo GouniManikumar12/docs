@@ -16,7 +16,6 @@ AdMesh enables conversational platforms (AI assistants, search engines, chat app
 **`admesh-ui-sdk` is required for all AdMesh integrations.**
 This package provides the core functionality every platform needs:
 
-- **Session Management**: Automatically creates and manages user sessions
 - **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh
 - **Rendering**: Displays recommendations in your UI with proper formatting
 - **Tracking**: Automatically tracks exposures, clicks, and conversions
@@ -29,7 +28,7 @@ The SDK handles all of this automatically, so you don't need to manage these con
 - Zero-code integration (3 simple steps)
 - Automatic session lifecycle management
 - Built-in error handling and fallbacks
-- Support for multiple ad formats (citation, product cards, etc.)
+- Support for multiple ad formats (tail, product cards, etc.)
 - Configurable theming and styling
 
 ---
@@ -55,26 +54,35 @@ Wraps your application and manages SDK initialization, session tracking, and sta
 
 ---
 
-### 2. **AdMeshRecommendations** - Citation & Product Formats
-Displays recommendations as a separate UI component. Use this for Citation or Product format.
+### 2. **AdMeshRecommendations** - Tail & Product Formats
+Displays recommendations as a separate UI component. Use this for Tail, Product, or Bridge format. Format is automatically detected from the recommendation's `preferred_format`.
 
 ```tsx
 <AdMeshRecommendations
-  messages={messages}
-  format="tail"  // or "product"
+  messageId={messageId}  // Required: Message ID for this recommendation
+  query={userQuery}      // Required: User's original query
+  onRecommendationsShown={(messageId) => {}}  // Optional: Callback when recommendations shown
+  onError={(error) => {}}  // Optional: Error handler
+  onPasteToInput={(content) => {}}  // Optional: For bridge format CTA button
+  followups_container_id="followups"  // Optional: Container for follow-up suggestions
+  onExecuteQuery={(query) => {}}  // Optional: Handler for follow-up queries
+  onFollowupDetected={(query, url, recId) => {}}  // Optional: When sponsored followup detected
 />
 ```
 
 **When to use:**
 - ✅ You want a separate recommendations panel
-- ✅ You want Citation format (inline citations)
-- ✅ You want Product format (product cards)
 - ✅ You want automatic rendering and tracking
+- ✅ You need per-message recommendations
 
-**Formats supported:**
-- `format="tail"` - Inline tail with product links
-- `format="product"` - Product cards with details
-- `format="bridge"` - Followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search (setup prompts and documentation URLs)
+**Formats supported (auto-detected):**
+- **Tail** - Inline tail with product links (default)
+- **Product** - Product cards with details
+- **Bridge** - Followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search (setup prompts and documentation URLs)
+
+<Note>
+  **Format Configuration**: Format is automatically detected from the recommendation's `creative_input.preferred_format`. `allowed_formats` are automatically fetched from your platform configuration (set during onboarding). For **Vibe Coding Platforms**, bridge format is automatically selected during onboarding. You don't need to specify formats as props.
+</Note>
 
 ---
 
@@ -83,24 +91,26 @@ Wraps your LLM response content and automatically detects AdMesh links. Use this
 
 ```tsx
 <WeaveAdFormatContainer
-  messageId={msg.id}
-  fallbackUI={<AdMeshRecommendations messages={[msg]} format="tail" />}
+  messageId={messageId}  // Required: Unique message ID
+  query={userQuery}      // Optional: User's query (for fallback recommendations)
+  fallbackFormat="tail"  // Optional: Fallback format if no links detected (default: "tail")
 >
-  {msg.content}
+  {llmResponseContent}
 </WeaveAdFormatContainer>
 ```
 
 **When to use:**
 - ✅ You embed AdMesh links directly in LLM responses
-- ✅ You want automatic link detection
+- ✅ You want automatic link detection with event-driven timing
 - ✅ You want fallback recommendations if no links present
 - ✅ You want automatic tracking and transparency labels
 
 **What it does:**
-- Detects AdMesh links in your content
+- Detects AdMesh links in your content using event-driven detection
 - Adds `[Ad]` labels automatically
 - Fires exposure pixels when links detected
-- Shows fallback UI if no links found
+- Shows "Why this ad?" tooltip on hover
+- Automatically renders fallback recommendations if no links found (format specified by `fallbackFormat`)
 
 ---
 
@@ -108,7 +118,7 @@ Wraps your LLM response content and automatically detects AdMesh links. Use this
 
 Choose your component based on your platform's needs.
 
-### Citation & Product Format
+### Tail & Product Format
 
 **Best for:** Most platforms that want quick, automatic integration
 
@@ -118,14 +128,14 @@ Choose your component based on your platform's needs.
 - Automatic rendering of recommendations
 - Automatic tracking and transparency labels
 - Zero-code setup (3 steps)
-- Multiple format options (citation, product cards, bridge format for followup sponsored recommendations)
+- Multiple format options (tail, product cards, bridge format for followup sponsored recommendations)
 
 **Integration steps:**
 1. Install `admesh-ui-sdk`
 2. Wrap app with `AdMeshProvider`
 3. Add `AdMeshRecommendations` component
 
-See [Citation & Product Format](/platforms/citation-format) for detailed integration steps.
+See [Tail & Product Format](/platforms/tail-format) for detailed integration steps.
 
 ---
 
@@ -157,7 +167,7 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 | Aspect | AdMeshRecommendations | WeaveAdFormatContainer |
 |--------|----------------------|------------------------|
 | **Purpose** | Display recommendations | Detect & track links |
-| **Formats** | Citation, Product, Bridge (followup sponsored recommendations) | Weave Ad Format |
+| **Formats** | Tail, Product, Bridge (followup sponsored recommendations) | Weave Ad Format |
 | **Rendering** | Automatic UI | Wraps your content |
 | **Link Detection** | N/A | Automatic |
 | **Fallback UI** | N/A | Supported |
@@ -171,7 +181,7 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 
 **Choose AdMeshRecommendations if:**
 - You want a separate recommendations panel
-- You want Citation format (inline citations)
+- You want Tail format (inline tails)
 - You want Product format (product cards)
 - You want Bridge format (followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search)
 - You want automatic rendering
@@ -186,7 +196,7 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 
 ## Next Steps
 
-1. **For Citation & Product Format:** Go to [Citation & Product Format](/platforms/citation-format)
+1. **For Tail & Product Format:** Go to [Tail & Product Format](/platforms/tail-format)
 2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)
 3. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
 

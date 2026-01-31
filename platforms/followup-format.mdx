@@ -1,0 +1,291 @@
+---
+title: "Followup Ad Format"
+description: "Sponsored follow-up suggestions as optional fields on any recommendation format"
+---
+
+## Overview
+
+**Sponsored follow-up suggestions** are **optional fields** on any AdMesh recommendation (tail/weave/product_card/etc.), not a separate format. They allow platforms to display a primary ad unit (e.g., tail ad) along with a sponsored follow-up below it for the same `recommendation_id`.
+
+When a brand agent provides `followup_query` in their `creative_input`, AdMesh supplies:
+
+- A **sponsored follow-up query** (`followup_query`) - text to display and execute
+- **Follow-up engagement URL** (`followup_engagement_url`) - tracking endpoint when user selects the follow-up
+- **Follow-up exposure URL** (`followup_exposure_url`) - dedicated tracking endpoint when followup is displayed
+
+The AdMesh SDK handles all rendering, interaction, and tracking automatically. Platforms only provide container identifiers and a query execution hook. Follow-up engagement is a **soft engagement** that does NOT lock billing - any format click can override it and become the billable event.
+
+**Key Points:**
+- ✅ **Optional fields** on any recommendation, not a separate format
+- ✅ Same `recommendation_id` as primary recommendation (tail/weave/product_card/etc.)
+- ✅ **SDK-managed rendering** - SDK automatically detects and renders follow-ups
+- ✅ **Automatic tracking** - SDK handles all exposure and engagement tracking internally
+- ✅ Soft engagement - does NOT lock billing (any format click can override)
+- ✅ Monotonic progression: exposed → engaged → clicked → converted
+- ✅ Billing finalized based on highest-value engagement achieved
+
+**Primary Use Cases:**
+- **AI Search Platforms**: Show sponsored follow-up suggestions alongside organic follow-ups
+- **AI Chat Platforms**: Display sponsored follow-up queries in existing follow-up suggestion UI
+- **AI Assistants**: Integrate sponsored follow-ups seamlessly into native follow-up patterns
+
+**Setup time:** 10-15 minutes | **Code complexity:** Low (headless, platform handles UI)
+
+---
+
+## What are Sponsored Follow-ups?
+
+Sponsored follow-ups are **optional fields** on any AdMesh recommendation (tail/weave/product_card/etc.), not a separate format. They allow platforms to display:
+
+1. **Primary format** (e.g., tail ad) - the main ad unit, rendered in `containerId`
+2. **Sponsored follow-up** below it - optional sponsored query suggestion, rendered in `followups_container_id`
+
+Both share the same `recommendation_id` and are part of the same recommendation. **The AdMesh SDK handles everything automatically:**
+
+1. **Automatic detection**: SDK detects `followup_query` in recommendation response
+2. **Automatic rendering**: SDK renders follow-up in `followups_container_id` when provided
+3. **Automatic tracking**: SDK handles all exposure and engagement tracking internally
+4. **Query execution**: Platform provides `onExecuteQuery` hook - SDK calls it when follow-up is selected
+
+This is ideal when:
+- ✅ You want SDK-managed rendering (no platform UI code needed)
+- ✅ You want automatic tracking without manual method calls
+- ✅ You only need to provide container IDs and a query execution hook
+
+---
+
+## Engagement Progression Model
+
+**Key Principle**: Engagements progress monotonically from `exposed` → `engaged` → `clicked` → `converted`. Billing is finalized based on the **highest-value engagement achieved** for a given `rec_id`, not the first or last.
+
+**Engagement Strength** (weakest to strongest):
+1. `exposed` (shown)
+2. `engaged` (follow-up selected, query continuation) - **soft engagement, does NOT lock billing**
+3. `clicked` (explicit format click - tail/weave/product_card/etc.) - **can override follow-up engagement**
+4. `converted` (CPA, if applicable) - **highest value**
+
+**Important Behaviors**:
+- Follow-up engagement (`engaged`) does NOT prevent format clicks
+- Any format click (tail/weave/product_card/etc.) can override follow-up and become the billable event
+- Billing is finalized only on highest-value engagement (typically `clicked` or `converted`)
+- No refunds, no reversals - engagements only progress upward
+
+---
+
+## Schema
+
+### Recommendation Response
+
+Any recommendation can optionally include followup fields when `creative_input.followup_query` is present:
+
+```json
+{
+  "recommendation_id": "rec_abc123",
+  "ad_id": "ad_xyz789",
+  "resolved_format": "tail",
+  "exposure_url": "https://api.useadmesh.com/exposure?rid=rec_abc123&nonce=...&exp=...&sig=...&cpx=0",
+  "click_url": "https://api.useadmesh.com/click/r/rec_abc123?rid=...",
+  "followup_query": "Compare Nimbus CRM Pro vs Salesforce pricing and features",
+  "followup_engagement_url": "https://api.useadmesh.com/engagement/followup?rid=rec_abc123&nonce=...&exp=...&sig=...",
+  "followup_exposure_url": "https://api.useadmesh.com/exposure/followup?rid=rec_abc123&nonce=...&exp=...&sig=...",
+  "creative_input": {
+    "preferred_format": "tail",
+    "followup_query": "Compare Nimbus CRM Pro vs Salesforce pricing and features"
+  }
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `followup_query` | string | Optional | Sponsored query string from `creative_input.followup_query` (present when brand agent provides it) | `"Compare Nimbus CRM Pro vs Salesforce pricing and features"` |
+| `followup_engagement_url` | string | Optional | Signed URL for engagement tracking when user selects followup (present when `followup_query` is present) | `"https://api.useadmesh.com/engagement/followup?rid=..."` |
+| `followup_exposure_url` | string | Optional | Signed URL for exposure tracking when followup is displayed (present when `followup_query` is present) | `"https://api.useadmesh.com/exposure/followup?rid=..."` |
+| `exposure_url` | string | Yes | Signed URL for main ad exposure tracking | `"https://api.useadmesh.com/exposure?rid=..."` |
+| `creative_input.followup_query` | string | Optional | Sponsored follow-up query provided by brand agent in bid response | `"Compare Nimbus CRM Pro vs Salesforce pricing and features"` |
+
+**Note**: Followup fields are only present when the brand agent includes `followup_query` in their `creative_input`. The `resolved_format` can be any format (tail/weave/product_card/etc.).
+
+---
+
+## Integration Guide
+
+### SDK-Managed Model
+
+The AdMesh SDK follows a **fully SDK-managed rendering model** for follow-ups:
+
+- **Platform responsibility**: Provide container identifiers and a query execution hook
+- **SDK responsibility**: Detect follow-ups, render them, handle all tracking, call query hook
+
+### Step 1: Initialize SDK
+
+```typescript
+import { AdMeshSDK } from '@admesh/ui-sdk';
+
+const sdk = new AdMeshSDK({ apiKey: 'your-api-key' });
+```
+
+### Step 2: Provide Container IDs and Query Hook
+
+Call `showRecommendations()` with both `containerId` (for primary ad) and optional `followups_container_id` (for follow-ups):
+
+```typescript
+await sdk.showRecommendations({
+  query: userQuery,
+  containerId: 'admesh-recommendations', // Primary ad container
+  followups_container_id: 'admesh-followups', // Optional: follow-ups container
+  session_id: sessionId,
+  messageId: messageId,
+  onExecuteQuery: (query: string) => {
+    // Platform's query execution logic
+    // SDK calls this automatically when follow-up is selected
+    executeQuery(query);
+  },
+  // ... other params
+});
+```
+
+### How It Works
+
+1. **SDK fetches recommendation** from `/aip/context` endpoint
+2. **SDK automatically detects** if `followup_query` is present in the response
+3. **SDK renders primary format** (tail/weave/product_card/bridge) in `containerId`
+4. **If `followups_container_id` is provided AND `followup_query` is present**:
+   - SDK automatically renders follow-up in `followups_container_id`
+   - SDK handles exposure tracking automatically (MRC-compliant viewability)
+   - SDK handles engagement tracking automatically when follow-up is clicked
+   - SDK calls `onExecuteQuery(query)` when follow-up is selected
+5. **Platform executes query** via the `onExecuteQuery` hook
+
+**Important**: 
+- Follow-ups only render if BOTH `followups_container_id` is provided AND `followup_query` is present
+- If `followups_container_id` is not provided, follow-ups are not rendered (even if `followup_query` is present)
+- All tracking happens automatically - no platform calls needed
+
+---
+
+## Complete Integration Example
+
+```typescript
+import { AdMeshSDK } from '@admesh/ui-sdk';
+
+// Initialize SDK (platform does this once)
+const sdk = new AdMeshSDK({ apiKey: 'your-api-key' });
+
+// Generate session ID and message ID (platform responsibility)
+const sessionId = AdMeshSDK.createSession();
+const messageId = AdMeshSDK.createMessageId(sessionId);
+
+// Show recommendations - SDK handles everything automatically
+await sdk.showRecommendations({
+  query: userQuery,
+  containerId: 'admesh-recommendations', // Primary ad container
+  followups_container_id: 'admesh-followups', // Optional: follow-ups container
+  session_id: sessionId,
+  messageId: messageId,
+  onExecuteQuery: (query: string) => {
+    // Platform's query execution logic
+    // SDK calls this automatically when follow-up is selected
+    executeQuery(query);
+  },
+  // ... other params (platformSurface, model, messages, etc.)
+});
+
+// That's it! SDK automatically:
+// - Detects if followup_query is present
+// - Renders primary format in containerId
+// - Renders follow-up in followups_container_id (if provided and followup_query is present)
+// - Handles all exposure tracking automatically
+// - Handles all engagement tracking automatically
+// - Calls onExecuteQuery when follow-up is selected
+```
+
+**Platform Setup** (HTML):
+
+```html
+<!-- Primary ad container -->
+<div id="admesh-recommendations"></div>
+
+<!-- Optional follow-ups container (SDK will render follow-ups here if provided) -->
+<div id="admesh-followups"></div>
+```
+
+---
+
+## Engagement Progression and Billing
+
+Follow-up engagement is a **soft engagement** that does NOT lock billing:
+
+- **Follow-up engagement** (`engaged`): Sets status but does NOT finalize billing
+- **Format click** (`clicked`): Can override follow-up engagement and finalize CPC billing
+- **Conversion** (`converted`): Can override format click and finalize CPA billing
+- **Billing rule**: Billing is finalized based on the **highest-value engagement achieved** for a given `rec_id`
+
+**Example Flow**:
+1. User sees ad → `exposed` (no billing)
+2. User selects follow-up → `engaged` (soft engagement, no billing)
+3. User later clicks Tail ad → `clicked` (upgrades `engaged` → `clicked`, finalizes CPC billing)
+
+**Important**: Engagements progress monotonically upward. No refunds or reversals - billing is based on highest-value engagement achieved.
+
+---
+
+## Best Practices
+
+### SDK-Managed Rendering
+
+- **Provide both containers**: Use `containerId` for primary ad and `followups_container_id` for follow-ups
+- **Query execution hook**: Always provide `onExecuteQuery` if you want follow-ups to work (SDK calls it automatically)
+- **Automatic detection**: SDK automatically detects `followup_query` - no manual checking needed
+- **Automatic tracking**: SDK handles all exposure and engagement tracking - no manual calls needed
+
+### Container Setup
+
+- **Primary container**: Required - always render primary format here
+- **Follow-ups container**: Optional - only needed if you want follow-ups rendered
+- **Container visibility**: SDK handles showing/hiding containers based on content
+- **Container styling**: Apply your own styles - SDK renders content, you control layout
+
+### Query Execution Hook
+
+- **Required for functionality**: Follow-ups need `onExecuteQuery` to execute queries
+- **Called automatically**: SDK calls `onExecuteQuery(query)` when follow-up is selected
+- **Async support**: Hook can be async - SDK awaits execution before continuing
+- **Error handling**: Handle errors in your hook - SDK won't block on failures
+
+### Query Execution
+
+- Execute `followup_query` **immediately** after firing engagement
+- Use platform's existing query execution mechanism
+- `followup_query` serves as both display text and executable query
+
+### Platform-Native Integration
+
+- Use your platform's existing follow-up suggestion UI components
+- No AdMesh UI components needed (it's headless)
+- Integrate seamlessly into existing UI patterns
+- Maintain consistent user experience
+
+---
+
+## Key Points
+
+- ✅ **Optional fields** on any recommendation (tail/weave/product_card/etc.), not a separate format
+- ✅ Same `recommendation_id` as primary recommendation
+- ✅ **SDK-managed rendering** - SDK automatically detects and renders follow-ups
+- ✅ **Automatic tracking** - SDK handles all exposure and engagement tracking internally
+- ✅ Follow-ups are supported only via `/aip/context` operator pipeline, not legacy endpoints
+- ✅ **Platform responsibility**: Provide container IDs and `onExecuteQuery` hook only
+- ✅ **SDK responsibility**: Fetch recommendations, detect follow-ups, render, track, execute query
+- ✅ Engagement progression: exposed → engaged → clicked → converted (monotonic, billing based on highest value)
+- ✅ Soft engagement: Follow-up engagement does NOT lock billing - any format click can override it
+- ✅ **Zero platform UI code** - SDK handles all rendering and tracking
+
+---
+
+## Next Steps
+
+- Learn about [Creative Formats](/platforms/creative-formats) to see all available formats
+- Review [SDK Installation](/ui-sdk/installation) for SDK setup
+- Check [Platform Integration Guide](/platforms/integration-guide) for general integration patterns

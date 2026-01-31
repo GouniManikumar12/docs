@@ -1,0 +1,302 @@
+---
+title: "Context Request Schema"
+description: "Complete schema reference for context requests sent from operator to brand agents"
+---
+
+# Context Request Schema
+
+The Context Request is the normalized, enriched request sent from the AdMesh operator to Brand Agents to request bids. This document describes all fields in the context request schema.
+
+<Note>
+**For Platform Developers**: You typically don't send Context Requests directly. The operator transforms your Platform Request into a Context Request automatically. This documentation is provided for reference and for Brand Agent developers.
+</Note>
+
+## Schema Reference
+
+The Context Request schema is defined in the [AIP Specification](/aip-spec/schemas/context-request.json).
+
+## Structure Overview
+
+ContextRequest uses a **flat UCP structure** with exactly one nested object: `context`. All AIP-specific fields are at the top level, and semantic data is in the `context` object.
+
+**Key Invariant**: `message_id` MUST equal `context.context_id` (enforced by operator).
+
+## Required Fields (Top-Level)
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `spec_version` | string | UCP specification version | `"aip/1.0"` |
+| `message_id` | string | Unique message ID (MUST equal `context.context_id`) | `"ctx_92fA1"` |
+| `timestamp` | string | ISO 8601 timestamp | `"2025-11-14T18:22:00Z"` |
+| `producer` | object | Producer information (operator details) | See Producer Object |
+| `session_id` | string | Conversation/session identifier | `"sess_001"` |
+| `turn_index` | integer | How many turns into the session (minimum: 0) | `3` |
+| `context` | object | Context information (semantic plane) | See Context Object |
+| `consent` | object | Consent information | See Consent Object |
+| `usage_constraints` | object | Usage constraints for brand agents | See Usage Constraints Object |
+
+## Optional Fields (Top-Level)
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `conversation_id` | string | Conversation session from platform | `"conv_xyz789"` |
+| `latency_budget_ms` | integer | How long the platform will wait for an ad response (milliseconds) | `500` |
+| `allowed_formats` | array | Creative formats allowed by the operator | `["weave", "tail", "product_card"]` |
+| `embeddings` | array | Array of embedding vectors (optional, may be added by operator) | See Embeddings Array |
+
+## Producer Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `agent_id` | string | Identifier of the operator sending the request | `"admesh_operator"` |
+| `agent_role` | string | Role of the agent, typically "seller" for operators | `"seller"` |
+| `software` | string | Software name | `"admesh_operator"` |
+| `software_version` | string | Software version | `"1.0.0"` |
+
+## Context Object (Semantic Plane)
+
+The `context` object is the single nested object containing all semantic/contextual data:
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `context_id` | string | Unique context ID (MUST equal `message_id`) | `"ctx_92fA1"` |
+| `language` | string | User locale in BCP 47 format (pattern: `^[a-z]{2}-[A-Z]{2}$`) | `"en-US"` |
+| `publisher` | string | Identifier of the source AI platform | `"openai_chat"` |
+| `placement` | object | Placement information | See Placement Object |
+| `device` | object | Device information | See Device Object |
+| `geography` | object | Geographic information | See Geography Object |
+| `intent` | object | Intent classification data | See Intent Object |
+| `verticals` | array | Normalized topical verticals | `["crm", "smb_software"]` |
+
+### Placement Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `ad_unit` | string | Platform surface type: "conversation", "chat", etc. | `"conversation"` |
+
+### Device Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `platform` | string | Device platform: "web", "mobile", etc. | `"web"` |
+| `form_factor` | string | Device form factor: "mobile", "desktop", "tablet" | `"desktop"` |
+
+### Geography Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `country` | string | User country code (ISO 3166-1 alpha-2, pattern: `^[A-Z]{2}$`) | `"US"` |
+
+## Intent Object
+
+The `intent` object is nested within `context` and contains operator-generated semantic understanding:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `type` | string | Yes | High-level intent classification: "informational", "commercial", "transactional" | `"commercial"` |
+| `decision_phase` | string | Yes | Commercial funnel decision phase: "awareness", "consideration", "compare", "decision" | `"compare"` |
+| `confidence` | number | Yes | Confidence score for intent classification (0.0 to 1.0) | `0.87` |
+| `summary` | string | Yes | Operator-generated summary of conversation context (sanitized, no raw queries) | `"User is comparing CRM tools for a small team."` |
+
+## Allowed Formats
+
+<Note>
+**Automatic Format Fetching**: `allowed_formats` are **automatically fetched** from your platform configuration (set during onboarding). You do **not** need to specify formats in API requests. The operator retrieves this from your platform's configuration.
+
+For **Vibe Coding Platforms**, the bridge format is automatically selected during onboarding.
+</Note>
+
+The `allowed_formats` array specifies which creative formats the operator allows for rendering:
+
+- `"weave"`: Inline contextual text to insert into assistant response
+- `"tail"`: Paragraph-level block ad to show after organic response
+- `"product_card"`: Structured card data with title, description, value props, and assets
+- `"bridge"`: Setup prompt or configuration instructions for AI agents (primarily for Vibe Coding Platforms and AI IDEs)
+- `"tail"`: Tail-style reference format
+
+**Example**: `["weave", "tail", "product_card"]`
+
+## Consent Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `purposes` | array | List of consent purposes | `["activation_scoring"]` |
+| `permissible_uses` | array | List of permissible uses | `["activation_scoring"]` |
+| `ttl_seconds` | integer | Time to live in seconds | `900` |
+| `legal_basis` | string | Legal basis for consent | `"contract"` |
+
+## Usage Constraints Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `disallowed` | array | List of disallowed uses | `["retargeting", "profiling", "storage", "cross_session_learning", "identity_resolution"]` |
+
+## Embeddings Array
+
+Each embedding object contains:
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `id` | string | Embedding identifier | `"emb_intent"` |
+| `type` | string | Embedding type | `"user_intent"` |
+| `dimension` | integer | Embedding dimension | `256` |
+| `origin` | object | Origin information | See Origin Object |
+
+### Origin Object
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `text_window` | string | Text used to generate embedding | `"CRM comparison for small teams"` |
+| `on_device` | boolean | Whether embedding was generated on device | `false` |
+
+## Complete Example
+
+```json
+{
+  "spec_version": "aip/1.0",
+  "message_id": "ctx_92fA1",
+  "timestamp": "2025-11-14T18:22:00Z",
+  "producer": {
+    "agent_id": "admesh_operator",
+    "agent_role": "seller",
+    "software": "admesh_operator",
+    "software_version": "1.0.0"
+  },
+  "session_id": "sess_001",
+  "conversation_id": "conv_xyz789",
+  "turn_index": 3,
+  "latency_budget_ms": 500,
+  "allowed_formats": ["weave", "tail", "product_card"],
+  "context": {
+    "context_id": "ctx_92fA1",
+    "language": "en-US",
+    "publisher": "openai_chat",
+    "placement": {
+      "ad_unit": "conversation"
+    },
+    "device": {
+      "platform": "web",
+      "form_factor": "desktop"
+    },
+    "geography": {
+      "country": "US"
+    },
+    "intent": {
+      "type": "commercial",
+      "decision_phase": "compare",
+      "confidence": 0.87,
+      "summary": "User is comparing CRM tools for a small team."
+    },
+    "verticals": ["crm", "smb_software"]
+  },
+  "embeddings": [
+    {
+      "id": "emb_intent",
+      "type": "user_intent",
+      "dimension": 256,
+      "origin": {
+        "text_window": "CRM comparison for small teams",
+        "on_device": false
+      }
+    }
+  ],
+  "consent": {
+    "purposes": ["activation_scoring"],
+    "permissible_uses": ["activation_scoring"],
+    "ttl_seconds": 900,
+    "legal_basis": "contract"
+  },
+  "usage_constraints": {
+    "disallowed": [
+      "retargeting",
+      "profiling",
+      "storage",
+      "cross_session_learning",
+      "identity_resolution"
+    ]
+  }
+}
+```
+
+## Key Differences from Platform Request
+
+The Context Request is an **enriched** version of the Platform Request with:
+
+1. **Operator-added fields**:
+   - `message_id` / `context.context_id`: Operator-generated unique ID (enforced invariant)
+   - `producer.agent_id`: Operator identifier ("admesh_operator")
+   - `context.verticals`: Operator-classified categories
+   - `context.intent`: Operator-generated intent analysis (with confidence and sanitized summary)
+   - `consent`: Consent information added by operator
+   - `usage_constraints`: Usage constraints for brand agents
+
+2. **Auto-fetched fields**:
+   - `allowed_formats`: Automatically fetched from platform configuration
+
+3. **Privacy & Security**:
+   - Raw user queries (`query_text`) are **dropped** - brand agents receive `context.intent.summary` only
+   - Raw messages (`messages`) are **dropped**
+   - Identity fields (`user_id`, hashes) are **dropped**
+   - Brand agents receive decision context only
+
+## Field Descriptions
+
+### `message_id` and `context.context_id`
+
+Both fields MUST be identical (enforced invariant). The operator generates this unique identifier for the auction request.
+
+### `allowed_formats`
+
+**Automatically fetched** from platform configuration during onboarding. Platforms do not need to specify this in requests. The operator retrieves it from your platform's configuration.
+
+**For Vibe Coding Platforms**: The bridge format is automatically selected during onboarding.
+
+### `context.verticals`
+
+Operator-classified topical categories that help brand agents understand the query context. Examples:
+- `["crm", "smb_software"]`
+- `["ecommerce", "payment_processing"]`
+- `["developer_tools", "api_platforms"]`
+
+### `context.intent.decision_phase`
+
+Indicates where the user is in the commercial funnel:
+- `"awareness"`: Early exploration
+- `"consideration"`: Evaluating options
+- `"compare"`: Comparing options
+- `"decision"`: Ready to make a decision
+
+### `context.intent.summary`
+
+Operator-generated, sanitized summary of the conversation context. This does **not** contain raw user queries or messages. Brand agents use this for decision-making without access to sensitive user data.
+
+## Field Mapping (Legacy → New)
+
+For brand agents migrating from the previous schema:
+
+- `context_id` → `context.context_id` (also equals `message_id`)
+- `operator_id` → `producer.agent_id`
+- `platform_id` → `context.publisher`
+- `locale` → `context.language`
+- `geo` → `context.geography.country`
+- `device_type` → `context.device.form_factor`
+- `platform_surface` → `context.placement.ad_unit`
+- `intent` → `context.intent` (now includes `confidence` field, `summary` instead of `context_summary`)
+- `verticals` → `context.verticals`
+- `session_id` → `session_id` (top-level)
+- `conversation_id` → `conversation_id` (top-level)
+- `turn_index` → `turn_index` (top-level, no longer in intent)
+- `allowed_formats` → `allowed_formats` (top-level)
+- `latency_budget_ms` → `latency_budget_ms` (top-level)
+- `usage_constraints` → `usage_constraints` (top-level)
+- ❌ `query_text` → **Dropped** (brand agents receive `context.intent.summary` only)
+- ❌ `messages` → **Dropped** (privacy protection)
+- ❌ `user_id` → **Dropped** (privacy protection)
+- ❌ `extensions.aip.*` → **Removed** (fields moved to top-level or `context`)
+
+## Next Steps
+
+- Learn about the [Platform Request Schema](/platforms/platform-request-schema) (platform-to-operator)
+- See the [Complete Flow Documentation](/platforms/complete-flow) for end-to-end integration
+- Review [Creative Formats](/platforms/creative-formats) for format details
+- Check [Bid and Auction Schema](/platforms/bid-auction-schema) for brand agent responses

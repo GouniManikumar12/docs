@@ -1,0 +1,558 @@
+---
+title: "Tail & Product Format"
+description: "Display recommendations as inline tails or product cards with automatic tracking using admesh-ui-sdk"
+---
+
+## Overview
+
+The **Tail & Product Format** displays recommendations as a **separate UI element** below your LLM responses. This is the simplest way to integrate AdMesh - just add a component and it handles everything automatically.
+
+**What you get:**
+- ✅ Automatic rendering of recommendations
+- ✅ Automatic tracking (exposures and clicks)
+- ✅ Transparency labels (`[Ad]` added automatically)
+- ✅ Session-aware tracking
+- ✅ Multiple format options (tail or product cards)
+
+**Setup time:** 5-10 minutes | **Code complexity:** Minimal
+
+---
+
+## Component: AdMeshRecommendations
+
+The `AdMeshRecommendations` component is specifically designed for **Tail and Product formats**. It displays recommendations as a separate UI element (not embedded in your content).
+
+**Use this component if:**
+- ✅ You want a separate recommendations panel
+- ✅ You want Tail format (inline tail with links)
+- ✅ You want Product format (product cards)
+- ✅ You want automatic rendering and tracking
+
+**Don't use this component if:**
+- ❌ You want to embed links directly in LLM responses (use [Weave Ad Format](/platforms/weave-ad-format) instead)
+
+---
+
+## Quick Start - Provider Pattern (Recommended)
+
+The **Provider Pattern** is the simplest approach - just 3 lines of code!
+
+<Steps>
+  <Step title="Install the SDK">
+    ```bash
+    npm install admesh-ui-sdk@latest
+    ```
+  </Step>
+
+  <Step title="Wrap with AdMeshProvider">
+    ```tsx
+    import { AdMeshProvider } from 'admesh-ui-sdk';
+
+    <AdMeshProvider apiKey="your-api-key" sessionId={sessionId}>
+      <YourChatComponent messages={messages} />
+    </AdMeshProvider>
+    ```
+  </Step>
+
+  <Step title="Add AdMeshRecommendations Component">
+    ```tsx
+    import { AdMeshRecommendations } from 'admesh-ui-sdk';
+
+    // For each assistant message, display recommendations
+    {messages.map((msg) => (
+      <div key={msg.messageId}>
+        {msg.content}
+        {msg.role === 'assistant' && msg.userQuery && msg.userMessageId && (
+          <AdMeshRecommendations
+            messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
+            query={msg.userQuery}  // Required: User's original query (stored on assistant message)
+          />
+        )}
+      </div>
+    ))}
+    ```
+    
+    **Note:** Format is automatically detected from the recommendation's `preferred_format`. You don't need to specify a format prop.
+  </Step>
+
+  <Step title="Done!">
+    The SDK automatically:
+    - Initializes the SDK
+    - Fetches recommendations based on the query
+    - Shows recommendations (format is auto-detected)
+    - Tracks exposures and clicks
+    - Handles all API communication
+  </Step>
+</Steps>
+
+
+
+---
+
+## Format Types
+
+### Tail Format
+
+Displays a summary with embedded product links. Ideal for conversational interfaces.
+
+```tsx
+<AdMeshRecommendations
+  messageId={userMessageId}  // Required: User message ID
+  query={userQuery}  // Required: User's original query
+/>
+```
+---
+
+### Product Format
+
+Displays product recommendation cards with key details. Suitable for SaaS or software listings.
+
+```tsx
+<AdMeshRecommendations
+  messageId={userMessageId}  // Required: User message ID
+  query={userQuery}  // Required: User's original query
+/>
+```
+---
+## Customization
+
+### Theme Customization
+
+You can customize the appearance by passing a theme to the `AdMeshProvider`:
+
+```tsx
+import { AdMeshProvider } from 'admesh-ui-sdk';
+
+const customTheme = {
+  mode: 'dark',
+  primaryColor: '#3b82f6',
+  accentColor: '#ffffff',
+  borderRadius: '0.5rem',
+  fontFamily: 'Inter, sans-serif'
+};
+
+<AdMeshProvider
+  apiKey="your-api-key"
+  sessionId={sessionId}
+  theme={customTheme}
+>
+  <YourApp />
+</AdMeshProvider>
+```
+
+---
+
+### Event Handlers
+
+```tsx
+<AdMeshRecommendations
+  messageId={userMessageId}  // Required: User message ID
+  query={userQuery}  // Required: User's original query
+  onRecommendationsShown={(messageId) => {
+    console.log('Recommendations shown for message:', messageId);
+  }}
+  onError={(error) => {
+    console.error('Error fetching recommendations:', error);
+  }}
+/>
+```
+
+**Available callbacks:**
+- `onRecommendationsShown`: Called when recommendations are successfully displayed
+- `onError`: Called if there's an error fetching or displaying recommendations
+
+---
+
+## Automatic Tracking
+
+The SDK automatically manages:
+
+1. **Exposure tracking** - when recommendations are rendered  
+2. **Click tracking** - when users engage with recommendations  
+3. **Conversion tracking** - if configured  
+4. **Transparency labels** - `[Ad]` automatically added  
+
+No additional setup is required.
+
+---
+
+## Complete Integration Example
+
+```tsx
+import React, { useState } from 'react';
+import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
+
+interface Message {
+  messageId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  userQuery?: string;  // For assistant messages: the user query that prompted this response
+  userMessageId?: string;  // For assistant messages: the user message ID that prompted this response
+}
+
+function ChatWithRecommendations() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputQuery, setInputQuery] = useState('');
+  const sessionId = 'user-session-123';
+
+  const handleSendMessage = async () => {
+    if (!inputQuery.trim()) return;
+
+    // Add user message
+    const userMessageId = `msg-${Date.now()}`;
+    const userMessage: Message = {
+      messageId: userMessageId,
+      role: 'user',
+      content: inputQuery,
+    };
+
+    // Simulate assistant response
+    const assistantMessage: Message = {
+      messageId: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: 'Here are some recommendations for you...',
+      userQuery: inputQuery,  // Store the original user query on assistant message
+      userMessageId: userMessageId  // Store the user message ID on assistant message
+    };
+
+    setMessages([...messages, userMessage, assistantMessage]);
+    setInputQuery('');
+  };
+
+  return (
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+      <div className="chat-container">
+        <div className="messages">
+          {messages.map((msg) => (
+            <div key={msg.messageId} className={`message ${msg.role}`}>
+              <div className="message-content">{msg.content}</div>
+
+              {/* Show recommendations for assistant messages */}
+              {msg.role === 'assistant' && msg.userQuery && msg.userMessageId && (
+                <AdMeshRecommendations
+                  messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
+                  query={msg.userQuery}  // Required: User's original query (stored on assistant message)
+                  onRecommendationsShown={(id) => {
+                    console.log('Recommendations shown for:', id);
+                  }}
+                  onError={(error) => {
+                    console.error('Recommendation error:', error);
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="chat-input">
+          <input
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Ask for product recommendations..."
+          />
+          <button onClick={handleSendMessage}>Send</button>
+        </div>
+      </div>
+    </AdMeshProvider>
+  );
+}
+
+export default ChatWithRecommendations;
+```
+
+---
+## Optional Follow-Up Recommendations
+
+AdMesh can inject sponsored follow-up queries into your existing follow-up suggestions UI. Instead of creating a separate container, you can use your existing follow-up or "Related" section where you already show suggestions to users.
+
+### Setting Up Follow-Up Recommendations
+
+If your platform already has a follow-up suggestions section (e.g., "Related Questions", "Suggested Queries", or similar), AdMesh can add sponsored follow-ups directly into that existing container.
+
+**Step 1: Identify your existing follow-up container** (or create one if you don't have one):
+
+```tsx
+{/* Your existing "Related" or "Suggestions" section */}
+<div>
+  <h3>Related</h3>
+  {/* Your platform's follow-up suggestions container */}
+  <div id={`admesh-followups-${message.messageId}`}>
+    {/* Your existing suggestions can go here too */}
+    {message.suggestions?.map(suggestion => (
+      <div key={suggestion.id}>{suggestion.text}</div>
+    ))}
+  </div>
+</div>
+```
+
+**Step 2: Pass the container ID to `AdMeshRecommendations`**:
+
+```tsx
+<AdMeshRecommendations
+  messageId={msg.userMessageId}
+  query={msg.userQuery}
+  followups_container_id={`admesh-followups-${message.messageId}`}
+  onExecuteQuery={(query) => {
+    // Execute the sponsored follow-up query when user clicks it
+    // This continues the conversation with the sponsored query
+    sendMessage(query);
+  }}
+  isContainerReady={!loading}  // Optional: signal when container is ready in DOM
+/>
+```
+
+When a recommendation includes a `followup_query`, the SDK will automatically inject the sponsored follow-up into your container using React portals. It will appear alongside your existing suggestions, seamlessly integrated into your UI.
+
+The SDK automatically:
+- Detects follow-up queries from recommendations
+- Renders the sponsored follow-up in your existing container
+- Handles engagement tracking when users interact with follow-ups
+- Calls your `onExecuteQuery` callback when a user clicks the sponsored follow-up
+
+### Complete Example
+
+Here's how Perplexica integrates sponsored follow-ups into their existing "Related" section:
+
+```tsx
+function MessageComponent({ message, sendMessage, loading }) {
+  return (
+    <div>
+      {/* LLM response */}
+      <div>{message.content}</div>
+
+      {/* Recommendations */}
+      {message.userMessageId && message.userQuery && (
+        <AdMeshRecommendations
+          messageId={message.userMessageId}
+          query={message.userQuery}
+          followups_container_id={`admesh-followups-${message.messageId}`}
+          onExecuteQuery={(query) => {
+            sendMessage(query);
+          }}
+          isContainerReady={!loading}
+        />
+      )}
+
+      {/* Existing "Related" section - AdMesh injects sponsored follow-ups here */}
+      {message.role === 'assistant' && !loading && (
+        <div>
+          <h3>Related</h3>
+          {/* Existing container where platform suggestions appear */}
+          {/* AdMesh will inject sponsored follow-ups into this container */}
+          <div id={`admesh-followups-${message.messageId}`}>
+            {/* Your platform's existing suggestions (optional) */}
+            {message.suggestions?.map((suggestion, i) => (
+              <div key={i} onClick={() => sendMessage(suggestion)}>
+                {suggestion}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Props Reference
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `followups_container_id` | `string` | No | DOM element ID where the SDK should render follow-ups. When provided, the SDK uses portal rendering. |
+| `onExecuteQuery` | `(query: string) => void \| Promise<void>` | No | Callback invoked when a user clicks a follow-up. Required for follow-up functionality. Typically executes the query to continue the conversation. |
+| `onFollowupDetected` | `(followupQuery: string, engagementUrl: string, recommendationId: string) => void` | No | Optional callback when a sponsored follow-up is detected. Use this for custom integrations if you prefer to handle rendering yourself (advanced use case). |
+| `isContainerReady` | `boolean` | No | Signal indicating if the follow-up container is ready in the DOM. Useful for streaming or delayed rendering scenarios. |
+
+### How It Works
+
+1. **Detection**: When a recommendation includes a `followup_query`, the SDK detects it automatically.
+
+2. **Rendering**: When `followups_container_id` is provided, the SDK injects the sponsored follow-up into your existing container using React portals. The follow-up appears alongside your existing suggestions, matching your platform's styling.
+
+3. **Click Handling**: When a user clicks a follow-up:
+   - The SDK automatically fires engagement tracking (`followup_engagement_url`)
+   - Your `onExecuteQuery` callback is invoked with the follow-up query
+   - You execute the query to continue the conversation (e.g., via `sendMessage()`)
+
+### Notes
+
+- Follow-ups are only displayed if the recommendation includes `followup_query` from the backend.
+- The SDK handles all engagement tracking automatically—you only need to provide `onExecuteQuery` to continue the conversation.
+- Use `isContainerReady` when rendering containers conditionally or after streaming completes.
+
+---
+
+## Best Practices
+
+✅ **DO:**
+- Always provide the `query` parameter (required for contextual recommendations)
+- Pass your own `sessionId` and `messageId` for accurate tracking
+- Store the user's original query with each assistant message (`userQuery` and `userMessageId` on assistant messages)
+- Let the SDK auto-detect format from recommendations (format is determined by `creative_input.preferred_format`)
+- Use the SDK for rendering and tracking (all tracking is automatic)
+- Provide `followups_container_id` and `onExecuteQuery` if you want to show sponsored follow-ups in your existing suggestions UI
+- Customize themes to match your brand via `AdMeshProvider` theme prop
+- Use separate sessions for each conversation
+- Ensure the follow-up container exists in the DOM before providing its ID to `followups_container_id`
+
+❌ **DON'T:**
+- Omit the `query` parameter (recommendations won't be contextual)
+- Pass assistant message ID instead of user message ID to `messageId` prop
+- Manually trigger tracking events (the SDK handles all tracking automatically)
+- Modify or remove transparency labels ("Ad" labels are required)
+- Try to specify format manually (format is auto-detected from recommendations)
+- Reuse session IDs across conversations
+- Render recommendations outside the SDK-provided components
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Recommendations Not Showing">
+    **Check:**
+    - `query` prop is provided and not empty (required)
+    - `messageId` prop is provided
+    - API key is valid and set in environment variables
+    - `sessionId` prop is provided to `AdMeshProvider`
+    - Component is wrapped inside `AdMeshProvider`
+
+    **Common issue:**
+    ```tsx
+    // ❌ WRONG - Missing query
+    <AdMeshRecommendations
+      messageId={msg.userMessageId}
+    />
+
+    // ✅ CORRECT - Query provided
+    <AdMeshRecommendations
+      messageId={msg.userMessageId}  // User message ID (not assistant message ID)
+      query={msg.userQuery}  // Required: User's original query
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Query Parameter Missing">
+    **Problem:** The `query` parameter is required for contextual recommendations.
+
+    **Solution:** Store the user's original query and user message ID on assistant messages:
+    ```tsx
+    const userMessageId = generateId();
+    const assistantMessage = {
+      messageId: generateId(),
+      role: 'assistant',
+      content: 'Response...',
+      userQuery: userQuery,  // Store original user query
+      userMessageId: userMessageId  // Store user message ID
+    };
+    ```
+
+    Then pass it to the component:
+    ```tsx
+    <AdMeshRecommendations
+      messageId={msg.userMessageId}  // User message ID (not assistant message ID)
+      query={msg.userQuery}  // Required: User's original query
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="API Key Issues">
+    **Check:**
+    - API key is valid and active
+    - Environment variable is set correctly
+    - No extra spaces or quotes in the key
+
+    **Example:**
+    ```tsx
+    <AdMeshProvider
+      apiKey={process.env.REACT_APP_ADMESH_API_KEY}
+      sessionId={sessionId}
+    >
+    ```
+  </Accordion>
+
+  <Accordion title="Tracking Not Working">
+    Tracking is managed automatically by the SDK. Do not modify tracking logic or URLs manually. The SDK handles all tracking internally.
+
+    **The SDK automatically tracks:**
+    - Exposure events when recommendations are shown
+    - Click events when users interact with recommendations
+    - Follow-up engagement events when users click sponsored follow-ups
+    - All tracking is handled internally - no manual setup needed
+
+    **Note:** You don't need to call tracking methods manually. The SDK fires tracking pixels automatically when recommendations are displayed and when users click on them.
+  </Accordion>
+
+  <Accordion title="Follow-Ups Not Showing">
+    If you're using `followups_container_id` but follow-ups aren't appearing:
+
+    **Check:**
+    - Container element with the specified ID exists in the DOM
+    - `onExecuteQuery` callback is provided (required for follow-up functionality)
+    - Recommendation from backend includes `followup_query` field
+    - Container is ready before SDK tries to render (use `isContainerReady` if rendering is delayed)
+
+    **Common issues:**
+    ```tsx
+    // ❌ WRONG - Container doesn't exist yet
+    <AdMeshRecommendations
+      messageId={msg.userMessageId}
+      query={msg.userQuery}
+      followups_container_id="followups-container"  // Container not in DOM yet
+    />
+
+    // ✅ CORRECT - Container exists and onExecuteQuery provided
+    <div id="followups-container" />  {/* Container in DOM */}
+    <AdMeshRecommendations
+      messageId={msg.userMessageId}
+      query={msg.userQuery}
+      followups_container_id="followups-container"
+      onExecuteQuery={(query) => sendMessage(query)}
+      isContainerReady={!loading}  // Signal when container is ready
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Wrong Format Displayed">
+    Format is auto-detected from the recommendation's `creative_input.preferred_format` field. You don't need to (and shouldn't) specify format manually.
+
+    **Supported formats:**
+    - `tail`: Summary with embedded product links (default)
+    - `product` or `product_card`: Product cards
+    - `bridge`: Follow-up sponsored recommendations with setup prompts
+
+    **The SDK automatically:**
+    - Detects format from `creative_input.preferred_format`
+    - Renders the appropriate component (Tail, Product Card, or Bridge)
+    - Handles all format-specific logic internally
+
+    **Note:** There's no `format` prop on `AdMeshRecommendations` - format is determined by the backend recommendation.
+  </Accordion>
+
+  <Accordion title="Messages Not Updating">
+    Ensure:
+    - Each message has a unique `messageId`
+    - Assistant messages store the original `userQuery` and `userMessageId`
+    - Messages array is updated when new messages arrive
+    - Component is re-rendering with new messages
+
+    **Example message structure:**
+    ```typescript
+    interface Message {
+      messageId: string;
+      role: 'user' | 'assistant';
+      content: string;
+      userQuery?: string;  // For assistant: the user query that prompted this response
+      userMessageId?: string;  // For assistant: the user message ID that prompted this response
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+

@@ -33,7 +33,7 @@ The Weave Ad Format uses an **event-driven architecture** to eliminate race cond
 6. **Link Detection** → `WeaveAdFormatContainer` waits for event, then scans for AdMesh links
 7. **Conditional Rendering:**
    - **Links found** → Adds `[Ad]` labels, fires exposure tracking, shows tooltips (no fallback)
-   - **No links found** → Renders fallback recommendations (citation or product format)
+   - **No links found** → Renders fallback recommendations (tail or product format)
 
 ### Why Event-Driven?
 
@@ -61,7 +61,7 @@ The `WeaveAdFormatContainer` component wraps your LLM response content and uses 
 - ✅ You want automatic tracking and transparency labels
 
 **Don't use this component if:**
-- ❌ You want a separate recommendations panel (use [Citation & Product Format](/platforms/citation-format) instead)
+- ❌ You want a separate recommendations panel (use [Tail & Product Format](/platforms/tail-format) instead)
 
 ---
 
@@ -231,6 +231,11 @@ import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 - `query`: The user's query that prompted this response
 - `fallbackFormat`: `"tail"` or `"product"` (format for fallback recommendations)
 
+**Optional follow-up props:**
+- `followups_container_id`: DOM element ID where follow-ups will be rendered
+- `onExecuteQuery`: Callback when a follow-up is clicked (required for follow-up functionality)
+- `isContainerReady`: Signal when the follow-up container is ready in DOM
+
 ### Step 3: Dispatch Streaming Events from Chat Component
 
 In your chat component (e.g., `ChatWindow.tsx`), dispatch events during the streaming flow:
@@ -308,7 +313,7 @@ Once you've completed the integration, `WeaveAdFormatContainer` automatically:
    - Shows "Why this ad?" tooltips on hover
    - Does NOT render fallback recommendations
 4. **If no links found:**
-   - Renders fallback recommendations (citation or product format)
+   - Renders fallback recommendations (tail or product format)
    - Makes single API call to fetch recommendations
 
 ---
@@ -597,32 +602,166 @@ import React from 'react';
 import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 import Markdown from 'markdown-to-jsx';
 
-function MessageBox({ message }) {
+function MessageBox({ message, sendMessage, loading }) {
   if (message.role === 'user') {
     return <div className="user-message">{message.content}</div>;
   }
 
   // For assistant messages, wrap with WeaveAdFormatContainer
   return (
-    <WeaveAdFormatContainer
-      messageId={message.messageId}  // Assistant message ID from backend
-      query={message.userQuery}      // User query stored with assistant message
-      fallbackFormat="tail"      // or "product"
-    >
-      <Markdown>{message.content}</Markdown>
-    </WeaveAdFormatContainer>
+    <>
+      <WeaveAdFormatContainer
+        messageId={message.messageId}  // Assistant message ID from backend
+        query={message.userQuery}      // User query stored with assistant message
+        fallbackFormat="tail"      // or "product"
+        followups_container_id={`admesh-followups-${message.messageId}`}
+        onExecuteQuery={(query) => {
+          sendMessage(query);
+        }}
+        isContainerReady={!loading}
+      >
+        <Markdown>{message.content}</Markdown>
+      </WeaveAdFormatContainer>
+
+      {/* Existing "Related" section - AdMesh injects sponsored follow-ups here */}
+      {message.role === 'assistant' && !loading && (
+        <div>
+          <h3>Related</h3>
+          {/* Container for SDK-managed follow-ups */}
+          <div id={`admesh-followups-${message.messageId}`} />
+          {/* Your platform's existing suggestions (optional) */}
+        </div>
+      )}
+    </>
   );
 }
 
 export default MessageBox;
 ```
 
-<Note>
-**Reference Implementation:** This example is based on the Perplexica integration. See:
-- `perplexica-backend/src/routes/chat.ts` - Backend streaming implementation
-- `perplexica/src/components/ChatWindow.tsx` - Event dispatching
-- `perplexica/src/components/MessageBox.tsx` - WeaveAdFormatContainer usage
-</Note>
+
+---
+
+## Optional Follow-Up Recommendations
+
+AdMesh can inject sponsored follow-up queries into your existing follow-up suggestions UI when using `WeaveAdFormatContainer`. Follow-ups work in both scenarios: when AdMesh links are detected in the LLM response AND when fallback recommendations are displayed, as long as the fetched recommendations contain `followup_query`.
+
+### Setting Up Follow-Up Recommendations
+
+If your platform already has a follow-up suggestions section (e.g., "Related Questions", "Suggested Queries", or similar), AdMesh can add sponsored follow-ups directly into that existing container.
+
+**Step 1: Identify your existing follow-up container** (or create one if you don't have one):
+
+```tsx
+{/* Your existing "Related" or "Suggestions" section */}
+<div>
+  <h3>Related</h3>
+  {/* Your platform's follow-up suggestions container */}
+  <div id={`admesh-followups-${message.messageId}`}>
+    {/* Your existing suggestions can go here too */}
+    {message.suggestions?.map(suggestion => (
+      <div key={suggestion.id}>{suggestion.text}</div>
+    ))}
+  </div>
+</div>
+```
+
+**Step 2: Pass the container ID to `WeaveAdFormatContainer`**:
+
+```tsx
+<WeaveAdFormatContainer
+  messageId={message.messageId}
+  query={message.userQuery}
+  fallbackFormat="tail"
+  followups_container_id={`admesh-followups-${message.messageId}`}
+  onExecuteQuery={(query) => {
+    // Execute the sponsored follow-up query when user clicks it
+    // This continues the conversation with the sponsored query
+    sendMessage(query);
+  }}
+  isContainerReady={!loading}  // Optional: signal when container is ready in DOM
+>
+  <Markdown>{message.content}</Markdown>
+</WeaveAdFormatContainer>
+```
+
+When recommendations fetched for link detection include a `followup_query`, the SDK will automatically inject the sponsored follow-up into your container using React portals. It will appear alongside your existing suggestions, seamlessly integrated into your UI, regardless of whether links were detected or fallback recommendations are shown.
+
+The SDK automatically:
+- Detects follow-up queries from recommendations (works for both link-detected and fallback scenarios)
+- Renders the sponsored follow-up in your existing container
+- Handles engagement tracking when users interact with follow-ups
+- Calls your `onExecuteQuery` callback when a user clicks the sponsored follow-up
+
+### Complete Example
+
+Here's how to integrate follow-ups with WeaveAdFormatContainer:
+
+```tsx
+function MessageComponent({ message, sendMessage, loading }) {
+  return (
+    <div>
+      {/* LLM response wrapped in WeaveAdFormatContainer */}
+      <WeaveAdFormatContainer
+        messageId={message.messageId}
+        query={message.userQuery}
+        fallbackFormat="tail"
+        followups_container_id={`admesh-followups-${message.messageId}`}
+        onExecuteQuery={(query) => {
+          sendMessage(query);
+        }}
+        isContainerReady={!loading}
+      >
+        <Markdown>{message.content}</Markdown>
+      </WeaveAdFormatContainer>
+
+      {/* Existing "Related" section with follow-up container */}
+      {message.role === 'assistant' && !loading && (
+        <div>
+          <h3>Related</h3>
+          {/* Existing container where platform suggestions appear */}
+          {/* AdMesh will inject sponsored follow-ups into this container */}
+          <div id={`admesh-followups-${message.messageId}`}>
+            {/* Your platform's existing suggestions (optional) */}
+            {message.suggestions?.map((suggestion, i) => (
+              <div key={i} onClick={() => sendMessage(suggestion)}>
+                {suggestion}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Props Reference
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `followups_container_id` | `string` | No | DOM element ID where the SDK should render follow-ups. When provided, the SDK uses portal rendering. |
+| `onExecuteQuery` | `(query: string) => void \| Promise<void>` | No | Callback invoked when a user clicks a follow-up. Required for follow-up functionality. Typically executes the query to continue the conversation. |
+| `onFollowupDetected` | `(followupQuery: string, engagementUrl: string, recommendationId: string) => void` | No | Optional callback when a sponsored follow-up is detected. Use this for custom integrations if you prefer to handle rendering yourself (advanced use case). |
+| `isContainerReady` | `boolean` | No | Signal indicating if the follow-up container is ready in the DOM. Useful for streaming or delayed rendering scenarios. |
+
+### How It Works
+
+1. **Detection**: When recommendations fetched by `WeaveAdFormatContainer` include a `followup_query`, the SDK detects it automatically.
+
+2. **Rendering**: When `followups_container_id` is provided, the SDK injects the sponsored follow-up into your existing container using React portals. The follow-up appears alongside your existing suggestions, matching your platform's styling.
+
+3. **Click Handling**: When a user clicks a follow-up:
+   - The SDK automatically fires engagement tracking (`followup_engagement_url`)
+   - Your `onExecuteQuery` callback is invoked with the follow-up query
+   - You execute the query to continue the conversation (e.g., via `sendMessage()`)
+
+### Notes
+
+- Follow-ups are displayed if recommendations include `followup_query` from the backend, regardless of whether links are detected or fallback is shown.
+- The SDK handles all engagement tracking automatically—you only need to provide `onExecuteQuery` to continue the conversation.
+- Use `isContainerReady` when rendering containers conditionally or after streaming completes.
+- Follow-ups work with recommendations fetched for link detection, not requiring separate API calls.
 
 ---
 
@@ -679,6 +818,37 @@ export default MessageBox;
     - WeaveResponseProcessor is initialized correctly
     - No CSS conflicts hiding the labels
   </Accordion>
+
+  <Accordion title="Follow-Ups Not Showing">
+    If you're using `followups_container_id` but follow-ups aren't appearing:
+
+    **Check:**
+    - Container element with the specified ID exists in the DOM
+    - `onExecuteQuery` callback is provided (required for follow-up functionality)
+    - Recommendations from backend include `followup_query` field
+    - Container is ready before SDK tries to render (use `isContainerReady` if rendering is delayed)
+    - Follow-ups work for both link-detected and fallback scenarios
+
+    **Common issues:**
+    ```tsx
+    // ❌ WRONG - Container doesn't exist yet
+    <WeaveAdFormatContainer
+      messageId={message.messageId}
+      query={message.userQuery}
+      followups_container_id="followups-container"  // Container not in DOM yet
+    />
+
+    // ✅ CORRECT - Container exists and onExecuteQuery provided
+    <div id="followups-container" />  {/* Container in DOM */}
+    <WeaveAdFormatContainer
+      messageId={message.messageId}
+      query={message.userQuery}
+      followups_container_id="followups-container"
+      onExecuteQuery={(query) => sendMessage(query)}
+      isContainerReady={!loading}  // Signal when container is ready
+    />
+    ```
+  </Accordion>
 </AccordionGroup>
 
 ---
@@ -706,14 +876,3 @@ export default MessageBox;
 - Zero manual tracking required
 
 ---
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Backend SDK (admesh-weave-node)" icon="server" href="/backend-sdk/weave-node">
-    Complete backend integration guide
-  </Card>
-  <Card title="Citation & Product Format" icon="list" href="/platforms/citation-format">
-    Alternative format for separate recommendations panel
-  </Card>
-</CardGroup>

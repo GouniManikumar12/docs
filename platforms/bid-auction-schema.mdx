@@ -1,0 +1,301 @@
+---
+title: "Bid and Auction Schema"
+description: "Complete schema reference for bids and auction results"
+---
+
+# Bid and Auction Schema
+
+This document describes the schemas for bids submitted by brand agents and auction results returned by the operator.
+
+<Note>
+**For Brand Agent Developers**: This documentation is primarily for brand agent developers who need to understand the bid submission and auction result schemas. Platform developers typically interact with the higher-level recommendation API.
+</Note>
+
+## Bid Schema
+
+The Bid schema represents a bid submitted by a brand agent in response to a Context Request.
+
+### Schema Reference
+
+The Bid schema is defined in the [AIP Specification](/aip-spec/schemas/bid.json).
+
+### Required Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `bid_id` | string | Unique identifier for this bid | `"bid_7823"` |
+| `brand_agent_id` | string | Identifier of the brand agent placing the bid | `"brand_agent_123"` |
+| `context_id` | string | ID of the ContextRequest being bid on | `"ctx_92f"` |
+| `wallet_id` | string | Wallet to debit if the bid wins | `"wallet_890"` |
+| `pricing` | object | Pricing vector for different billing events | See Pricing Object |
+| `offer` | object | Offer metadata that will be rendered if the bid wins | See Offer Object |
+| `timestamp` | string | ISO 8601 timestamp when the bid was generated | `"2025-11-11T18:00:01Z"` |
+| `auth` | object | Authentication envelope for replay protection | See Auth Object |
+
+### Optional Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `metadata` | object | Optional vendor-namespaced metadata | `{}` |
+| `processing_latency_ms` | integer | Round-trip latency from auction request receipt to bid submission (milliseconds). Used by operator to track brand agent response times. | `42` |
+
+### Pricing Object
+
+The `pricing` object contains pricing information for different billing events:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `cpx` | string | Yes | Price per exposure (USD). Pattern: `^\d+\.\d{2,}$` | `"0.05"` |
+| `cpc` | string | No | Price per click (USD). Pattern: `^\d+\.\d{2,}$` | `"0.45"` |
+| `cpa` | string | No | Price per conversion (USD). Pattern: `^\d+\.\d{2,}$` | `"10.00"` |
+| `currency` | string | No | Currency code (ISO 4217). Default: `"USD"` | `"USD"` |
+| `preferred_pricing_model` | string | No | Preferred pricing model for billing: `"CPX"`, `"CPC"`, or `"CPA"` | `"CPA"` |
+
+**Note**: `cpx`` is always required. `cpc` and `cpa` are optional but recommended for flexibility.
+
+### Offer Object
+
+The `offer` object contains the creative that will be rendered if the bid wins:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `creative_input` | object | Yes | Unified creative input structure (see [Creative Formats](/platforms/creative-formats)) |
+
+The `creative_input` structure is defined in the [AIP Specification](/aip-spec/schemas/creative-input.json).
+
+### Auth Object
+
+The `auth` object contains authentication data:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `nonce` | string | Yes | One-time nonce for replay protection | `"nonce_456"` |
+| `signature` | string | Yes | Signature over the canonical bid payload | `"sig_789"` |
+
+### Complete Bid Example
+
+```json
+{
+  "bid_id": "bid_7823",
+  "brand_agent_id": "brand_agent_123",
+  "context_id": "ctx_92f",
+  "wallet_id": "wallet_890",
+  "pricing": {
+    "cpx": "0.05",
+    "cpc": "0.45",
+    "cpa": "10.00",
+    "currency": "USD",
+    "preferred_pricing_model": "CPA"
+  },
+  "offer": {
+    "creative_input": {
+      "brand_name": "Nimbus",
+      "product_name": "Nimbus CRM Pro",
+      "short_description": "CRM built for growing teams, with AI-assisted workflows.",
+      "long_description": "Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster.",
+      "value_props": [
+        "Automated pipeline insights",
+        "Collaborative forecasting",
+        "AI-powered deal recommendations"
+      ],
+      "context_snippet": "For startups needing higher limits and automated expense workflows.",
+      "cta_label": "Start Free Trial",
+      "cta_url": "https://nimbus.example.com/signup",
+      "assets": {
+        "logo_url": "https://cdn.example.com/nimbus/logo.png",
+        "image_urls": ["https://cdn.example.com/nimbus/crm.png"],
+        "resource_urls": ["https://nimbus.example.com/signup"]
+      }
+    }
+  },
+  "timestamp": "2025-11-11T18:00:01Z",
+  "auth": {
+    "nonce": "nonce_456",
+    "signature": "sig_789"
+  },
+  "processing_latency_ms": 42
+}
+```
+
+---
+
+## Auction Result Schema
+
+The Auction Result schema represents the result of an auction, returned to brand agents and used to generate platform responses.
+
+### Schema Reference
+
+The Auction Result schema is defined in the [AIP Specification](/aip-spec/schemas/auction-result.json).
+
+### Required Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `auction_id` | string | Unique auction identifier | `"auc_981"` |
+| `serve_token` | string | Token for tracking and attribution. Used in exposure and click URLs. | `"stk_abcxyz123"` |
+| `ttl_ms` | integer | Time-to-live in milliseconds (1000-300000) | `60000` |
+
+### Conditional Fields
+
+The auction result has two possible structures:
+
+#### Winning Bid Result
+
+If the bid wins, the result includes:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `winner` | object | Yes | Winning bid information | See Winner Object |
+| `render` | object | Yes | Format-specific creative content | See Creative Object |
+| `no_bid` | boolean | No | Must be `false` or omitted | `false` |
+
+#### No-Bid Result
+
+If no bid wins (or bid lost), the result includes:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `no_bid` | boolean | Yes | Must be `true` | `true` |
+
+<Note>
+**Privacy**: `winning_brand_agent_id` and `winning_bid` are only sent to winners. Losers only receive `win: false` and their own bid to protect competitive pricing.
+</Note>
+
+### Winner Object
+
+The `winner` object contains information about the winning bid:
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `brand_agent_id` | string | Identifier of the winning brand agent | `"brand_agent_123"` |
+| `preferred_unit` | string | Preferred pricing model: `"CPX"`, `"CPC"`, or `"CPA"` | `"CPA"` |
+| `reserved_amount_cents` | integer | Amount held at auction time (in cents, minimum: 0) | `500` |
+
+### Render Object (Creative)
+
+The `render` object contains format-specific creative content. See [Creative Formats](/platforms/creative-formats) for complete details.
+
+The Creative schema supports four formats:
+
+1. **Weave**: `{ "format": "weave", "weave_content": "..." }`
+2. **Tail**: `{ "format": "tail", "tail_content": "..." }`
+3. **Product Card**: `{ "format": "product_card", "product_card": {...} }`
+4. **Bridge**: `{ "format": "bridge", "bridge_content": "...", "documentation_url": "..." }`
+
+### Complete Auction Result Examples
+
+#### Winning Bid Example
+
+```json
+{
+  "auction_id": "auc_981",
+  "serve_token": "stk_abcxyz123",
+  "winner": {
+    "brand_agent_id": "brand_agent_123",
+    "preferred_unit": "CPA",
+    "reserved_amount_cents": 500
+  },
+  "render": {
+    "format": "tail",
+    "tail_content": "Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster.\n\nStart Free Trial: https://admesh.click/stk_abcxyz123"
+  },
+  "ttl_ms": 60000
+}
+```
+
+#### No-Bid Example
+
+```json
+{
+  "auction_id": "auc_981",
+  "serve_token": "",
+  "no_bid": true,
+  "ttl_ms": 60000
+}
+```
+
+---
+
+## Bid Submission Flow
+
+1. **Receive Context Request**: Brand agent receives Context Request from operator
+2. **Process Request**: Load brand context, match query, generate creative
+3. **Build Bid**: Create bid with pricing, creative_input, and authentication
+4. **Submit Bid**: POST bid to `operator_bid_url` (provided in Context Request)
+5. **Receive Result**: Get auction result (win/loss) from operator
+
+## Auction Result Processing
+
+### For Winners
+
+1. **Extract `serve_token`**: Use for generating tracking URLs
+2. **Process `render`**: Transform Creative to recommendation format
+3. **Reserve Budget**: Hold `reserved_amount_cents` in wallet
+4. **Generate Tracking URLs**: Create exposure and click URLs with `serve_token`
+
+### For Losers
+
+1. **Receive `no_bid: true`**: Indicates bid did not win
+2. **No Budget Reservation**: No funds are held
+3. **No Tracking URLs**: No need to generate URLs
+
+## Pricing Models
+
+### CPX (Cost Per Exposure)
+
+- **Required**: Yes
+- **Billing**: When ad is viewed (MRC-compliant: 50% visible for 1 second)
+- **Use Case**: Brand awareness, reach campaigns
+
+### CPC (Cost Per Click)
+
+- **Required**: No (but recommended)
+- **Billing**: When user clicks the ad
+- **Use Case**: Engagement, traffic campaigns
+
+### CPA (Cost Per Action/Conversion)
+
+- **Required**: No (but recommended)
+- **Billing**: When user completes conversion (purchase, signup, etc.)
+- **Use Case**: Performance, ROI-focused campaigns
+
+### Preferred Pricing Model
+
+The `preferred_pricing_model` field indicates which model the brand agent prefers for billing:
+
+- Operator will attempt to use preferred model when possible
+- Falls back to CPX if preferred model not available
+- Used for reporting and analytics
+
+## Serve Token
+
+The `serve_token` is a critical component for tracking and attribution:
+
+- **Generated by operator**: Unique per auction
+- **Used in tracking URLs**: Included in `exposure_url` and `click_url`
+- **Time-limited**: Valid for `ttl_ms` milliseconds
+- **Attribution**: Links exposures, clicks, and conversions to the auction
+
+## Best Practices
+
+### For Bid Submission
+
+1. **Fast Response**: Submit bids within `latency_budget_ms` if possible
+2. **Complete Creative**: Provide all required `creative_input` fields
+3. **Accurate Pricing**: Ensure pricing reflects true value
+4. **Proper Authentication**: Include valid nonce and signature
+
+### For Auction Results
+
+1. **Handle Both Cases**: Process both winning and losing results
+2. **Respect TTL**: Use `serve_token` within `ttl_ms` window
+3. **Track Latency**: Monitor `processing_latency_ms` for optimization
+4. **Secure Storage**: Store `serve_token` securely for attribution
+
+## Next Steps
+
+- Review [Context Request Schema](/platforms/context-request-schema) for request structure
+- See [Creative Formats](/platforms/creative-formats) for creative input details
+- Check [Complete Flow](/platforms/complete-flow) for end-to-end integration
+- Review [Response Schema](/platforms/get-recommendations#response-schema) for platform responses
+

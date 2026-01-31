@@ -29,21 +29,21 @@ Get started with AdMesh in 3 simple steps:
   <Step title="Choose Your Integration Format">
     Select the format that matches your use case:
 
-    **Citation & Product Format** - Separate recommendations panel
+    **Tail & Product Format** - Separate recommendations panel
     ```tsx
     import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
     {messages.map((msg) => (
-      msg.role === 'assistant' && (
+      msg.role === 'assistant' && msg.userQuery && msg.userMessageId && (
         <AdMeshRecommendations
           key={msg.messageId}
-          messageId={msg.messageId}
-          query={msg.query}  // Required
-          format="tail"
+          messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
+          query={msg.userQuery}  // Required: User's original query
         />
       )
     ))}
     ```
+
 
     **Weave Ad Format** - Embedded links in LLM responses
     ```tsx
@@ -89,7 +89,7 @@ AdMesh supports three recommendation formats:
 
 | Format | Use Case | Component |
 |--------|----------|-----------|
-| **Citation** | Inline citations with product links | `AdMeshRecommendations` |
+| **Tail** | Inline tails with product links | `AdMeshRecommendations` |
 | **Product** | Product cards with details | `AdMeshRecommendations` |
 | **Weave** | Embedded links in LLM responses | `WeaveAdFormatContainer` |
 
@@ -103,9 +103,15 @@ Context provider that initializes the SDK and manages session state. **Required*
 
 ```typescript
 interface AdMeshProviderProps {
-  apiKey: string;            // Your AdMesh API key
-  sessionId: string;         // Current session ID
+  apiKey: string;            // Your AdMesh API key (required)
+  sessionId: string;         // Current session ID (required)
   theme?: AdMeshTheme;       // Optional: Custom theme
+  apiBaseUrl?: string;       // Optional: API base URL (defaults to production)
+  language?: string;         // Optional: User language in BCP 47 format (e.g., "en-US")
+  geo_country?: string;      // Optional: User country code in ISO 3166-1 alpha-2 format (e.g., "US")
+  userId?: string;           // Optional: Anonymous hashed user ID
+  model?: string;            // Optional: AI model identifier (e.g., "gpt-4o")
+  messages?: Array<{ role: string; content: string; id?: string }>;  // Optional: Conversation history
   children: React.ReactNode; // Your app components
 }
 ```
@@ -123,15 +129,19 @@ import { AdMeshProvider } from 'admesh-ui-sdk';
 
 ### AdMeshRecommendations
 
-Displays recommendations in a separate panel. Use for **Citation** or **Product** format.
+Displays recommendations in a separate panel. Use for **Tail** or **Product** format.
 
 ```typescript
 interface AdMeshRecommendationsProps {
-  messageId: string;                      // Message ID (required)
-  query: string;                          // User's query (required)
-  format?: 'tail' | 'product';        // Display format (default: 'tail')
-  onRecommendationsShown?: (messageId: string) => void;
-  onError?: (error: Error) => void;
+  messageId: string;                      // Required: Message ID (user message ID, not assistant message ID)
+  query: string;                          // Required: User's original query
+  onRecommendationsShown?: (messageId: string) => void;  // Optional: Callback when recommendations shown
+  onError?: (error: Error) => void;       // Optional: Error handler
+  onPasteToInput?: (content: string) => void;  // Optional: For bridge format CTA button
+  followups_container_id?: string;        // Optional: Container ID for follow-up suggestions
+  onExecuteQuery?: (query: string) => void | Promise<void>;  // Optional: Handler for follow-up queries
+  onFollowupDetected?: (followupQuery: string, followupEngagementUrl: string, recommendationId: string) => void;  // Optional: Callback when follow-up detected
+  isContainerReady?: boolean;             // Optional: Signal when follow-up container is ready
 }
 ```
 
@@ -140,19 +150,20 @@ interface AdMeshRecommendationsProps {
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
 {messages.map((msg) => (
-  msg.role === 'assistant' && (
+  msg.role === 'assistant' && msg.userQuery && msg.userMessageId && (
     <AdMeshRecommendations
       key={msg.messageId}
-      messageId={msg.messageId}
-      query={msg.query}  // Required
-      format="citation"
+      messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
+      query={msg.userQuery}  // Required: User's original query
+      followups_container_id={`admesh-followups-${msg.messageId}`}
+      onExecuteQuery={(query) => sendMessage(query)}
     />
   )
 ))}
 ```
 
-<Card title="Citation & Product Format Guide" icon="list" href="/platforms/citation-format">
-  Complete integration guide for Citation & Product Format
+<Card title="Tail & Product Format Guide" icon="list" href="/platforms/tail-format">
+  Complete integration guide for Tail & Product Format
 </Card>
 
 ---
@@ -163,13 +174,21 @@ Wraps LLM response content and detects embedded AdMesh links. Use for **Weave Ad
 
 ```typescript
 interface WeaveAdFormatContainerProps {
-  messageId: string;                      // Assistant message ID
-  query: string;                          // User's query
-  fallbackFormat: 'tail' | 'product'; // Fallback format if no links found
-  children: React.ReactNode;              // LLM response content
-  onLinksDetected?: (count: number) => void;
-  onNoLinksDetected?: () => void;
-  onError?: (error: Error) => void;
+  messageId: string;                      // Required: Assistant message ID
+  query?: string;                         // Optional: User's query (for fallback recommendations)
+  fallbackFormat?: 'tail' | 'product';   // Optional: Fallback format if no links found (default: 'tail')
+  children: React.ReactNode;              // Required: LLM response content
+  onLinksDetected?: (count: number) => void;  // Optional: Callback when links detected
+  onNoLinksDetected?: () => void;        // Optional: Callback when no links detected
+  onError?: (error: Error) => void;      // Optional: Error handler
+  onFallbackChange?: (shouldFallback: boolean) => void;  // Optional: Callback when fallback state changes
+  onWeaveAttempt?: (messageId: string) => void;  // Optional: Callback when weave injection attempted
+  onWeaveOutcome?: (messageId: string, success: boolean, reason?: string) => void;  // Optional: Callback when weave outcome determined
+  followups_container_id?: string;       // Optional: Container ID for follow-up suggestions
+  onExecuteQuery?: (query: string) => void | Promise<void>;  // Optional: Handler for follow-up queries
+  onFollowupDetected?: (followupQuery: string, followupEngagementUrl: string, recommendationId: string) => void;  // Optional: Callback when follow-up detected
+  isContainerReady?: boolean;            // Optional: Signal when follow-up container is ready
+  className?: string;                     // Optional: CSS class for container
 }
 ```
 
@@ -180,7 +199,7 @@ import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 <WeaveAdFormatContainer
   messageId={message.messageId}
   query={userQuery}
-  fallbackFormat="citation"
+  fallbackFormat="tail"
 >
   <Markdown>{message.content}</Markdown>
 </WeaveAdFormatContainer>
@@ -353,7 +372,7 @@ import { AdMeshProvider, AdMeshRecommendations } from 'admesh-ui-sdk';
   <AdMeshRecommendations
     messageId={messageId}
     query={userQuery}
-    format="citation"
+    format="tail"
   />
 </AdMeshProvider>
 ```
@@ -521,7 +540,7 @@ export default function App() {
 Choose your integration format and follow the detailed guide:
 
 <CardGroup cols={2}>
-  <Card title="Citation & Product Format" icon="list" href="/platforms/citation-format">
+  <Card title="Tail & Product Format" icon="list" href="/platforms/tail-format">
     Display recommendations in a separate panel
 
     **Best for:** Separate recommendations UI, simple integration
@@ -539,19 +558,3 @@ Choose your integration format and follow the detailed guide:
 </CardGroup>
 
 ---
-
-## Additional Resources
-
-<CardGroup cols={3}>
-  <Card title="API Reference" icon="book" href="/ui-sdk/api-reference">
-    Complete API documentation
-  </Card>
-
-  <Card title="Examples" icon="code" href="/ui-sdk/examples">
-    Code examples and patterns
-  </Card>
-
-  <Card title="Support" icon="question" href="mailto:support@useadmesh.com">
-    Get help from our team
-  </Card>
-</CardGroup>

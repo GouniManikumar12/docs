@@ -1,6 +1,6 @@
 ---
 title: "Choosing Your Integration"
-description: "Compare Weave Ad Format and Citation & Product Format to decide which fits your AI platform best"
+description: "Compare Weave Ad Format and Tail & Product Format to decide which fits your AI platform best"
 ---
 
 AdMesh offers two powerful integration formats for monetizing AI conversations.
@@ -10,14 +10,14 @@ Both support **AI chatbots**, **search assistants**, and **generative LLM applic
 
 ## Quick Comparison
 
-| Feature | **Weave Ad Format (API)** | **Citation & Product Format (SDK)** |
+| Feature | **Weave Ad Format (API)** | **Tail & Product Format (SDK)** |
 |----------|----------------------------|-------------------------------------|
 | **Integration Type** | API-based | SDK-based |
 | **Control** | Full control of UI and placement | Automatic rendering |
-| **Ideal For** | Platforms that weave sponsored responses inside AI output | Platforms that display pre-built cards or citations |
+| **Ideal For** | Platforms that weave sponsored responses inside AI output | Platforms that display pre-built cards or tails |
 | **Rendering** | You decide how, where, and when recommendations appear | SDK auto-renders inside your app |
 | **Setup Time** | Moderate (custom rendering) | Minimal (3-step SDK install) |
-| **LLM Compatibility** | Perfect for agents that generate natural text | Great for assistants showing answer cards or citations |
+| **LLM Compatibility** | Perfect for agents that generate natural text | Great for assistants showing answer cards or tails |
 | **Tracking** | Manual pixel firing | Automatic via SDK |
 | **Transparency Label** | Add `[Ad]` subscript manually | Auto-included in SDK output |
 | **Examples** | ChatGPT-style chatbots, voice agents, conversational apps | Search copilots, widgets, dashboards, browser extensions |
@@ -31,10 +31,10 @@ Use **Weave Ad Format** if you:
 - Need to dynamically insert offers into AI-generated text.
 - Already have an LLM integration and want programmatic flexibility.
 
-Use **Citation & Product Format** if you:
+Use **Tail & Product Format** if you:
 - Want to integrate quickly with little or no code.
 - Prefer AdMesh to handle rendering, labeling, and pixel tracking.
-- Are building a chatbot, widget, or extension that surfaces offers or citations visually.
+- Are building a chatbot, widget, or extension that surfaces offers or tails visually.
 
 ---
 
@@ -43,11 +43,11 @@ Use **Citation & Product Format** if you:
 | Platform Type | Recommended Format | Why |
 |----------------|--------------------|-----|
 | **Conversational AI (LLM chat)** | Weave Ad Format | Seamless in-text blending of sponsored links |
-| **Search Answer Bot** | Citation & Product Format | Automatically rendered sponsored citations |
-| **Browser Extension** | Citation & Product Format | Lightweight, no custom frontend |
+| **Search Answer Bot** | Tail & Product Format | Automatically rendered sponsored tails |
+| **Browser Extension** | Tail & Product Format | Lightweight, no custom frontend |
 | **In-App Chat or Assistant** | Weave Ad Format | Custom UX and interaction control |
 | **AI Content Generator** | Weave Ad Format | Natural inclusion inside long-form responses |
-| **Widget / Dashboard Plugin** | Citation & Product Format | Quick setup with pre-rendered UI |
+| **Widget / Dashboard Plugin** | Tail & Product Format | Quick setup with pre-rendered UI |
 
 ---
 
@@ -57,7 +57,7 @@ Use **Citation & Product Format** if you:
 flowchart LR
     A[User Query] --> B[AdMesh /agent/recommend]
     B -->|Weave Ad Format| C[Developer Weaves into AI Response]
-    B -->|Citation & Product Format| D[SDK Auto-Renders Cards]
+    B -->|Tail & Product Format| D[SDK Auto-Renders Cards]
     C --> E[User Sees Blended Answer]
     D --> E
     E --> F[Exposure Pixel Fires]
@@ -71,9 +71,9 @@ flowchart LR
 You call AdMesh APIs and weave responses directly into your LLM output.
 [Learn More → Weave Ad Format](/platforms/weave-ad-format)
 
-**Citation & Product Format** → best for plug-and-play sponsored cards.
+**Tail & Product Format** → best for plug-and-play sponsored cards.
 You install the SDK and let AdMesh render ads automatically.
-[Learn More → Citation & Product Format](/platforms/citation-format)
+[Learn More → Tail & Product Format](/platforms/tail-format)
 
 ---
 

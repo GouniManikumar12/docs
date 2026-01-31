@@ -14,7 +14,7 @@ The **admesh-weave-python** SDK is a backend Python package that fetches persona
 
 **When NOT to use this SDK:**
 - You only need frontend recommendations (use admesh-ui-sdk instead)
-- You want a separate recommendations panel (use Citation/Product Format with admesh-ui-sdk)
+- You want a separate recommendations panel (use Tail/Product Format with admesh-ui-sdk)
 
 ---
 
@@ -95,17 +95,20 @@ client = AdMeshClient(api_key="your-api-key")
 
 ### Session and Message IDs
 
-Every recommendation request requires:
-- **session_id**: Unique identifier for the user's conversation session
-- **message_id**: Unique identifier for each message in the conversation
-- **query**: The user's search query (required for contextual recommendations)
+AdMesh uses IDs to track user interactions:
+
+- **session_id**: Unique identifier for a user's conversation session
+- **message_id**: Unique identifier for each individual message/query
 
 ```python
 import uuid
 
+# Your application generates these IDs
 session_id = str(uuid.uuid4())  # Generate once per conversation
 message_id = str(uuid.uuid4())  # Generate for each message
 ```
+
+Your backend is responsible for generating and managing session and message IDs. The SDK accepts these IDs but does not generate them. These IDs must be provided by the frontend.
 
 ---
 
@@ -121,10 +124,10 @@ client = AdMeshClient(api_key="your-api-key")
 async def handle_user_query(user_query: str, session_id: str, message_id: str):
     # Fetch recommendations
     result = await client.get_recommendations_for_weave(
-        session_id=session_id,
-        message_id=message_id,
-        query=user_query,
-        timeout_ms=30000
+        session_id=session_id,  # Required: Must be provided by frontend
+        message_id=message_id,  # Required: Must be provided by frontend
+        query=user_query,       # Required
+        latency_budget_ms=10000  # Optional: 10 second latency budget for auction processing
     )
     
     if result["found"]:
@@ -237,26 +240,60 @@ client = AdMeshClient(api_key=os.environ["ADMESH_API_KEY"])
 
 ---
 
-## API Reference
+## API Methods
 
 ### get_recommendations_for_weave()
 
-Async method to fetch recommendations.
+Fetches recommendations for a given query that can be woven into LLM responses.
 
-**Parameters:**
-- `session_id` (str, required): Session identifier
-- `message_id` (str, required): Message identifier
-- `query` (str, required): User's search query
-- `timeout_ms` (int, optional): Request timeout in milliseconds (default: 12000)
+```python
+result = await client.get_recommendations_for_weave(
+    session_id: str,           # Required: Must be provided by frontend
+    message_id: str,           # Required: Must be provided by frontend
+    query: str,                # Required: User query for contextual recommendations
+    latency_budget_ms: int = None,  # Optional: Latency budget for auction processing (milliseconds)
+    messages: List[dict] = None,   # Optional: Conversation history
+    locale: str = None,            # Optional: User language in BCP 47 format (e.g., "en-US")
+    geo: str = None,              # Optional: User country code in ISO 3166-1 alpha-2 format (e.g., "US")
+    user_id: str = None,          # Optional: Anonymous hashed user ID
+    model: str = None,            # Optional: AI model identifier (e.g., "gpt-4o")
+    platform_id: str = None,      # Optional: Platform identifier
+    platform_surface: str = None, # Optional: Platform surface (e.g., "web")
+    timeout_ms: int = None        # Optional: Max wait time (default: calculated from latency_budget_ms or 30000ms)
+)
+```
+
+**Note:** HTTP timeout is automatically calculated from `latency_budget_ms` when provided: `max(latency_budget_ms * 3, 30000)`. This ensures the HTTP request doesn't timeout before the auction completes. If `latency_budget_ms` is not provided, defaults to 30 seconds or `timeout_ms` if specified.
+
+**Format Filtering:** This method only returns recommendations with "weave" format. If the recommendation format is not "weave", the method returns `{"found": False, "error": "Preferred format is not weave"}`.
+
+**Example:**
+```python
+result = await client.get_recommendations_for_weave(
+    session_id='session-abc123',  # Required: Must be provided by frontend
+    message_id='msg-xyz789',      # Required: Must be provided by frontend
+    query='best project management tools',  # Required
+    latency_budget_ms=10000  # Optional: 10 second latency budget for auction processing
+)
+
+if result["found"]:
+    print(f"Found {len(result['recommendations'])} recommendations")
+    for rec in result["recommendations"]:
+        print(f"- {rec['title']}: {rec['click_url']}")
+        weave_summary = rec.get('weave_summary') or rec.get('creative_input', {}).get('short_description')
+        print(f"  Summary: {weave_summary}")
+else:
+    print('No recommendations found:', result.get('error'))
+```
 
 **Returns:**
 ```python
 {
-    "found": bool,
-    "recommendations": List[dict],  # If found=True
-    "query": str,
-    "request_id": str,
-    "error": str  # If found=False
+    "found": bool,                         # Whether recommendations were found
+    "recommendations": List[dict],         # Array of recommendations (if found)
+    "query": str,                          # Original query
+    "request_id": str,                     # Request ID
+    "error": str                           # Error message if not found
 }
 ```
 
@@ -271,14 +308,16 @@ Synchronous version of `get_recommendations_for_weave()`. Same parameters and re
 ### No recommendations returned
 
 **Possible causes:**
-- Query is too generic or vague
+- Query is too generic (try more specific queries)
 - No active campaigns match the query
 - API key is invalid
+- Format is not "weave" (SDK only returns "weave" format recommendations)
 
 **Solution:**
 - Use more specific queries (e.g., "best CRM for startups" instead of "software")
 - Check that your AdMesh account has active campaigns
 - Verify API key in environment variables
+- Note: If format is not "weave", the SDK returns `{"found": False, "error": "Preferred format is not weave"}`
 
 ### API key errors
 

@@ -1,0 +1,235 @@
+---
+title: "Platform Request Schema"
+description: "Complete schema reference for platform requests sent to AdMesh operator"
+---
+
+# Platform Request Schema
+
+The Platform Request is the initial request sent from an AI platform to the AdMesh operator to initiate an ad auction. This document describes all fields in the request schema.
+
+## Schema Reference
+
+The Platform Request schema is defined in the [AIP Specification](/aip-spec/schemas/platform-request.json).
+
+## UCP Structure
+
+The Platform Request uses the **UCP (User Context Protocol)** structure. Required top-level fields:
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `spec_version` | string | UCP specification version | `"1.0.0"` |
+| `message_id` | string | **Required** - Unique identifier for this auction request (used for idempotency) | `"req_92fA1"` |
+| `timestamp` | string | ISO 8601 timestamp when the platform generated the request | `"2025-11-14T18:22:00Z"` |
+| `producer` | object | Producer information (platform/agent that created the request) | See Producer Object |
+| `context` | object | Context information (language, publisher, placement, device, geography) | See Context Object |
+| `identity` | object | Identity information (namespace, value_hash, confidence) | See Identity Object |
+| `extensions` | object | Extensions containing AIP-specific and other vendor data | See Extensions Object |
+
+## Producer Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `agent_id` | string | Yes | Identifier of the AI platform sending this request | `"openai_chat"` |
+| `agent_role` | string | Yes | Role of the agent, typically "publisher" | `"publisher"` |
+| `software` | string | Yes | Software name | `"chatgpt"` |
+| `software_version` | string | Yes | Software version or model identifier | `"4.3-mini"` |
+
+## Context Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `context_id` | string | Yes | Unique context identifier | `"ctx_raw_92fA1"` |
+| `language` | string | Yes | User locale in BCP 47 format (pattern: `^[a-z]{2}-[A-Z]{2}$`) | `"en-US"` |
+| `publisher` | string | Yes | Publisher identifier (same as producer.agent_id) | `"openai_chat"` |
+| `placement` | object | Yes | Placement information | See Placement Object |
+| `device` | object | Yes | Device information | See Device Object |
+| `geography` | object | Yes | Geographic information | See Geography Object |
+
+### Placement Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `ad_unit` | string | Yes | Platform surface type: "conversation", "chat", "voice", etc. | `"conversation"` |
+
+### Device Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `platform` | string | Yes | Device platform: "web", "mobile", etc. | `"web"` |
+| `form_factor` | string | Yes | Device form factor: "mobile", "desktop", "tablet" | `"desktop"` |
+| `ua_hash` | string | No | Optional user agent hash | `"ua_hash_xyz"` |
+
+### Geography Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `country` | string | Yes | User country code (ISO 3166-1 alpha-2, pattern: `^[A-Z]{2}$`) | `"US"` |
+
+## Identity Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `namespace` | string | Yes | Identity namespace | `"platform_user"` |
+| `value_hash` | string | Yes | Anonymous hashed user ID | `"user_hash_abc123"` |
+| `confidence` | number | Yes | Confidence level for identity (0.0 to 1.0) | `1.0` |
+
+## Extensions Object
+
+The `extensions` object contains vendor-namespaced data. The `aip` namespace contains AIP-specific fields:
+
+### AIP Extensions (`extensions.aip`)
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `session_id` | string | Yes | Conversation or interaction session ID | `"sess_001"` |
+| `query_text` | string | Yes | User's raw query text | `"best CRM for small teams"` |
+| `turn_index` | integer | Yes | Turn index in the conversation | `3` |
+| `conversation_id` | string | No | Conversation ID if independent from session_id | `"conv_xyz789"` |
+| `model` | string | Identifier of the AI model used for this interaction | `"gpt-4.3-mini"` |
+| `messages` | array | Optional short conversation history (last N turns). Used for operator intent inference. | See Messages Array |
+| `platform_surface` | string | Platform-defined surface or view type | `"ai_chat"` |
+| `cpx_floor` | number | Minimum CPX (USD) required by the platform for this auction request | `0.05` |
+| `device_type` | string | Device type: `"mobile"`, `"desktop"`, or `"tablet"` | `"desktop"` |
+| `conversation_id` | string | Conversation ID if independent from `session_id` | `"conv_abc123"` |
+| `user_id` | string | Anonymous hashed user ID for pacing & personalization | `"user_hash_xyz789"` |
+| `latency_budget_ms` | integer | Optional latency budget from platform in milliseconds | `500` |
+| `metadata` | object | Platform extensions, modes, structured session metadata. Must be vendor-namespaced. | See Metadata Object |
+
+## Auth Object
+
+The `auth` object contains authentication data for request validation:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `nonce` | string | Yes | One-time nonce for replay protection | `"nonce_12345"` |
+| `sig` | string | Yes | HMAC signature of the request | `"sig_d41d8cd98f00b204e9800998ecf8427e"` |
+
+## Messages Array
+
+The `messages` array contains conversation history for intent inference:
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `role` | string | Message role: `"user"`, `"assistant"`, or `"system"` | `"user"` |
+| `content` | string | Message content | `"Looking for CRM recommendations"` |
+| `id` | string | Optional message ID. If `message_id` is not provided at top level, the last message's `id` will be used for deduplication. | `"msg_123"` |
+
+## Metadata Object
+
+The `metadata` object allows platform-specific extensions. All keys must be vendor-namespaced:
+
+```json
+{
+  "openai": {
+    "model": "gpt-4.3-mini",
+    "conversation_mode": "assistant"
+  }
+}
+```
+
+## Complete Example
+
+```json
+{
+  "spec_version": "1.0.0",
+  "message_id": "req_92fA1",
+  "timestamp": "2025-11-14T18:22:00Z",
+  "producer": {
+    "agent_id": "openai_chat",
+    "agent_role": "publisher",
+    "software": "chatgpt",
+    "software_version": "4.3-mini"
+  },
+  "context": {
+    "context_id": "ctx_raw_92fA1",
+    "language": "en-US",
+    "publisher": "openai_chat",
+    "placement": {
+      "ad_unit": "conversation"
+    },
+    "device": {
+      "platform": "web",
+      "form_factor": "desktop",
+      "ua_hash": "ua_hash_xyz"
+    },
+    "geography": {
+      "country": "US"
+    }
+  },
+  "identity": {
+    "namespace": "platform_user",
+    "value_hash": "user_hash_abc123",
+    "confidence": 1.0
+  },
+  "extensions": {
+    "aip": {
+      "session_id": "sess_001",
+      "conversation_id": "conv_xyz789",
+      "turn_index": 3,
+      "query_text": "best CRM for small teams",
+      "messages": [
+        { "role": "user", "content": "best CRM tools?", "id": "msg_123" },
+        { "role": "assistant", "content": "HubSpot, Zoho, Salesforce…" }
+      ],
+      "latency_budget_ms": 500,
+      "cpx_floor": 0.05
+    },
+    "openai": {
+      "model": "gpt-4.3-mini",
+      "conversation_mode": "assistant"
+    }
+  }
+}
+```
+
+## Field Descriptions
+
+### `message_id` (Required)
+
+**Important**: `message_id` is **required** and serves as the unique identifier for this auction request. It is used for idempotency checks and deduplication. The operator uses this to prevent duplicate processing of the same request.
+
+**Format**: `req_{timestamp}_{random_string}` or any unique identifier
+
+**Note**: This replaces the old `request_id` field. Use `message_id` for all identification and idempotency purposes.
+
+### `extensions.aip.latency_budget_ms` (Optional)
+
+Specifies how long the platform will wait for an ad response. The operator will attempt to return results within this budget. If not specified, the operator uses default timing.
+
+**Typical values**:
+- Fast responses: `200-500ms`
+- Standard responses: `500-1000ms`
+- Extended responses: `1000-2000ms`
+
+### `extensions.aip.cpx_floor` (Optional)
+
+The minimum Cost Per Exposure (CPX) in USD that the platform requires. Only bids meeting or exceeding this floor will be considered.
+
+**Default**: No floor (all bids considered)
+
+### `context.device.form_factor`
+
+Helps the operator optimize creative formats and targeting:
+
+- `"mobile"`: Optimize for mobile viewing
+- `"desktop"`: Optimize for desktop viewing
+- `"tablet"`: Optimize for tablet viewing
+
+### `identity.value_hash`
+
+Anonymous hashed user ID used for:
+- **Pacing**: Limit ad frequency per user
+- **Personalization**: Improve relevance based on user history
+
+**Privacy**: Must be a one-way hash. Never send raw user identifiers.
+
+## Authentication
+
+Platform requests are authenticated using API keys passed in the request headers. The operator validates the API key and extracts the `platform_id` (agent_id) from it. No `auth` object is required in the request body.
+
+## Next Steps
+
+- Learn about the [Context Request Schema](/platforms/context-request-schema) (operator-to-brand-agent)
+- See the [Complete Flow Documentation](/platforms/complete-flow) for end-to-end integration
+- Review [Response Schema](/platforms/get-recommendations#response-schema) for response structure
+

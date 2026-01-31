@@ -22,18 +22,15 @@
           {
             "group": "For Advertisers",
             "pages": [
-              "advertisers/overview",
-              "advertisers/getting-started",
-              "advertisers/budget-performance",
-              "advertisers/best-practices"            ]
+              "advertisers/overview"
+                   ]
           },
           {
             "group": "Platforms",
             "pages": [
               "platforms/overview",
-              "platforms/citation-format",
-              "platforms/weave-ad-format",
-              "platforms/bridge-format"
+              "platforms/tail-format",
+              "platforms/weave-ad-format"
             ]
           },
           {
@@ -90,10 +87,7 @@
   },
   "navbar": {
     "links": [
-      {
-        "label": "Playground",
-        "href": "https://docs.useadmesh.com/api-playground"
-      },
+     
       {
         "label": "Try AdPlex",
         "href": "https://tryadplex.com"

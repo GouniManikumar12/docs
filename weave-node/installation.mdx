@@ -14,7 +14,7 @@ The **admesh-weave-node** SDK is a backend Node.js package that fetches personal
 
 **When NOT to use this SDK:**
 - You only need frontend recommendations (use admesh-ui-sdk instead)
-- You want a separate recommendations panel (use Citation/Product Format with admesh-ui-sdk)
+- You want a separate recommendations panel (use Tail/Product Format with admesh-ui-sdk)
 
 ---
 
@@ -89,7 +89,8 @@ The main client for fetching recommendations. Initialize once and reuse across y
 import { AdMeshClient } from '@admesh/weave-node';
 
 const client = new AdMeshClient({
-  apiKey: process.env.ADMESH_API_KEY
+  apiKey: process.env.ADMESH_API_KEY,  // Required
+  apiBaseUrl: process.env.ADMESH_API_BASE_URL  // Optional: defaults to https://api.useadmesh.com
 });
 ```
 
@@ -119,39 +120,60 @@ Your backend is responsible for generating and managing session and message IDs.
 Fetches recommendations for a given query that can be woven into LLM responses.
 
 ```typescript
-interface GetRecommendationsForWeaveRequest {
-  sessionId: string;  // User's session ID
-  messageId: string;  // Current message ID
-  query: string;      // User's query
+interface AdMeshSubscriptionOptions {
+  sessionId: string;        // Required: Must be provided by frontend
+  messageId: string;        // Required: Must be provided by frontend
+  query: string;            // Required: User query for contextual recommendations
+  latencyBudgetMs?: number; // Optional: Latency budget for auction processing (milliseconds)
+  messages?: Array<{ role: string; content: string; id?: string }>;  // Optional: Conversation history
+  locale?: string;          // Optional: User language in BCP 47 format (e.g., "en-US")
+  geo?: string;             // Optional: User country code in ISO 3166-1 alpha-2 format (e.g., "US")
+  userId?: string;          // Optional: Anonymous hashed user ID
+  model?: string;           // Optional: AI model identifier (e.g., "gpt-4o")
+  platformId?: string;      // Optional: Platform identifier
+  platformSurface?: string; // Optional: Platform surface (e.g., "web")
 }
 
-interface GetRecommendationsForWeaveResponse {
-  found: boolean;
-  recommendations: Recommendation[];
+interface AdMeshWaitResult {
+  found: boolean;                         // Whether recommendations were found
+  recommendations?: AdMeshRecommendation[]; // Array of recommendations
+  query?: string;                         // Original query
+  requestId?: string;                     // Request ID
+  error?: string;                         // Error message if not found
 }
 
-interface Recommendation {
-  ad_id: string;           // Unique ad identifier
-  product_title: string;   // Product/service title
-  product_description: string; // Product description
-  click_url: string;       // Tracking URL for clicks
-  exposure_url: string;    // Tracking URL for exposures
+interface AdMeshRecommendation {
+  recommendation_id: string;              // Recommendation identifier
+  ad_id: string;                          // Unique ad identifier
+  product_id: string;                     // Product ID
+  product_title: string;                  // Product/service title
+  click_url: string;                      // Tracking URL for clicks
+  exposure_url: string;                   // Tracking URL for exposures
+  weave_summary?: string;                 // Weave format summary
+  tail_summary?: string;                  // Tail format summary
+  creative_input: CreativeInput;          // Creative content with product details
+  contextual_relevance_score: number;     // Contextual relevance score (0-100)
+  // ... and other fields
 }
 ```
 
 **Example:**
 ```typescript
 const result = await client.getRecommendationsForWeave({
-  sessionId: 'session-abc123',
-  messageId: 'msg-xyz789',
-  query: 'best project management tools'
+  sessionId: 'session-abc123',  // Required: Must be provided by frontend
+  messageId: 'msg-xyz789',      // Required: Must be provided by frontend
+  query: 'best project management tools',  // Required
+  latencyBudgetMs: 10000  // Optional: 10 second latency budget for auction processing
 });
 
 if (result.found) {
   console.log(\`Found \${result.recommendations.length} recommendations\`);
-  result.recommendations.forEach(rec => {
+  result.recommendations?.forEach(rec => {
     console.log(\`- \${rec.product_title}: \${rec.click_url}\`);
+    console.log(\`  Summary: \${rec.weave_summary || rec.creative_input?.short_description}\`);
   });
+} else {
+  console.log('No recommendations found:', result.error);
 }
 ```
 
@@ -178,9 +200,10 @@ app.post('/api/chat', async (req, res) => {
   try {
     // Step 1: Fetch AdMesh recommendations
     const result = await client.getRecommendationsForWeave({
-      sessionId: sessionId,
-      messageId: messageId,
-      query: query
+      sessionId: sessionId,  // Required: Must be provided by frontend
+      messageId: messageId,  // Required: Must be provided by frontend
+      query: query,          // Required
+      latencyBudgetMs: 10000  // Optional: 10 second latency budget for auction processing
     });
 
     // Step 2: Format recommendations for your LLM
@@ -248,9 +271,9 @@ The SDK is written in TypeScript and includes full type definitions:
 ```typescript
 import type {
   AdMeshClient,
-  GetRecommendationsForWeaveRequest,
-  GetRecommendationsForWeaveResponse,
-  Recommendation
+  AdMeshSubscriptionOptions,
+  AdMeshWaitResult,
+  AdMeshRecommendation
 } from '@admesh/weave-node';
 ```
 

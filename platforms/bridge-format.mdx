@@ -11,7 +11,7 @@ The **Bridge Ad Format** is designed for **followup sponsored recommendations** 
 - ✅ Followup sponsored recommendations after initial responses
 - ✅ Setup prompts for AI agent configuration
 - ✅ Documentation URLs for product setup guides
-- ✅ Automatic tracking (impressions and clicks)
+- ✅ Automatic tracking (exposures and clicks)
 - ✅ Transparency labels (`[Ad]` added automatically)
 - ✅ Session-aware tracking
 
@@ -217,21 +217,13 @@ export default ChatWithBridgeFormat;
 
 ---
 
-## API Request Format
+## Format Configuration
 
-When requesting bridge format, include `allowed_formats: ["bridge"]` in your API request:
+**Important**: `allowed_formats` are automatically fetched from your platform configuration (set during onboarding). You don't need to specify formats in API requests.
 
-```typescript
-const response = await fetch('/api/recommendations', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    query: userQuery,
-    session_id: sessionId,
-    allowed_formats: ["bridge"]  // Request bridge format
-  })
-});
-```
+- For **Vibe Coding Platforms**, bridge format is automatically selected during onboarding
+- The backend validates format requests against your platform's allowed formats
+- Simply specify `format="bridge"` in the component - the backend handles the rest
 
 ---
 
@@ -291,7 +283,7 @@ You can customize how bridge format recommendations are displayed:
 **Don't use Bridge Format when:**
 - ❌ You need primary recommendations (use tail or product_card instead)
 - ❌ Marketing consumer products (use tail or product_card)
-- ❌ Simple product recommendations (use citation or product format)
+- ❌ Simple product recommendations (use tail or product format)
 - ❌ Embedding links in responses (use weave format)
 
 ---
@@ -305,7 +297,7 @@ You can customize how bridge format recommendations are displayed:
     - `query` prop is provided and not empty (required)
     - `messageId` prop is provided
     - API key is valid and set correctly
-    - `allowed_formats: ["bridge"]` is included in API request
+    - Bridge format is enabled in your platform configuration (set during onboarding)
 
     **Common issue:**
     ```tsx
@@ -345,7 +337,7 @@ You can customize how bridge format recommendations are displayed:
   <Card title="UI SDK Installation" icon="download" href="/ui-sdk/installation">
     Complete frontend SDK installation and setup
   </Card>
-  <Card title="Citation & Product Format" icon="file-text" href="/platforms/citation-format">
+  <Card title="Tail & Product Format" icon="file-text" href="/platforms/tail-format">
     Learn about other ad formats
   </Card>
   <Card title="Weave Ad Format" icon="link" href="/platforms/weave-ad-format">

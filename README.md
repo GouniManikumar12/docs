@@ -41,8 +41,8 @@ AdMesh supports two distinct integration styles depending on how your platform r
 - The weave-node package runs server-side, calls the AIP server for recommendations, and formats the results as inline links so the LLM can stitch them into the final answer.
 - Because it plugs into your LLM response pipeline, you must manage the streaming lifecycle and embedding logic manually.
 
-### Citation/Product Format (standard integration)
-- For the standard citation or product recommendation layouts, integrate straight with the AIP server through the **`admesh-ui-sdk`** (this SDK is required for all integrations).
+### Tail/Product Format (standard integration)
+- For the standard tail or product recommendation layouts, integrate straight with the AIP server through the **`admesh-ui-sdk`** (this SDK is required for all integrations).
 - The UI SDK already handles platform requests, auction parsing, CPX → CPC → CPA tracking, and rendering of creatives or fallback recommendations—no weave-node service is necessary.
 - See the `admesh-ui-sdk` codebase for concrete examples of the direct AIP communication patterns and how the SDK encapsulates them.
 

@@ -9,12 +9,12 @@ description: "Frequently asked questions from platform integrators about format 
   <Accordion title="What is AdMesh?" data-faq-item="What is AdMesh?">
     AdMesh is a conversational advertising platform that enables platforms (like AI assistants, search engines, and chat applications) to monetize through contextually relevant product recommendations. AdMesh provides two SDKs for integration:
 
-    - **React SDK** (`admesh-ui-sdk`): For frontend integration with citation format and product card layouts
+    - **React SDK** (`admesh-ui-sdk`): For frontend integration with tail format and product card layouts
     - **AdMesh Weave Node SDK** (`admesh-weave-node`): For backend Node.js integration with weave format
   </Accordion>
 
-  <Accordion title="How do I choose between weave format and citation format?" data-faq-item="How do I choose between weave format and citation format?">
-    | Aspect | Weave Format | Citation Format |
+  <Accordion title="How do I choose between weave format and tail format?" data-faq-item="How do I choose between weave format and tail format?">
+    | Aspect | Weave Format | Tail Format |
     |--------|--------------|-----------------|
     | **What it is** | Inline product cards embedded in conversation | Clickable links within conversational text |
     | **Best for** | Visual-heavy platforms, mobile apps | Text-based platforms, chat interfaces |
@@ -28,7 +28,7 @@ description: "Frequently asked questions from platform integrators about format 
     - You want a visual, interactive experience
     - You have sufficient bandwidth
 
-    **Choose Citation if:**
+    **Choose Tail if:**
     - Your platform is text-based
     - You want minimal UI changes
     - You want lightweight integration
@@ -39,7 +39,7 @@ description: "Frequently asked questions from platform integrators about format 
   <Accordion title="When should I use the React SDK vs. AdMesh Weave Node SDK?" data-faq-item="When should I use the React SDK vs. AdMesh Weave Node SDK?">
     | Aspect | React SDK | AdMesh Weave Node SDK |
     |--------|-----------|-----------|
-    | **Supported Formats** | Citation, Product Cards | Weave Format |
+    | **Supported Formats** | Tail, Product Cards | Weave Format |
     | **Best for** | Frontend React applications | Backend Node.js applications |
     | **Setup Time** | 5-10 minutes | 15-30 minutes |
     | **Customization** | Limited (UI components) | Full control (backend logic) |
@@ -49,7 +49,7 @@ description: "Frequently asked questions from platform integrators about format 
 
     **Use React SDK if:**
     - Your platform is built with React
-    - You want citation or product card format
+    - You want tail or product card format
     - You want quick frontend integration
     - You need UI components for recommendations
 
@@ -87,7 +87,7 @@ description: "Frequently asked questions from platform integrators about format 
   <Accordion title="What formats does the React SDK support?" data-faq-item="What formats does the React SDK support?">
     The React SDK supports:
 
-    - **Citation Format** - Clickable links within conversational text
+    - **Tail Format** - Clickable links within conversational text
     - **Product Card Layouts** - Individual product recommendation cards
 
     **Not supported:** Weave Format (use AdMesh Weave Node SDK instead)
@@ -308,11 +308,11 @@ description: "Frequently asked questions from platform integrators about format 
 
 ---
 
-## Citation Format Integration
+## Tail Format Integration
 
-<AccordionGroup data-faq-section="Citation Format Integration">
-  <Accordion title="How do I integrate citation format?" data-faq-item="How do I integrate citation format?">
-    Citation format can be integrated via:
+<AccordionGroup data-faq-section="Tail Format Integration">
+  <Accordion title="How do I integrate tail format?" data-faq-item="How do I integrate tail format?">
+    Tail format can be integrated via:
 
     1. **React SDK** (recommended for React apps)
     2. **Direct API** (for any platform)
@@ -328,11 +328,11 @@ description: "Frequently asked questions from platform integrators about format 
     ```
 
     **Using Direct API:**
-    See [Citation Format](/platforms/citation-format) for API details.
+    See [Tail Format](/platforms/tail-format) for API details.
   </Accordion>
 
-  <Accordion title="What does citation format look like?" data-faq-item="What does citation format look like?">
-    Citation format displays recommendations as clickable links within conversational text:
+  <Accordion title="What does tail format look like?" data-faq-item="What does tail format look like?">
+    Tail format displays recommendations as clickable links within conversational text:
 
     ```
     Here are some great options for you:
@@ -343,7 +343,7 @@ description: "Frequently asked questions from platform integrators about format 
     Each link is tracked for clicks and conversions.
   </Accordion>
 
-  <Accordion title="How do I customize citation format styling?" data-faq-item="How do I customize citation format styling?">
+  <Accordion title="How do I customize tail format styling?" data-faq-item="How do I customize tail format styling?">
     With React SDK:
 
     ```tsx
@@ -649,7 +649,7 @@ description: "Frequently asked questions from platform integrators about format 
 
 <CardGroup cols={2}>
   <Card title="Choose Integration" icon="code-branch" href="/platforms/choose-integration">
-    Compare weave and citation formats
+    Compare weave and tail formats
   </Card>
   <Card title="React SDK" icon="react" href="/ui-sdk/installation">
     React SDK installation and setup
@@ -657,8 +657,8 @@ description: "Frequently asked questions from platform integrators about format 
   <Card title="Weave Format" icon="layout-grid" href="/platforms/weave-ad-format">
     Weave format integration guide
   </Card>
-  <Card title="Citation Format" icon="link" href="/platforms/citation-format">
-    Citation format integration guide
+  <Card title="Tail Format" icon="link" href="/platforms/tail-format">
+    Tail format integration guide
   </Card>
   <Card title="Styling System" icon="palette" href="/ui-sdk/styling-system">
     Customize component styling

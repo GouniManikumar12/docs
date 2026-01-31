@@ -1,0 +1,365 @@
+---
+title: "Creative Formats"
+description: "Complete guide to all AdMesh creative formats: weave, tail, product_card, bridge, and followup"
+---
+
+# Creative Formats
+
+AdMesh supports five creative formats for displaying recommendations. Each format is optimized for different use cases and platform types.
+
+## Format Overview
+
+| Format | Best For | Description |
+|--------|----------|-------------|
+| **weave** | Conversational AI | Inline contextual text inserted into LLM responses |
+| **tail** | Most platforms | Paragraph-level block ad shown after organic response |
+| **product_card** | E-commerce, product discovery | Structured card with images, value props, and CTA |
+| **bridge** | Vibe Coding Platforms, AI IDEs | Setup prompts and documentation URLs for followup recommendations |
+| **followup** | AI platforms with follow-up UI | Headless format for sponsored follow-up queries (platform-native integration) |
+
+## Format Selection
+
+<Note>
+**Automatic Format Selection**: `allowed_formats` are automatically fetched from your platform configuration (set during onboarding). You do not need to specify formats in API requests.
+
+For **Vibe Coding Platforms**, the bridge format is automatically selected during onboarding.
+</Note>
+
+## Weave Format
+
+**Use case**: Embedding sponsored recommendations directly into conversational AI responses.
+
+### Schema
+
+```json
+{
+  "format": "weave",
+  "weave_content": "[Ad] {context_snippet} {short_description} Learn more: {url}"
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `format` | string | Yes | Must be `"weave"` | `"weave"` |
+| `weave_content` | string | Yes | Short, inline, contextual text to insert into assistant response. Format: `"[Ad] {context_snippet} {short_description} Learn more: {url}"` | `"[Ad] For startups needing higher limits and automated expense workflows. CRM built for growing teams, with AI-assisted workflows. Learn more: https://admesh.click/stk_abcxyz123"` |
+
+### Example
+
+```json
+{
+  "format": "weave",
+  "weave_content": "[Ad] For startups needing higher limits and automated expense workflows. CRM built for growing teams, with AI-assisted workflows. Learn more: https://admesh.click/stk_abcxyz123"
+}
+```
+
+### Integration
+
+The weave format is designed to be naturally inserted into LLM-generated responses. The `[Ad]` label ensures transparency.
+
+---
+
+## Tail Format
+
+**Use case**: Displaying recommendations as a separate block after the organic response.
+
+### Schema
+
+```json
+{
+  "format": "tail",
+  "tail_content": "{long_description}\n\n{cta_label}: {url}"
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `format` | string | Yes | Must be `"tail"` | `"tail"` |
+| `tail_content` | string | Yes | Paragraph-level block ad to show after organic response. Format: `"{long_description}\n\n{cta_label}: {url}"` | `"Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster.\n\nStart Free Trial: https://admesh.click/stk_abcxyz123"` |
+
+### Example
+
+```json
+{
+  "format": "tail",
+  "tail_content": "Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster.\n\nStart Free Trial: https://admesh.click/stk_abcxyz123"
+}
+```
+
+### Integration
+
+The tail format is displayed as a separate block after the main response. It's ideal for platforms that want to clearly separate organic content from sponsored recommendations.
+
+---
+
+## Product Card Format
+
+**Use case**: Rich product discovery with images, value propositions, and structured data.
+
+### Schema
+
+```json
+{
+  "format": "product_card",
+  "product_card": {
+    "title": "string",
+    "subtitle": "string",
+    "description": "string",
+    "value_props": ["string"],
+    "assets": {
+      "logo_url": "string",
+      "primary_image_url": "string",
+      "image_urls": ["string"]
+    },
+    "admesh_url": "string"
+  }
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `format` | string | Yes | Must be `"product_card"` | `"product_card"` |
+| `product_card` | object | Yes | Structured card data | See Product Card Object |
+
+### Product Card Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `title` | string | Yes | Product title | `"Nimbus CRM Pro"` |
+| `subtitle` | string | No | Brand name or subtitle | `"Nimbus"` |
+| `description` | string | No | Product description | `"CRM built for growing teams, with AI-assisted workflows."` |
+| `value_props` | array | No | Value propositions (bullet points), limited to 5 | `["Automated pipeline insights", "Collaborative forecasting", "AI-powered deal recommendations"]` |
+| `assets` | object | No | Product card assets | See Assets Object |
+| `admesh_url` | string | Yes | Tracking URL for clicks with serve token | `"https://admesh.click/stk_abcxyz123"` |
+
+### Assets Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `logo_url` | string | No | Product or brand logo URL | `"https://cdn.example.com/nimbus/logo.png"` |
+| `primary_image_url` | string | No | Primary product image URL | `"https://cdn.example.com/nimbus/crm.png"` |
+| `image_urls` | array | No | Additional image URLs, limited to 3 | `["https://cdn.example.com/nimbus/crm.png"]` |
+
+### Example
+
+```json
+{
+  "format": "product_card",
+  "product_card": {
+    "title": "Nimbus CRM Pro",
+    "subtitle": "Nimbus",
+    "description": "CRM built for growing teams, with AI-assisted workflows.",
+    "value_props": [
+      "Automated pipeline insights",
+      "Collaborative forecasting",
+      "AI-powered deal recommendations"
+    ],
+    "assets": {
+      "logo_url": "https://cdn.example.com/nimbus/logo.png",
+      "primary_image_url": "https://cdn.example.com/nimbus/crm.png",
+      "image_urls": ["https://cdn.example.com/nimbus/crm.png"]
+    },
+    "admesh_url": "https://admesh.click/stk_abcxyz123"
+  }
+}
+```
+
+### Integration
+
+The product card format provides rich, structured data perfect for rendering product cards in UI components. It includes all necessary assets and metadata for a complete product display.
+
+---
+
+## Bridge Format
+
+**Use case**: Followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search. Provides setup prompts and documentation URLs.
+
+### Schema
+
+```json
+{
+  "format": "bridge",
+  "bridge_content": "string",
+  "documentation_url": "string"
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `format` | string | Yes | Must be `"bridge"` | `"bridge"` |
+| `bridge_content` | string | Yes | Setup prompt or configuration instructions for AI agents | `"To set up Nimbus CRM Pro, install the package using npm install @nimbus/crm-pro. Then configure your API key in the environment variables. See the documentation for detailed setup instructions."` |
+| `documentation_url` | string | Yes | Link to product documentation or setup guide | `"https://docs.nimbus.com/getting-started"` |
+
+### Example
+
+```json
+{
+  "format": "bridge",
+  "bridge_content": "To set up Nimbus CRM Pro, install the package using npm install @nimbus/crm-pro. Then configure your API key in the environment variables. See the documentation for detailed setup instructions.",
+  "documentation_url": "https://docs.nimbus.com/getting-started"
+}
+```
+
+### Integration
+
+The bridge format is specifically designed for Vibe Coding Platforms and AI IDEs where developers need setup instructions and documentation links. It's automatically selected during onboarding for these platform types.
+
+---
+
+## Creative Input Structure
+
+Brand agents generate a unified `creative_input` structure that operators transform into format-specific creatives.
+
+### Required Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `brand_name` | string | Brand or advertiser name | `"Nimbus CRM"` |
+| `product_name` | string | Product or offer name | `"Nimbus CRM Pro"` |
+| `short_description` | string | 1-2 sentence summary, max 200 characters, contextual to the query | `"CRM built for growing teams, with AI-assisted workflows."` |
+| `long_description` | string | 2-4 sentence expanded description, max 500 characters | `"Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster."` |
+| `value_props` | array | Short value propositions or bullet points | `["Automated pipeline insights", "Collaborative forecasting", "AI-powered deal recommendations"]` |
+| `context_snippet` | string | 60-100 character contextual hint for weave format, making the ad relevant to the user's query | `"For startups needing higher limits and automated expense workflows."` |
+| `cta_label` | string | Call-to-action label, smart based on product (e.g., 'Start Free Trial', 'Request Demo', 'Learn More') | `"Start Free Trial"` |
+| `cta_url` | string | Call-to-action URL, selected from available resource URLs based on query relevance | `"https://nimbus.example.com/signup"` |
+| `assets` | object | Creative assets (logo, images, resource URLs) | See Assets Object |
+
+### Optional Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `product_id` | string | Product identifier for tracking | `"prod_nimbus_001"` |
+| `categories` | array | Product categories | `["crm", "saas", "business_tools"]` |
+| `fallback_formats` | array | Fallback ad formats if preferred format is not available | `["tail", "product_card"]` |
+| `offer_summary` | string | Special offer summary (when available) | `"Special offer: 50% off first year for teams"` |
+
+### Assets Object
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `logo_url` | string | Yes | Product or brand logo URL | `"https://cdn.example.com/nimbus/logo.png"` |
+| `image_urls` | array | Yes | Creative image URLs | `["https://cdn.example.com/nimbus/crm.png"]` |
+| `resource_urls` | array | Yes | Destination or tracking URLs available for use (min 1) | `["https://nimbus.example.com/signup", "https://nimbus.example.com/demo"]` |
+
+### Complete Creative Input Example
+
+```json
+{
+  "brand_name": "Nimbus",
+  "product_name": "Nimbus CRM Pro",
+  "short_description": "CRM built for growing teams, with AI-assisted workflows.",
+  "long_description": "Nimbus CRM Pro is designed for teams of 5-50 people who need intelligent pipeline management. It includes automated follow-ups, collaborative forecasting, and embedded AI copilots that help close deals faster.",
+  "value_props": [
+    "Automated pipeline insights",
+    "Collaborative forecasting",
+    "AI-powered deal recommendations"
+  ],
+  "context_snippet": "For startups needing higher limits and automated expense workflows.",
+  "cta_label": "Start Free Trial",
+  "cta_url": "https://nimbus.example.com/signup",
+  "assets": {
+    "logo_url": "https://cdn.example.com/nimbus/logo.png",
+    "image_urls": ["https://cdn.example.com/nimbus/crm.png"],
+    "resource_urls": ["https://nimbus.example.com/signup"]
+  },
+  "product_id": "prod_nimbus_001",
+  "categories": ["crm", "saas"],
+  "fallback_formats": ["tail", "product_card"],
+  "offer_summary": "Special offer: 50% off first year for teams"
+}
+```
+
+## Format Transformation
+
+The operator transforms `creative_input` into format-specific creatives based on:
+
+1. **Platform's `allowed_formats`**: Automatically fetched from platform configuration
+2. **Brand agent's preferred format**: From the bid
+3. **Query context**: Optimized for the user's intent
+
+## Best Practices
+
+### For Weave Format
+- Keep `context_snippet` concise (60-100 characters)
+- Make it relevant to the user's query
+- Ensure natural integration into LLM responses
+
+### For Tail Format
+- Use `long_description` for detailed information
+- Include clear CTA with compelling label
+- Keep formatting clean with proper line breaks
+
+### For Product Card Format
+- Provide high-quality images
+- Limit `value_props` to 3-5 most compelling points
+- Ensure `logo_url` and `primary_image_url` are accessible
+
+### For Bridge Format
+- Provide clear, actionable setup instructions
+- Link to comprehensive documentation
+- Make it easy for developers to get started
+
+### For Followup Format
+- Use platform's existing follow-up suggestion UI
+- Fire exposure when follow-up becomes visible
+- Fire engagement before executing query
+- Execute query immediately after engagement
+- See [Followup Format Guide](/platforms/followup-format) for complete integration details
+
+---
+
+## Followup Format
+
+**Use case**: Headless, platform-native engagement format for AI platforms with existing follow-up suggestion UI.
+
+### Schema
+
+```json
+{
+  "format": "followup",
+  "followup_query": "Compare Nimbus CRM Pro vs Salesforce pricing and features"
+}
+```
+
+### Fields
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| `format` | string | Yes | Must be `"followup"` | `"followup"` |
+| `followup_query` | string | Yes | Sponsored query string to execute when user selects the follow-up (also used as display text) | `"Compare Nimbus CRM Pro vs Salesforce pricing and features"` |
+
+### Example
+
+```json
+{
+  "format": "followup",
+  "followup_query": "Compare Nimbus CRM Pro vs Salesforce pricing and features"
+}
+```
+
+### Integration
+
+The followup format is **completely headless** - AdMesh provides data and tracking endpoints, but no UI components. Platforms use their existing follow-up suggestion UI to render sponsored follow-ups. See the [Followup Format Guide](/platforms/followup-format) for complete integration instructions.
+
+**Key characteristics:**
+- Headless design - no AdMesh UI components
+- Platform-native integration using existing follow-up UI
+- Exposure and engagement tracking via SDK utilities
+- CPE billing (cost-per-engagement) capped at 50-60% of max CPC
+
+---
+
+## Next Steps
+
+- Learn about the [Complete Flow](/platforms/complete-flow) to see how formats are selected
+- Review [Response Schema](/platforms/get-recommendations#response-schema) to see how creatives are returned
+- Check [Platform Request Schema](/platforms/platform-request-schema) for request structure
+- Read the [Followup Format Guide](/platforms/followup-format) for headless integration details
+

@@ -30,7 +30,6 @@ The **CPX Model** is designed for **brand awareness campaigns** where the primar
     - Click is **tracked for analytics** (stored in `clicks` collection)
     - **CPC is set to 0** - no additional charge for clicks
     - CPX charge remains (already charged on exposure)
-    - `should_bill_cpc = False`
     - `billing_reason = "CPX_model_no_cpc_charge"`
   </Accordion>
 
@@ -88,7 +87,7 @@ The **CPC Model** is designed for **performance campaigns** where ROI and conver
     - **CPX is released** (waived, returned to available budget)
     - **CPC is charged** instead
     - Amount: Based on agent trust score (typically $0.10-$0.30)
-    - `should_bill_cpc = True` (unless duplicate click in session)
+    - `billing_reason = "First click or new session"` (unless duplicate click)
     - `billing.components.cpx_released = cpx_value`
   </Accordion>
 

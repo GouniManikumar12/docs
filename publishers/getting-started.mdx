@@ -1,0 +1,79 @@
+---
+title: "Getting Started"
+description: "Set up admesh-ui-sdk for publisher websites with AdMeshIntentAssistant"
+---
+
+## Prerequisites
+
+- A React or Next.js frontend
+- AdMesh API key
+- Ability to generate a session ID per user session
+
+---
+
+## Step 1: Install the SDK
+
+```bash
+npm install admesh-ui-sdk@latest
+```
+
+---
+
+## Step 2: Wrap Your Page with AdMeshProvider
+
+```tsx
+'use client';
+
+import { useMemo } from 'react';
+import { AdMeshProvider } from 'admesh-ui-sdk';
+import { AdMeshIntentAssistant } from 'admesh-ui-sdk';
+
+export default function PublisherPage() {
+  const apiKey = '<YOUR_ADMESH_API_KEY>';
+  const sessionId = useMemo(() => `pub-session-${Date.now()}`, []);
+
+  return (
+    <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+      <main>
+        <h1>Your Publisher Content</h1>
+        <p>Your article body goes here...</p>
+      </main>
+
+      <AdMeshIntentAssistant
+        autoOpen={true}
+        position="bottom-right"
+        size="md"
+      />
+    </AdMeshProvider>
+  );
+}
+```
+
+---
+
+## Step 3: Configure Environment Variables
+
+```bash
+ADMESH_API_KEY=sk_your_admesh_key
+```
+
+<Note>
+Use a valid `sk_` key. Inject it from your app config or backend, and avoid hardcoding keys in production.
+</Note>
+
+---
+
+## Step 4: Verify Integration
+
+1. Open a content page where the assistant is rendered
+2. Confirm the floating assistant appears in the selected corner
+3. Click a suggestion and verify recommendation UI appears
+4. Check browser console for SDK initialization logs
+
+---
+
+## Next Step
+
+<Card title="UI SDK Integration" icon="code" href="/publishers/ui-sdk-integration">
+  Explore advanced configuration options for AdMeshIntentAssistant.
+</Card>

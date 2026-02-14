@@ -1,0 +1,60 @@
+---
+title: "Overview"
+description: "Monetize publisher pages with admesh-ui-sdk and AdMeshIntentAssistant"
+---
+
+## Introduction
+
+AdMesh helps publishers add contextual monetization directly inside content experiences.
+
+Instead of static display placements, you can surface intent-aware product suggestions using:
+
+- `AdMeshProvider` for SDK setup, session context, and tracking
+- `AdMeshIntentAssistant` for a floating assistant that suggests relevant sponsored options
+
+---
+
+## Why Publishers Use AdMesh
+
+- **Intent-aware monetization**: Suggestions are aligned to what users are reading and asking
+- **Low integration effort**: Add one provider and one component
+- **Native UX**: Assistant fits inside your site instead of sending users away to ads-first layouts
+- **Transparent tracking**: Exposure and engagement tracking is handled by the SDK
+
+---
+
+## How It Works
+
+1. Wrap your page or app with `AdMeshProvider`
+2. Pass your API key and a session ID
+3. Render `AdMeshIntentAssistant` on article/content pages
+4. Assistant surfaces relevant suggestions based on page context
+5. Sponsored interactions are tracked automatically
+
+---
+
+## Recommended Integration Pattern
+
+Use this on long-form pages such as:
+
+- Publisher articles
+- Product guides
+- Review/comparison pages
+- Editorial and affiliate content
+
+<Card title="Publisher UI SDK Integration" icon="react" href="/publishers/ui-sdk-integration">
+  See complete React integration examples for AdMeshProvider and AdMeshIntentAssistant.
+</Card>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Getting Started" icon="rocket" href="/publishers/getting-started">
+    Set up your first publisher page integration in minutes.
+  </Card>
+  <Card title="UI SDK Integration" icon="code" href="/publishers/ui-sdk-integration">
+    Implement AdMeshIntentAssistant with production-ready code snippets.
+  </Card>
+</CardGroup>

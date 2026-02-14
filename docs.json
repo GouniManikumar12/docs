@@ -20,7 +20,7 @@
                  ]
           },
           {
-            "group": "For Advertisers",
+            "group": "Advertisers",
             "pages": [
               "advertisers/overview"
                    ]
@@ -31,6 +31,14 @@
               "platforms/overview",
               "platforms/tail-format",
               "platforms/weave-ad-format"
+            ]
+          },
+          {
+            "group": "Publishers",
+            "pages": [
+              "publishers/overview",
+              "publishers/getting-started",
+              "publishers/ui-sdk-integration"
             ]
           },
           {
@@ -56,9 +64,7 @@
             "pages": [
               "contextual-relevance-score",
               "cost-per-exposure",
-              "cpm-vs-cpx",
-              "how-billing-works"
-            ]
+              "cpm-vs-cpx"            ]
           },
           {
             "group": "Policies",

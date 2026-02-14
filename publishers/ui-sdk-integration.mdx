@@ -1,0 +1,127 @@
+---
+title: "UI SDK Integration"
+description: "Integrate AdMeshProvider and AdMeshIntentAssistant in publisher pages"
+---
+
+## Integration Overview
+
+Publisher integration is two components:
+
+- `AdMeshProvider` for SDK/session initialization
+- `AdMeshIntentAssistant` for floating contextual suggestions
+
+---
+
+## Full Page Integration (Next.js / React)
+
+```tsx
+'use client';
+
+import { useMemo } from 'react';
+import { AdMeshProvider } from 'admesh-ui-sdk';
+import { AdMeshIntentAssistant } from 'admesh-ui-sdk';
+
+export default function ArticlePage() {
+  const apiKey = '<YOUR_ADMESH_API_KEY>';
+  const sessionId = useMemo(() => `publisher-${Date.now()}`, []);
+
+  return (
+    <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+      <div className="min-h-screen bg-white">
+        <header className="border-b">
+          <div className="mx-auto max-w-5xl px-4 py-4">
+            <h1 className="text-2xl font-bold">Your Publication</h1>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-3xl px-4 py-8">
+          <article>
+            <h2 className="mb-4 text-3xl font-semibold">
+              Your Article Title
+            </h2>
+            <p className="mb-4">
+              Publish your content normally. The assistant runs independently as a floating UI.
+            </p>
+            <p>
+              Readers can open suggestions and interact with sponsored recommendations without leaving your page flow.
+            </p>
+          </article>
+        </main>
+      </div>
+
+      <AdMeshIntentAssistant
+        autoOpen={true}
+        position="bottom-right"
+        size="md"
+        panelWidth={360}
+        panelHeight={420}
+        fontScale={0.95}
+        maxSuggestions={3}
+        showWelcomeMessage={false}
+      />
+    </AdMeshProvider>
+  );
+}
+```
+
+---
+
+## Key Props
+
+### AdMeshProvider
+
+```tsx
+<AdMeshProvider
+  apiKey={apiKey}
+  sessionId={sessionId}
+  language="en-US"
+  geo_country="US"
+>
+  {children}
+</AdMeshProvider>
+```
+
+### AdMeshIntentAssistant
+
+```tsx
+<AdMeshIntentAssistant
+  autoOpen={true}
+  position="bottom-right"
+  size="md"
+  maxSuggestions={3}
+  showWelcomeMessage={false}
+/>
+```
+
+| Prop | Component | Purpose |
+|------|-----------|---------|
+| `apiKey` | `AdMeshProvider` | Authenticates SDK requests |
+| `sessionId` | `AdMeshProvider` | Tracks a user session across interactions |
+| `autoOpen` | `AdMeshIntentAssistant` | Opens assistant by default |
+| `position` | `AdMeshIntentAssistant` | Floating position (`bottom-right`, etc.) |
+| `size` | `AdMeshIntentAssistant` | Panel preset size (`sm`, `md`, `lg`, `xl`) |
+| `maxSuggestions` | `AdMeshIntentAssistant` | Limit visible suggestions |
+
+---
+
+## Best Practices for Publishers
+
+- Keep the assistant on content-heavy pages where user intent is clearer
+- Generate one stable `sessionId` per browsing session
+- Start with `size="md"` and `position="bottom-right"` for minimal disruption
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Assistant does not appear">
+    Verify the component is inside `AdMeshProvider` and `apiKey`/`sessionId` are non-empty.
+  </Accordion>
+  <Accordion title="No contextual suggestions are shown">
+    Confirm your key is valid and that your content page has enough meaningful text/context.
+  </Accordion>
+  <Accordion title="Session tracking looks inconsistent">
+    Ensure `sessionId` is stable for the page lifecycle and not regenerated on every render.
+  </Accordion>
+</AccordionGroup>

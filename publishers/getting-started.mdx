@@ -18,7 +18,7 @@ npm install admesh-ui-sdk@latest
 
 ---
 
-## Step 2: Generate Session ID and Wrap Your Page
+## Step 2: Generate Session ID and Wrap Your Page with AdMeshIntentAssistant
 
 For publisher integrations, use the SDK's utility function to generate session IDs from URL structure.
 
@@ -27,14 +27,14 @@ For publisher integrations, use the SDK's utility function to generate session I
 
 import { useMemo } from 'react';
 import { AdMeshProvider } from 'admesh-ui-sdk';
-import { AdMeshIntentAssistant } from 'admesh-ui-sdk';
+import { AdMeshIntentAssistant, AdMeshProvider as AdMeshProviderComponent, AdMeshSDK } from 'admesh-ui-sdk';
 
 export default function PublisherPage() {
   const apiKey = '<YOUR_ADMESH_API_KEY>';
     
   // Generate session ID from current page URL
   const sessionId = useMemo(() => {
-    const { AdMeshSDK } = require('admesh-ui-sdk');
+    // Use the utility function from the SDK
     return AdMeshSDK.generateSessionIdFromUrl();
   }, []);
 
@@ -55,96 +55,7 @@ export default function PublisherPage() {
 }
 ```
 
-### How Session Generation Works
-
-The `AdMeshSDK.generateSessionIdFromUrl()` utility function:
-
-- **Extracts article slug** from the current page URL path
-- **Generates format**: `session_{timestamp}_{article-slug}`
-- **Handles errors gracefully** with fallback to random session ID
-
-**Examples:**
-- `https://techcrunch.com/2025/12/30/the-best-ai-powered-dictation-apps-of-2025/`
-  → `session_1739534760000_the-best-ai-powered-dictation-apps-of-2025`
-- `https://example.com/blog/how-to-build-react-apps`
-  → `session_1739534760000_how-to-build-react-apps`
-
----
-
-### For Non-Publisher API Keys
-
-If you're using a non-publisher API key (e.g., `sk_` keys), generate session IDs manually:
-
-```tsx
-'use client';
-
-import { useMemo } from 'react';
-import { AdMeshProvider } from 'admesh-ui-sdk';
-import { AdMeshIntentAssistant } from 'admesh-ui-sdk';
-
-export default function PlatformPage() {
-  const apiKey = 'sk_your_platform_key'; // Non-publisher API key
-  const sessionId = useMemo(() => `platform-session-${Date.now()}`, []);
-
-  return (
-    <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
-      <main>
-        <h1>Your Platform Content</h1>
-        <p>Your content goes here...</p>
-      </main>
-
-      <AdMeshIntentAssistant
-        autoOpen={true}
-        position="bottom-right"
-        size="md"
-      />
-    </AdMeshProvider>
-  );
-}
-```
-
----
-
-### Session Management Best Practices
-
-**For Publishers:**
-- Use `AdMeshSDK.generateSessionIdFromUrl()` for URL-based sessions
-- Call this function on every page load
-- The utility handles edge cases and errors automatically
-
-**For Platforms:**
-- Use `AdMeshSDK.createSession()` for random session IDs
-- Implement your own persistence strategy if needed
-- Store session IDs in localStorage, cookies, or server-side
-
----
-
-### Optional: Custom Session ID
-
-You can always override with a custom session ID:
-
-```tsx
-const sessionId = 'custom-session-identifier';
-<AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
-  {/* your content */}
-</AdMeshProvider>
-```
-
----
-
-## Step 3: Configure Environment Variables
-
-```bash
-ADMESH_API_KEY=pub_your_publisher_key
-```
-
-<Note>
-Use a valid `pub_` key for publisher integrations. The `pub_` prefix enables automatic session ID detection. Inject it from your app config or backend, and avoid hardcoding keys in production.
-</Note>
-
----
-
-## Step 4: Verify Integration
+## Step 3: Verify Integration
 
 1. Open a content page where the assistant is rendered
 2. Confirm the floating assistant appears in the selected corner

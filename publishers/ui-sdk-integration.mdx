@@ -22,9 +22,10 @@ import { AdMeshProvider } from 'admesh-ui-sdk';
 import { AdMeshIntentAssistant } from 'admesh-ui-sdk';
 
 export default function ArticlePage() {
-  const apiKey = '<YOUR_ADMESH_API_KEY>';
-  const sessionId = useMemo(() => `publisher-${Date.now()}`, []);
-
+ const sessionId = useMemo(() => {
+    // Use the utility function from the SDK
+    return AdMeshSDK.generateSessionIdFromUrl();
+  }, []);
   return (
     <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
       <div className="min-h-screen bg-white">
@@ -107,7 +108,6 @@ export default function ArticlePage() {
 ## Best Practices for Publishers
 
 - Keep the assistant on content-heavy pages where user intent is clearer
-- Generate one stable `sessionId` per browsing session
 - Start with `size="md"` and `position="bottom-right"` for minimal disruption
 
 ---

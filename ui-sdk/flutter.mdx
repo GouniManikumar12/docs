@@ -28,8 +28,7 @@ Get started with AdMesh in 3 simple steps:
       config: const AdMeshSdkConfig(apiKey: 'your-api-key'),
     );
 
-    final sessionId = AdMeshSdk.createSession();
-    final messageId = AdMeshSdk.createMessageId(sessionId);
+
     ```
 
     Your application owns session and message lifecycle. The SDK validates these values but does not persist them for you.
@@ -76,11 +75,6 @@ AdMesh uses sessions to tie recommendation exposures, clicks, and follow-up enga
 
 - **Session ID**: unique identifier for a conversation or recommendation thread
 - **Message ID**: unique identifier for the specific user query or turn
-
-```dart
-final sessionId = AdMeshSdk.createSession();
-final messageId = AdMeshSdk.createMessageId(sessionId);
-```
 
 <Note>
 Your Flutter app is responsible for storing and reusing `sessionId` values between screens or app launches when needed.

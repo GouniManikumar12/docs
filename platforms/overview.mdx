@@ -11,17 +11,21 @@ AdMesh enables conversational platforms (AI assistants, search engines, chat app
 
 ## Package Requirements
 
-### Mandatory: `admesh-ui-sdk`
+### Frontend SDKs
 
-**`admesh-ui-sdk` is required for all AdMesh integrations.**
-This package provides the core functionality every platform needs:
+Use the frontend SDK that matches your client application:
+
+- **`admesh-ui-sdk`** for React web applications
+- **`admesh_flutter_ui_sdk`** for native Flutter applications
+
+These SDKs provide the core functionality every platform needs:
 
 - **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh
 - **Rendering**: Displays recommendations in your UI with proper formatting
 - **Tracking**: Automatically tracks exposures, clicks, and conversions
 - **Transparency**: Adds `[Ad]` labels to comply with advertising standards
 
-The SDK handles all of this automatically, so you don't need to manage these concerns yourself.
+The frontend SDK handles all of this automatically, so you don't need to manage these concerns yourself.
 
 **Key Features:**
 - **Provider Pattern**: 3-line integration with automatic everything
@@ -35,7 +39,7 @@ The SDK handles all of this automatically, so you don't need to manage these con
 
 ## Three Core Components
 
-The `admesh-ui-sdk` provides three components for different integration needs:
+The React frontend SDK provides three components for different integration needs, while the Flutter frontend SDK provides native widget equivalents for recommendation layouts, tracking, and provider-based state.
 
 ### 1. **AdMeshProvider** - State Management
 Wraps your application and manages SDK initialization, session tracking, and state.
@@ -131,7 +135,7 @@ Choose your component based on your platform's needs.
 - Multiple format options (tail, product cards, bridge format for followup sponsored recommendations)
 
 **Integration steps:**
-1. Install `admesh-ui-sdk`
+1. Install your frontend SDK (`admesh-ui-sdk` or `admesh_flutter_ui_sdk`)
 2. Wrap app with `AdMeshProvider`
 3. Add `AdMeshRecommendations` component
 
@@ -198,7 +202,8 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 
 1. **For Tail & Product Format:** Go to [Tail & Product Format](/platforms/tail-format)
 2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)
-3. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
+3. **For Flutter frontend setup:** Go to [Flutter Frontend SDK](/ui-sdk/flutter)
+4. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
 
 ---
 

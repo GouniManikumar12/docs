@@ -261,7 +261,7 @@ recommendations = get_recommendations('best CRM for startups')
 <AccordionGroup>
   <Accordion title="Display Recommendations (Frontend)">
 
-If you're building a frontend, you can use our React components to display recommendations:
+If you're building a frontend, you can use our frontend SDKs to display recommendations:
 
 ```bash
 npm install admesh-ui-sdk
@@ -295,6 +295,37 @@ function MyApp() {
 ```
 
 [Learn more about UI components →](/ui-sdk/installation)
+
+**Flutter**
+
+```yaml
+dependencies:
+  admesh_flutter_ui_sdk:
+    path: ../admesh-flutter-ui-sdk
+```
+
+```dart
+import 'package:admesh_flutter_ui_sdk/admesh_flutter_ui_sdk.dart';
+
+final sessionId = AdMeshSdk.createSession();
+
+AdMeshProvider(
+  config: const AdMeshSdkConfig(apiKey: 'your-api-key'),
+  sessionId: sessionId,
+  child: AdMeshRecommendations(
+    loadRecommendation: (sdk) => sdk.showRecommendations(
+      ShowRecommendationsOptions(
+        query: 'best CRM for startups',
+        sessionId: sessionId,
+        messageId: AdMeshSdk.createMessageId(sessionId),
+      ),
+    ),
+  ),
+)
+```
+
+[React frontend guide →](/ui-sdk/installation)  
+[Flutter frontend guide →](/ui-sdk/flutter)
 
   </Accordion>
 
@@ -393,7 +424,7 @@ That's it! You now have AdMesh recommendations working in your application.
 ### What's Next?
 
 - **Need help?** → [Contact Support](mailto:mani@useadmesh.com)
-- **Want UI components?** → [Frontend Integration Guide](/ui-sdk/installation)
+- **Want UI components?** → [React Frontend Guide](/ui-sdk/installation) or [Flutter Frontend Guide](/ui-sdk/flutter)
 - **More examples?** → [Integration Examples](/examples/integration-examples)
 - **Complete API docs?** → [API Reference](/api/recommendations)
 

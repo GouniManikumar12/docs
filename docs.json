@@ -47,7 +47,8 @@
               {
                 "group": "Frontend",
                 "pages": [
-                  "ui-sdk/installation"
+                  "ui-sdk/installation",
+                  "ui-sdk/flutter"
                 ]
               },
               {

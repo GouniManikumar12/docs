@@ -1,0 +1,366 @@
+---
+title: "Flutter"
+description: "Install and set up admesh_flutter_ui_sdk for native recommendation rendering, tracking, and theming"
+---
+
+<Card title="Looking for React?" icon="react" href="/ui-sdk/installation">
+  Use the React frontend SDK guide for `admesh-ui-sdk`, `AdMeshProvider`, `AdMeshRecommendations`, and `WeaveAdFormatContainer`.
+</Card>
+
+## Quick Start
+
+Get started with AdMesh in 3 simple steps:
+
+<Steps>
+  <Step title="Add the Package">
+    ```yaml
+    dependencies:
+      admesh_flutter_ui_sdk:
+        path: ../admesh-flutter-ui-sdk
+    ```
+  </Step>
+
+  <Step title="Create an SDK Instance">
+    ```dart
+    import 'package:admesh_flutter_ui_sdk/admesh_flutter_ui_sdk.dart';
+
+    final sdk = AdMeshSdk(
+      config: const AdMeshSdkConfig(apiKey: 'your-api-key'),
+    );
+
+    final sessionId = AdMeshSdk.createSession();
+    final messageId = AdMeshSdk.createMessageId(sessionId);
+    ```
+
+    Your application owns session and message lifecycle. The SDK validates these values but does not persist them for you.
+  </Step>
+
+  <Step title="Choose Your Integration Pattern">
+    **Direct fetch**
+    ```dart
+    final recommendation = await sdk.showRecommendations(
+      ShowRecommendationsOptions(
+        query: 'best CRM for small business',
+        sessionId: sessionId,
+        messageId: messageId,
+      ),
+    );
+    ```
+
+    **Provider + widget integration**
+    ```dart
+    AdMeshProvider(
+      config: const AdMeshSdkConfig(apiKey: 'your-api-key'),
+      sessionId: sessionId,
+      child: AdMeshRecommendations(
+        loadRecommendation: (sdk) => sdk.showRecommendations(
+          ShowRecommendationsOptions(
+            query: 'best CRM for small business',
+            sessionId: sessionId,
+            messageId: AdMeshSdk.createMessageId(sessionId),
+          ),
+        ),
+      ),
+    )
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Core Concepts
+
+### Session Management
+
+AdMesh uses sessions to tie recommendation exposures, clicks, and follow-up engagement to a single conversation.
+
+- **Session ID**: unique identifier for a conversation or recommendation thread
+- **Message ID**: unique identifier for the specific user query or turn
+
+```dart
+final sessionId = AdMeshSdk.createSession();
+final messageId = AdMeshSdk.createMessageId(sessionId);
+```
+
+<Note>
+Your Flutter app is responsible for storing and reusing `sessionId` values between screens or app launches when needed.
+</Note>
+
+### Supported Formats
+
+The Flutter SDK currently supports these native rendering paths:
+
+| Format | Use Case | Widget |
+|--------|----------|--------|
+| **Tail** | Summary-first recommendation panel | `AdMeshRecommendations` / `AdMeshLayout` |
+| **Product Card** | Horizontal product carousel | `AdMeshEcommerceCards` |
+| **Bridge** | Prompt-paste CTA and link-out flow | `AdMeshBridgeFormat` |
+| **Sponsored Follow-up** | Suggested follow-up query with tracking | `AdMeshFollowup` |
+
+<Warning>
+Flutter v1 does not implement DOM mutation, CSS injection, or browser-specific Weave link scanning. If your backend returns structured recommendation data, render it with the Flutter widgets instead of expecting web-style inline link processing.
+</Warning>
+
+---
+
+## Core APIs
+
+### AdMeshSdk
+
+`AdMeshSdk` builds the `/aip/context` request payload, validates required identifiers, and returns parsed recommendation data.
+
+```dart
+final sdk = AdMeshSdk(
+  config: const AdMeshSdkConfig(
+    apiKey: 'your-api-key',
+  ),
+);
+
+final recommendation = await sdk.fetchRecommendationFromAipContext(
+  ShowRecommendationsOptions(
+    query: 'best CRM for small business',
+    sessionId: sessionId,
+    messageId: messageId,
+    platformSurface: 'mobile_chat',
+    locale: 'en-US',
+    geo: 'US',
+    userId: 'hashed-user-id',
+  ),
+);
+```
+
+**Public types**
+
+```dart
+AdMeshSdk
+AdMeshSdkConfig
+ShowRecommendationsOptions
+```
+
+### AdMeshProvider and AdMeshScope
+
+Use `AdMeshProvider` to inject the SDK, tracker, session state, optional theme, and conversation metadata into the widget tree.
+
+```dart
+AdMeshProvider(
+  config: const AdMeshSdkConfig(apiKey: 'your-api-key'),
+  sessionId: sessionId,
+  language: 'en-US',
+  geoCountry: 'US',
+  child: const MyScreen(),
+)
+```
+
+Access the active controller from descendant widgets:
+
+```dart
+final controller = AdMeshScope.of(context);
+final sdk = controller.sdk;
+final tracker = controller.tracker;
+final processed = controller.processedMessageIds;
+```
+
+---
+
+## Recommendation Widgets
+
+### AdMeshRecommendations
+
+`AdMeshRecommendations` is the main high-level widget. It accepts either pre-fetched recommendation data or an async loader that calls the SDK.
+
+```dart
+AdMeshRecommendations(
+  loadRecommendation: (sdk) => sdk.showRecommendations(
+    ShowRecommendationsOptions(
+      query: 'best CRM for small business',
+      sessionId: sessionId,
+      messageId: AdMeshSdk.createMessageId(sessionId),
+    ),
+  ),
+  onPasteToInput: (prompt) {
+    // Handle bridge CTA prompt insertion
+  },
+  onExecuteQuery: (query) async {
+    // Handle sponsored follow-up execution
+  },
+  onOpenLink: (url) async {
+    // Route tracked click URLs through your link handler
+  },
+)
+```
+
+### AdMeshLayout
+
+`AdMeshLayout` selects the correct native widget based on backend format metadata:
+
+- `product_card` with `products[]` renders `AdMeshEcommerceCards`
+- `bridge` or `bridge_prompt` renders `AdMeshBridgeFormat`
+- everything else falls back to the tail-style recommendation layout
+
+```dart
+AdMeshLayout(
+  recommendation: recommendation,
+  tracker: controller.tracker,
+  sessionId: controller.sessionId,
+)
+```
+
+### Format-specific Widgets
+
+Use these directly when you want tighter control over your UI composition:
+
+```dart
+AdMeshEcommerceCards(...)
+AdMeshBridgeFormat(...)
+AdMeshFollowup(...)
+AdMeshBadge(...)
+```
+
+`AdMeshFollowup` only renders when the recommendation includes:
+
+- `followup_query`
+- `followup_engagement_url`
+- `followup_exposure_url`
+
+---
+
+## Tracking
+
+The Flutter SDK includes the same core tracking primitives as the React SDK, adapted to native widget composition.
+
+### AdMeshTracker
+
+`AdMeshTracker` handles:
+
+- exposure deduplication by `sessionId + recommendationId`
+- click tracking
+- follow-up exposure tracking
+- follow-up engagement tracking
+
+```dart
+final tracker = AdMeshTracker();
+
+await tracker.fireExposure(exposureUrl, recommendationId, sessionId);
+await tracker.fireClick(clickUrl, recommendationId, sessionId);
+await tracker.fireFollowupEngagement(
+  followupEngagementUrl,
+  recommendationId,
+  sessionId,
+);
+```
+
+### AdMeshViewabilityTracker
+
+Wrap recommendation widgets with `AdMeshViewabilityTracker` to fire impressions after the recommendation is at least 50% visible for 1 second.
+
+```dart
+AdMeshViewabilityTracker(
+  tracker: controller.tracker,
+  exposureUrl: recommendation.exposureUrl,
+  recommendationId: recommendation.recommendationId,
+  sessionId: controller.sessionId,
+  child: YourRecommendationWidget(),
+)
+```
+
+### AdMeshLinkTracker
+
+Use `AdMeshLinkTracker` around tap targets that should fire tracked click URLs before opening a destination.
+
+```dart
+AdMeshLinkTracker(
+  tracker: controller.tracker,
+  clickUrl: recommendation.clickUrl,
+  recommendationId: recommendation.recommendationId,
+  sessionId: controller.sessionId,
+  onOpenLink: (url) async {
+    // launchUrl(...) or custom router
+  },
+  child: const Text('Learn more'),
+)
+```
+
+---
+
+## Theming
+
+Use `AdMeshThemeData` as a `ThemeExtension` to style recommendation surfaces consistently across your app.
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    useMaterial3: true,
+    extensions: <ThemeExtension<dynamic>>[
+      AdMeshThemeData.light(),
+    ],
+  ),
+  home: ...,
+)
+```
+
+Customize colors, typography, spacing, and border radius:
+
+```dart
+const AdMeshThemeData(
+  mode: Brightness.light,
+  accentColor: Color(0xFF24A0ED),
+  borderRadius: 20,
+)
+```
+
+The main theme type exposed by the package is:
+
+```dart
+AdMeshThemeData
+```
+
+---
+
+## Requirements
+
+- Flutter `3.19.0+`
+- Dart `3.3.0+`
+- A valid AdMesh API key
+- Your app must provide and manage `sessionId` and `messageId`
+
+Package dependencies used by the SDK:
+
+- `http`
+- `provider`
+- `visibility_detector`
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The SDK throws an error about sessionId or messageId">
+    `AdMeshSdk` requires both values for every recommendation request. Generate them with `AdMeshSdk.createSession()` and `AdMeshSdk.createMessageId(sessionId)` and store the session ID in your app state.
+  </Accordion>
+
+  <Accordion title="Nothing renders in AdMeshRecommendations">
+    Check that your loader returns a real recommendation object and that the backend response includes a supported format. `AdMeshRecommendations` shows nothing when there is no recommendation data.
+  </Accordion>
+
+  <Accordion title="Bridge or follow-up UI is not showing">
+    Bridge UI needs `preferred_format: bridge` or `bridge_prompt` / `bridge_content`. Sponsored follow-ups only render when `followup_query`, `followup_engagement_url`, and `followup_exposure_url` are all present.
+  </Accordion>
+
+  <Accordion title="Weave behavior does not match the web SDK">
+    Flutter v1 does not support DOM-based Weave link detection or mutation. Render structured recommendation payloads with `AdMeshLayout` or `AdMeshRecommendations` instead.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Related Guides
+
+<CardGroup cols={2}>
+  <Card title="React Frontend SDK" icon="react" href="/ui-sdk/installation">
+    Use the React SDK for web-based recommendation rendering and browser-specific Weave flows.
+  </Card>
+
+  <Card title="Platforms Overview" icon="layers" href="/platforms/overview">
+    Compare integration approaches and format options across AdMesh platform surfaces.
+  </Card>
+</CardGroup>

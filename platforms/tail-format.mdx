@@ -16,6 +16,27 @@ The **Tail & Product Format** displays recommendations as a **separate UI elemen
 
 **Setup time:** 5-10 minutes | **Code complexity:** Minimal
 
+## Best Fit
+
+Use Tail & Product Format when:
+
+- You want recommendations rendered outside the main LLM response
+- You want the fastest frontend-only integration path
+- You want AdMesh to handle rendering and tracking for you
+
+Choose another format when:
+
+- You need links woven directly into the assistant response
+- You want the backend to control recommendation insertion logic
+
+## Implementation Checklist
+
+1. Install `admesh-ui-sdk`
+2. Wrap your app with `AdMeshProvider`
+3. Render `AdMeshRecommendations` for assistant messages
+4. Pass the original user query and user message ID
+5. Let the SDK handle exposures, clicks, and labels automatically
+
 ---
 
 ## Component: AdMeshRecommendations
@@ -91,6 +112,8 @@ The **Provider Pattern** is the simplest approach - just 3 lines of code!
 
 ## Format Types
 
+The same component supports two presentation styles. The recommendation payload determines which layout is rendered.
+
 ### Tail Format
 
 Displays a summary with embedded product links. Ideal for conversational interfaces.
@@ -113,6 +136,19 @@ Displays product recommendation cards with key details. Suitable for SaaS or sof
   query={userQuery}  // Required: User's original query
 />
 ```
+---
+
+## Tracking Behavior
+
+Tail & Product Format automatically handles:
+
+- exposure tracking when recommendations render
+- click tracking when a user engages
+- transparency labeling with `[Ad]`
+- fallback and error handling in the SDK layer
+
+This means you do not need to add a separate tracking wrapper for the basic format.
+
 ---
 ## Customization
 
@@ -555,4 +591,3 @@ function MessageComponent({ message, sendMessage, loading }) {
 </AccordionGroup>
 
 ---
-

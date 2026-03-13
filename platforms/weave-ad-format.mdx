@@ -17,6 +17,27 @@ The **Weave Ad Format** embeds AdMesh links directly into your LLM responses usi
 
 **Setup time:** 15-20 minutes | **Code complexity:** Moderate
 
+## Best Fit
+
+Use Weave Ad Format when:
+
+- Your backend already shapes or streams assistant responses
+- You want AdMesh links embedded directly in the response body
+- You want fallback recommendations only when woven links are absent
+
+Choose another format when:
+
+- You prefer a standalone recommendation panel
+- You do not want backend recommendation fetching
+
+## Implementation Checklist
+
+1. Install the frontend and backend SDKs
+2. Fetch recommendations on the backend before the LLM response is generated
+3. Pass recommendation context into the LLM
+4. Wrap assistant output with `WeaveAdFormatContainer`
+5. Dispatch streaming lifecycle events so detection runs at the correct time
+
 ---
 
 ## How It Works
@@ -47,6 +68,22 @@ Event-driven detection solves this:
 - ✅ Single detection cycle per message
 - ✅ Predictable, reliable behavior
 - ✅ Zero duplicate API calls
+
+## Core Responsibilities
+
+### Backend responsibilities
+
+- fetch recommendations from AdMesh
+- pass recommendation context into the LLM
+- return the assistant response with woven AdMesh links
+
+### Frontend responsibilities
+
+- render the streamed assistant response
+- detect AdMesh links after streaming completes
+- apply `[Ad]` labels and tooltips
+- track exposures and engagement
+- render fallback recommendations only when needed
 
 ---
 

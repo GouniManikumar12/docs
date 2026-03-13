@@ -93,13 +93,7 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-     
-      {
-        "label": "Try AdPlex",
-        "href": "https://tryadplex.com"
-      }
-    ],
+    "links": [],
     "primary": {
       "type": "button",
       "label": "Dashboard",

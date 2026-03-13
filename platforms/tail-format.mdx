@@ -7,14 +7,24 @@ description: "Display recommendations as inline tails or product cards with auto
 
 The **Tail & Product Format** displays recommendations as a **separate UI element** below your LLM responses. This is the simplest way to integrate AdMesh - just add a component and it handles everything automatically.
 
-**What you get:**
-- ✅ Automatic rendering of recommendations
-- ✅ Automatic tracking (exposures and clicks)
-- ✅ Transparency labels (`[Ad]` added automatically)
-- ✅ Session-aware tracking
-- ✅ Multiple format options (tail or product cards)
+### What you get
 
-**Setup time:** 5-10 minutes | **Code complexity:** Minimal
+- Automatic rendering of recommendations
+- Automatic tracking for exposures and clicks
+- Transparency labels with `[Ad]` added automatically
+- Session-aware tracking
+- Multiple format options, including tail and product cards
+
+### At a glance
+
+| Attribute | Tail & Product Format |
+| --- | --- |
+| Integration style | Frontend component |
+| Best for | Separate recommendation modules |
+| Setup time | 5 to 10 minutes |
+| Code complexity | Minimal |
+| Tracking | Automatic |
+| Fallback logic | Handled by the SDK |
 
 ## Best Fit
 
@@ -36,6 +46,13 @@ Choose another format when:
 3. Render `AdMeshRecommendations` for assistant messages
 4. Pass the original user query and user message ID
 5. Let the SDK handle exposures, clicks, and labels automatically
+
+## Common Use Cases
+
+- chat assistants that show sponsored follow-ups below the answer
+- product search experiences that need cards instead of inline links
+- recommendation panels in SaaS copilots
+- simple prototypes where the team wants the lowest integration effort
 
 ---
 
@@ -148,6 +165,13 @@ Tail & Product Format automatically handles:
 - fallback and error handling in the SDK layer
 
 This means you do not need to add a separate tracking wrapper for the basic format.
+
+## Format Selection Summary
+
+| Format | Best when | Example experience |
+| --- | --- | --- |
+| Tail | You want a lighter inline recommendation module | Chat answer with a short sponsored suggestion block |
+| Product | You want richer card-based presentation | SaaS comparison or product discovery UI |
 
 ---
 ## Customization

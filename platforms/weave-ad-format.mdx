@@ -7,15 +7,25 @@ description: "Embed AdMesh links directly into LLM responses with event-driven d
 
 The **Weave Ad Format** embeds AdMesh links directly into your LLM responses using an **event-driven architecture**. Your backend weaves recommendations into the response, and the frontend automatically detects them, adds transparency labels, and tracks engagement.
 
-**What you get:**
-- ✅ Event-driven link detection (no race conditions)
-- ✅ Automatic exposure tracking when links are detected
-- ✅ Transparency labels (`[Ad]` added automatically)
-- ✅ "Why this ad?" tooltips on hover
-- ✅ Fallback recommendations if no links detected
-- ✅ Zero duplicate API calls
+### What you get
 
-**Setup time:** 15-20 minutes | **Code complexity:** Moderate
+- Event-driven link detection with no race-condition timing
+- Automatic exposure tracking when links are detected
+- Transparency labels with `[Ad]` added automatically
+- "Why this ad?" tooltips on hover
+- Fallback recommendations when no woven links are detected
+- Zero duplicate API calls
+
+### At a glance
+
+| Attribute | Weave Ad Format |
+| --- | --- |
+| Integration style | Backend plus frontend |
+| Best for | Links embedded in the LLM response |
+| Setup time | 15 to 20 minutes |
+| Code complexity | Moderate |
+| Tracking | Automatic after detection |
+| Fallback logic | Built in |
 
 ## Best Fit
 
@@ -38,6 +48,13 @@ Choose another format when:
 4. Wrap assistant output with `WeaveAdFormatContainer`
 5. Dispatch streaming lifecycle events so detection runs at the correct time
 
+## Common Use Cases
+
+- AI assistants that stream long-form answers
+- chat products where sponsored links should appear inside the response itself
+- teams that already control backend prompt construction
+- products that need a fallback recommendation module only when weaving does not happen
+
 ---
 
 ## How It Works
@@ -55,6 +72,14 @@ The Weave Ad Format uses an **event-driven architecture** to eliminate race cond
 7. **Conditional Rendering:**
    - **Links found** → Adds `[Ad]` labels, fires exposure tracking, shows tooltips (no fallback)
    - **No links found** → Renders fallback recommendations (tail or product format)
+
+### Integration Summary
+
+| Layer | What it does |
+| --- | --- |
+| Backend | Fetches recommendations and provides context to the LLM |
+| LLM | Weaves AdMesh links into the assistant response |
+| Frontend | Detects links, applies labels, tracks exposures, and renders fallback UI |
 
 ### Why Event-Driven?
 
@@ -84,6 +109,14 @@ Event-driven detection solves this:
 - apply `[Ad]` labels and tooltips
 - track exposures and engagement
 - render fallback recommendations only when needed
+
+## Implementation Order
+
+1. Set up the backend SDK and recommendation fetch flow
+2. Pass recommendations into the LLM prompt or response generation path
+3. Render assistant output inside `WeaveAdFormatContainer`
+4. Dispatch streaming lifecycle events from your chat component
+5. Confirm woven-link detection and fallback behavior in the UI
 
 ---
 

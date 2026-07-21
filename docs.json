@@ -29,6 +29,7 @@
             "group": "Platforms",
             "pages": [
               "platforms/overview",
+              "platforms/bridge-format",
               "platforms/tail-format",
               "platforms/weave-ad-format"
             ]

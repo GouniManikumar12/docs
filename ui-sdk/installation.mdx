@@ -43,6 +43,8 @@ Get started with AdMesh in 3 simple steps:
           key={msg.messageId}
           messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
           query={msg.userQuery}  // Required: User's original query
+          onDelegationConsent={handleDelegationConsent}
+          onDelegationActivated={handleDelegationActivated}
         />
       )
     ))}
@@ -67,6 +69,24 @@ Get started with AdMesh in 3 simple steps:
 ---
 
 ## Core Concepts
+
+### AI Platform Delegation
+
+If you are integrating AdMesh into an AI platform, `admesh-ui-sdk` does more than render recommendations.
+
+It can also:
+
+- request host consent before brand handoff
+- activate a delegated brand session
+- expose normalized delegation payloads to the host
+- stop AdMesh/operator sessions through SDK methods
+
+Recommended split:
+
+- use the SDK for AdMesh calls
+- use your own backend only for host-local runtime state
+
+See [Bridge Format](/platforms/bridge-format) for the full architecture.
 
 ### Session Management
 
@@ -139,12 +159,19 @@ import { AdMeshProvider } from 'admesh-ui-sdk';
 
 Displays recommendations in a separate panel. Use for **Tail** or **Product** format.
 
+<Note>
+The SDK continues to use `messageId` in React props and client APIs. At the backend/API boundary, `messageId` maps to canonical AIP `message_id`.
+</Note>
+
 ```typescript
 interface AdMeshRecommendationsProps {
   messageId: string;                      // Required: Message ID (user message ID, not assistant message ID)
   query: string;                          // Required: User's original query
   onRecommendationsShown?: (messageId: string) => void;  // Optional: Callback when recommendations shown
   onError?: (error: Error) => void;       // Optional: Error handler
+  onDelegationConsent?: (recommendation: PlatformResponse) => boolean | Promise<boolean>; // Optional: Host consent UI
+  onDelegationActivated?: (payload: DelegationActivationPayload) => void | Promise<void>; // Optional: Host activation callback
+  onStartDelegation?: (recommendation: PlatformResponse) => void | Promise<void>; // Optional: Legacy host callback
   onPasteToInput?: (content: string) => void;  // Optional: For bridge format CTA button
   followups_container_id?: string;        // Optional: Container ID for follow-up suggestions
   onExecuteQuery?: (query: string) => void | Promise<void>;  // Optional: Handler for follow-up queries
@@ -163,12 +190,32 @@ import { AdMeshRecommendations } from 'admesh-ui-sdk';
       key={msg.messageId}
       messageId={msg.userMessageId}  // Required: User message ID (not assistant message ID)
       query={msg.userQuery}  // Required: User's original query
+      onDelegationConsent={handleDelegationConsent}
+      onDelegationActivated={handleDelegationActivated}
       followups_container_id={`admesh-followups-${msg.messageId}`}
       onExecuteQuery={(query) => sendMessage(query)}
     />
   )
 ))}
 ```
+
+### Stopping a Delegated Session
+
+Use the SDK hook inside your chat UI:
+
+```tsx
+import { useAdMesh } from 'admesh-ui-sdk';
+
+const { stopDelegationSession } = useAdMesh();
+
+await stopDelegationSession('user_stopped', {
+  source: 'your-platform',
+});
+```
+
+<Note>
+Third-party hosts should use `admesh-ui-sdk` for AdMesh/operator session lifecycle calls. If your host has its own delegated runtime state, clear that through your own backend separately.
+</Note>
 
 <Card title="Tail & Product Format Guide" icon="list" href="/platforms/tail-format">
   Complete integration guide for Tail & Product Format

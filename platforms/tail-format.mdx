@@ -11,7 +11,7 @@ The **Tail & Product Format** displays recommendations as a **separate UI elemen
 
 - Automatic rendering of recommendations
 - Automatic tracking for exposures and clicks
-- Transparency labels with `[Ad]` added automatically
+- Transparency labels with `Ad` added automatically
 - Session-aware tracking
 - Multiple format options, including tail and product cards
 
@@ -161,7 +161,7 @@ Tail & Product Format automatically handles:
 
 - exposure tracking when recommendations render
 - click tracking when a user engages
-- transparency labeling with `[Ad]`
+- transparency labeling with `Ad`
 - fallback and error handling in the SDK layer
 
 This means you do not need to add a separate tracking wrapper for the basic format.
@@ -230,7 +230,7 @@ The SDK automatically manages:
 1. **Exposure tracking** - when recommendations are rendered  
 2. **Click tracking** - when users engage with recommendations  
 3. **Conversion tracking** - if configured  
-4. **Transparency labels** - `[Ad]` automatically added  
+4. **Transparency labels** - `Ad` automatically added  
 
 No additional setup is required.
 
@@ -366,7 +366,7 @@ If your platform already has a follow-up suggestions section (e.g., "Related Que
 />
 ```
 
-When a recommendation includes a `followup_query`, the SDK will automatically inject the sponsored follow-up into your container using React portals. It will appear alongside your existing suggestions, seamlessly integrated into your UI.
+When a recommendation includes `followup_suggestion`, the SDK will automatically inject the sponsored follow-up into your container using React portals. It will appear alongside your existing suggestions, seamlessly integrated into your UI.
 
 The SDK automatically:
 - Detects follow-up queries from recommendations
@@ -430,18 +430,18 @@ function MessageComponent({ message, sendMessage, loading }) {
 
 ### How It Works
 
-1. **Detection**: When a recommendation includes a `followup_query`, the SDK detects it automatically.
+1. **Detection**: When a recommendation includes `followup_suggestion.query`, the SDK detects it automatically.
 
 2. **Rendering**: When `followups_container_id` is provided, the SDK injects the sponsored follow-up into your existing container using React portals. The follow-up appears alongside your existing suggestions, matching your platform's styling.
 
 3. **Click Handling**: When a user clicks a follow-up:
-   - The SDK automatically fires engagement tracking (`followup_engagement_url`)
+   - The SDK automatically fires engagement tracking (`followup_suggestion.engagement_url`)
    - Your `onExecuteQuery` callback is invoked with the follow-up query
    - You execute the query to continue the conversation (e.g., via `sendMessage()`)
 
 ### Notes
 
-- Follow-ups are only displayed if the recommendation includes `followup_query` from the backend.
+- Follow-ups are only displayed if the recommendation includes `followup_suggestion` from the backend.
 - The SDK handles all engagement tracking automatically—you only need to provide `onExecuteQuery` to continue the conversation.
 - Use `isContainerReady` when rendering containers conditionally or after streaming completes.
 
@@ -464,7 +464,7 @@ function MessageComponent({ message, sendMessage, loading }) {
 - Omit the `query` parameter (recommendations won't be contextual)
 - Pass assistant message ID instead of user message ID to `messageId` prop
 - Manually trigger tracking events (the SDK handles all tracking automatically)
-- Modify or remove transparency labels ("Ad" labels are required)
+- Modify or remove transparency labels ("Sponsored" labels are required)
 - Try to specify format manually (format is auto-detected from recommendations)
 - Reuse session IDs across conversations
 - Render recommendations outside the SDK-provided components
@@ -554,7 +554,7 @@ function MessageComponent({ message, sendMessage, loading }) {
     **Check:**
     - Container element with the specified ID exists in the DOM
     - `onExecuteQuery` callback is provided (required for follow-up functionality)
-    - Recommendation from backend includes `followup_query` field
+    - Recommendation from backend includes `followup_suggestion.query`, `followup_suggestion.engagement_url`, and `followup_suggestion.exposure_url`
     - Container is ready before SDK tries to render (use `isContainerReady` if rendering is delayed)
 
     **Common issues:**

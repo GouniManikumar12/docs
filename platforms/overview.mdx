@@ -23,7 +23,7 @@ These SDKs provide the core functionality every platform needs:
 - **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh
 - **Rendering**: Displays recommendations in your UI with proper formatting
 - **Tracking**: Automatically tracks exposures, clicks, and conversions
-- **Transparency**: Adds `[Ad]` labels to comply with advertising standards
+- **Transparency**: Adds `Ad` labels to comply with advertising standards
 
 The frontend SDK handles all of this automatically, so you don't need to manage these concerns yourself.
 
@@ -111,7 +111,7 @@ Wraps your LLM response content and automatically detects AdMesh links. Use this
 
 **What it does:**
 - Detects AdMesh links in your content using event-driven detection
-- Adds `[Ad]` labels automatically
+- Adds `Ad` labels automatically
 - Fires exposure pixels when links detected
 - Shows "Why this ad?" tooltip on hover
 - Automatically renders fallback recommendations if no links found (format specified by `fallbackFormat`)
@@ -121,6 +121,16 @@ Wraps your LLM response content and automatically detects AdMesh links. Use this
 ## Integration Decision Guide
 
 Choose your component based on your platform's needs.
+
+### AI Platform Runtime Integration
+
+If your product is an AI assistant, AI search product, or chat platform, there is one extra layer beyond rendering recommendations:
+
+- use `AdMeshRecommendations` to show sponsored recommendation units
+- use the SDK delegation callbacks to let users start in-session brand conversations
+- route delegated turns through your own host runtime after activation
+
+See [Bridge Format](/platforms/bridge-format) for the full host/runtime model, consent handling, and delegated session lifecycle.
 
 ### Tail & Product Format
 
@@ -202,8 +212,9 @@ See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps
 
 1. **For Tail & Product Format:** Go to [Tail & Product Format](/platforms/tail-format)
 2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)
-3. **For Flutter frontend setup:** Go to [Flutter Frontend SDK](/ui-sdk/flutter)
-4. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
+3. **For AI platform runtime integration:** Go to [Bridge Format](/platforms/bridge-format)
+4. **For Flutter frontend setup:** Go to [Flutter Frontend SDK](/ui-sdk/flutter)
+5. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
 
 ---
 

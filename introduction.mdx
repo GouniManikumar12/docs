@@ -1,163 +1,31 @@
 ---
 title: "Introduction"
-description: "Start integrating AdMesh SDKs into your application in minutes"
+description: "Connect brands with relevant opportunities in AI conversations."
 ---
 
-## Welcome to AdMesh
+AdMesh connects brands with people asking for products and services inside AI
+platforms and publisher assistants.
 
-**AdMesh** is an agentic advertising network built for AI-native interfaces.
+Brand agents use product knowledge, targeting rules, and budgets to evaluate
+advertising opportunities. AI platforms and publishers earn revenue by showing
+relevant sponsored recommendations.
 
-As users shift from browsing and scrolling to asking questions and completing tasks inside AI conversations, traditional advertising models break down. Impression-based ads, keyword targeting, and manual campaign management are poorly suited for environments where intent is explicit, contextual, and dynamic.
+## Get started
 
-AdMesh enables advertising to operate agent-to-agent, not banner-to-user.
-
-Rather than pushing ads into interfaces, AdMesh allows brand agents to respond autonomously to real user intent surfaced by AI platforms, with pricing, relevance, and safety enforced in real time.
-
----
-
-## SDK-First Integration
-
-AdMesh provides **SDKs** handles attribution, rendering, and transparency — so you can focus on building great experiences.
-
-### Main SDKs
-
-**1. Frontend SDKs**  
-- `admesh-ui-sdk` for React web applications  
-- `admesh_flutter_ui_sdk` for native Flutter applications  
-- Handle rendering, tracking, theming, and transparency labels  
-- Support native recommendation layouts such as tail, product cards, and bridge flows  
-
-**2. `@admesh/weave-node` (Node.js / Express Backend)**  
-- Optional backend SDK for weaving recommendations into LLM responses  
-- Includes database caching for instant retrieval  
-- Simplifies backend integration for Node.js environments  
-
----
-
-## Why AdMesh Exists
-
-Traditional ad systems (CPM/CPC) were never designed for AI.  
-They rely on banners, cookies, and page views — not real-time conversations or generative responses.
-
-AdMesh introduces a **three-tier performance model** built for the conversational web:
-
-| Tier | Trigger | What It Measures |
-|------|----------|------------------|
-| **CPX** | Verified exposure | Visibility and reach |
-| **CPC** | User click | Engagement and intent |
-| **CPA** | Conversion | Proven performance |
-
-Every campaign automatically tracks all three, giving brands better accuracy and platforms predictable revenue.
-
----
-
-## Who Uses AdMesh
-
-### AI Platforms & Agents
-- Chatbots, LLM assistants, and browser extensions  
-- AI-powered search engines and research tools  
-- Agentic workspaces and automation systems  
-
-### Advertisers & Brands
-- SaaS, fintech, and e-commerce companies  
-- Affiliate and CPA networks  
-- Marketplaces promoting verified digital products  
-
----
-
-## Key Features
-
-<CardGroup cols={2}>
-  <Card title="Agentic by Design">
-    Brands participate through autonomous brand agents that evaluate context, intent, budget, and policies in real time.
+<CardGroup cols={3}>
+  <Card title="Advertisers" icon="bullhorn" href="/advertisers/overview">
+    Create your brand agent, set a budget, and improve results from your dashboard.
   </Card>
-
-  <Card title="Intent-First, Not Inventory-First">
-    Commercial responses are triggered only when user intent justifies them. No default exposures, no forced exposure.
+  <Card title="AI Platforms" icon="code" href="/platforms/overview">
+    Integrate the SDK to show sponsored recommendations in your app.
   </Card>
-
-  <Card title="Outcome-Aligned Pricing">
-    AdMesh supports CPX (Cost Per Exposure), CPC, and engagement-based models designed for conversational interfaces, not feed-based scrolling.
+  <Card title="Publishers" icon="newspaper" href="/publishers/getting-started">
+    Copy the assistant script from your dashboard and place it on your site.
   </Card>
-
-  <Card title="Contextual Relevance Over Personalization">
-    Ads are selected based on the current conversational context, not user profiling, cookies, or behavioral tracking.
-  </Card>
-
-  <Card title="Trust-Preserving by Default">
-    Advertising runs only when aligned with user intent and platform policies, ensuring monetization does not degrade conversational quality or user trust.
-  </Card>
-
-  <Card title="Built for AI Platforms">
-    Designed to integrate natively with AI assistants, search, IDEs, and workflows through lightweight SDKs and APIs.
-  </Card>
-  
 </CardGroup>
 
----
+## How it works
 
-## How It Works
-
-1. User expresses intent inside an AI interface  
-2. Platform sends structured context to AdMesh  
-3. AdMesh decides whether to trigger a commercial response  
-4. Eligible brand agents receive the context  
-5. Brand agents respond in real time  
-6. AdMesh selects and returns a response  
-7. Platform renders it natively  
-8. Exposure and engagement are tracked and billed transparently
-
-
----
-
-## Quick Start
-
-Choose your integration path:
-
-<CardGroup cols={2}>
-  <Card
-    title="Frontend SDKs"
-    icon="react"
-    href="/ui-sdk/installation"
-  >
-    Explore React and Flutter frontend SDK integrations.
-  </Card>
-
-  <Card
-    title="Platforms Overview"
-    icon="layers"
-    href="/platforms/overview"
-  >
-    Learn about supported formats and integration approaches.
-  </Card>
-
-</CardGroup>
-
----
-
-## Who Should Use AdMesh?
-- **AI Platform Developers:** Monetize assistants, search tools, IDEs, or workflow solutions.
-- **Advertisers & Brands:** Reach high-intent users with low-waste, targeted distribution.
-- **Infrastructure Engineers:** Build agent-based systems and protocols enhanced with monetization.
-
----
-
-
-## Next Steps
-
-1. **Choose your SDK** — Frontend (React or Flutter) or Backend (Node.js)  
-2. **Install** — Follow the quick installation guide  
-3. **Get your API key** — Sign up at [useadmesh.com](https://useadmesh.com)  
-4. **Integrate** — Copy-paste the code examples  
-5. **Start earning** — Track your results in the AdMesh dashboard  
-
----
-
-## Resources
-
-- **Website:** [useadmesh.com](https://useadmesh.com)  
-- **Support:** [mani@useadmesh.com](mailto:mani@useadmesh.com)  
-
----
-
-> **AdMesh is the agentic ad network built for AI interfaces — transforming user intent into monetized recommendations for the conversational internet, powered by developer-friendly SDKs.**
+1. A user asks a question in a participating app or publisher assistant.
+2. Brand agents evaluate the opportunity, and AdMesh selects an eligible recommendation.
+3. The recommendation appears with an Ad label, and AdMesh tracks exposure and engagement.

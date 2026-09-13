@@ -1,71 +1,60 @@
 ---
 title: "Getting Started"
-description: "Set up admesh-ui-sdk for publisher websites with AdMeshIntentAssistant"
+description: "Copy the publisher assistant script from your dashboard and place it on your site."
 ---
 
-## Prerequisites
+## 1. Copy your install snippet
 
-- A React or Next.js frontend
-- AdMesh API key
+Open [Publisher Assistant](https://useadmesh.com/dashboard/agent/publisher-assistant-setup)
+in your AdMesh dashboard and select **Deployment**. Complete any setup items shown
+there until the install snippets are ready to copy.
 
----
+## 2. Choose where the assistant appears
 
-## Step 1: Install the SDK
+Copy **Add assistant container** into your page's HTML where you want the
+assistant to appear, such as below an article or inside a sidebar.
 
-```bash
-npm install admesh-ui-sdk@latest
+```html
+<div id="admesh-publisher-assistant"></div>
 ```
 
----
+Use the container ID from your dashboard. It must match the script's
+`data-target-selector`.
 
-## Step 2: Generate Session ID and Wrap Your Page with AdMeshIntentAssistant
+## 3. Add your script
 
-For publisher integrations, use the SDK's utility function to generate session IDs from URL structure.
+Copy **Add script before closing body tag** from the dashboard. Paste it after the
+container, before `</body>`. Keep the publisher identifier supplied in your snippet.
 
-```tsx
-'use client';
+This example shows the structure; use your own dashboard-generated script:
 
-import { useMemo } from 'react';
-import { AdMeshProvider } from 'admesh-ui-sdk';
-import { AdMeshIntentAssistant, AdMeshProvider as AdMeshProviderComponent, AdMeshSDK } from 'admesh-ui-sdk';
-
-export default function PublisherPage() {
-  const apiKey = '<YOUR_ADMESH_API_KEY>';
-    
-  // Generate session ID from current page URL
-  const sessionId = useMemo(() => {
-    // Use the utility function from the SDK
-    return AdMeshSDK.generateSessionIdFromUrl();
-  }, []);
-
-  return (
-    <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
-      <main>
-        <h1>Your Publisher Content</h1>
-        <p>Your article body goes here...</p>
-      </main>
-
-      <AdMeshIntentAssistant
-        autoOpen={true}
-        position="bottom-right"
-        size="md"
-      />
-    </AdMeshProvider>
-  );
-}
+```html
+<div id="admesh-publisher-assistant"></div>
+<script
+  src="https://embed.useadmesh.com/publisher-assistant.js"
+  data-agent-display-id="YOUR_AGENT_DISPLAY_ID"
+  data-mode="inline"
+  data-suggestion-style="carousel"
+  data-target-selector="#admesh-publisher-assistant"
+  async
+></script>
 ```
 
-## Step 3: Verify Integration
+In a CMS, use a Custom HTML block for the container and a script/footer code field
+for the script. The page must allow JavaScript to run.
 
-1. Open a content page where the assistant is rendered
-2. Confirm the floating assistant appears in the selected corner
-3. Click a suggestion and verify recommendation UI appears
-4. Check browser console for SDK initialization logs
+## 4. Add the monetization entry
 
----
+Copy the **ads.txt** line provided in Deployment into your site's `/ads.txt` file
+before enabling monetization.
 
-## Next Step
+## 5. Test
 
-<Card title="UI SDK Integration" icon="code" href="/publishers/ui-sdk-integration">
-  Explore advanced configuration options for AdMeshIntentAssistant.
-</Card>
+Publish the page, confirm the assistant appears in the chosen container, and ask
+a question. Open and minimize the conversation to check both layouts.
+
+If it does not appear, check that the container exists before the script runs,
+the selector matches, and the assistant is enabled in the dashboard. Also check
+page, device, and country restrictions.
+
+Use [Customize](/publishers/controls) to customize the assistant.

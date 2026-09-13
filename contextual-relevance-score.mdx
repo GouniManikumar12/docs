@@ -1,111 +1,48 @@
 ---
 title: "Contextual Relevance Score (CRS)"
-description: "How AdMesh ensures every recommendation feels natural and relevant"
+description: "How AdMesh measures whether a recommendation fits the conversation"
 ---
 
-The **Contextual Relevance Score (CRS)** is what sets AdMesh apart from traditional ad networks. It evaluates how naturally a product or service fits within a user’s question or conversation, ensuring that recommendations appear only when they truly belong.  
+**CRS** is a 0–100 score for how well a product fits a user’s question.
 
-Instead of showing random ads, AdMesh uses CRS to deliver suggestions that feel timely, relevant, and meaningful in context.
+AdMesh uses it to show recommendations only when they belong in the conversation.
 
----
+## Score ranges
 
-## Why It Matters
+| Score | Meaning |
+|-------|---------|
+| **90–100** | Excellent match — shown first |
+| **75–89** | Strong fit — shown often |
+| **60–74** | Fair fit — shown when space allows |
+| **45–59** | Weak fit — limited visibility |
+| **0–44** | Too weak — not shown |
 
-In normal advertising, exposures are based on page views or keywords.  
-In AdMesh, exposures happen inside AI conversations — where users are asking for help, ideas, or tools.
+Aim for **75+**.
 
-That’s why **relevance is everything**.
+## What affects CRS
 
-> CRS helps keep recommendations helpful, honest, and aligned with what the user is really looking for.
+- How closely your product matches the query
+- Category and description quality
+- Listing clarity and completeness
+- Brand trust on the network
+- Competitiveness of your offer
 
-It protects user trust, improves click-through rates, and ensures advertisers pay for meaningful visibility, not noise.
+## How to improve it
 
----
+1. Write clear descriptions of what you offer and who it’s for.
+2. Use specific categories (e.g. “CRM for small teams,” not “Business tools”).
+3. Use language your customers actually search with.
+4. Keep listings accurate and up to date.
 
-## How We Measure Relevance
+## In the dashboard
 
-Every time a user asks a question, AdMesh reviews multiple factors before deciding what to show.  
-The CRS (a score from 0 to 100) is based on:
+Track average CRS per product, which queries score highest, and trends over time.
 
-- How closely your product matches the user’s query  
-- How well your categories and description fit the topic  
-- The overall clarity and completeness of your listing  
-- How credible and trusted your brand appears on the network  
-- How competitive your offer is compared to others in the same space  
-
-> Higher CRS means your product feels more relevant — so it appears more often and in better positions.
-
----
-
-## Score Levels
-
-| Score Range | Quality | What It Means |
-|--------------|----------|----------------|
-| **90–100** | Excellent | Perfect match — shown first and most often |
-| **75–89** | Good | Strong fit — regularly visible |
-| **60–74** | Fair | Relevant — appears when space allows |
-| **45–59** | Weak | Limited visibility — needs improvement |
-| **0–44** | Poor | Not shown — not relevant enough |
-
-**Tip:** Products scoring **75+** are considered high quality and perform best across the network.
-
----
-
-## What CRS Means for You
-
-For **advertisers**  
-- Higher CRS = more visibility and stronger results  
-- Your cost per exposure (CPX) reflects the quality of your match  
-- Better relevance means better performance, not higher waste  
-
-For **platforms**  
-- Higher CRS = more natural, helpful answers for users  
-- Keeps recommendations useful, not intrusive  
-- Improves user trust and engagement metrics  
-
----
-
-## How to Improve Your CRS
-
-### 1. Be Clear and Descriptive
-Write descriptions that explain exactly what your product does and who it’s for.  
-Avoid buzzwords — focus on clarity and benefits.
-
-### 2. Choose the Right Categories
-Use accurate, specific categories instead of broad ones.  
-Example: **“CRM Software for Small Teams”** is better than **“Business Tools.”**
-
-### 3. Match User Language
-Think like your users — write in their words.  
-Use phrases like “tools to grow your small business” instead of “enterprise optimization platform.”
-
-### 4. Keep It Honest
-List only features and benefits that truly apply to your product.  
-Transparent listings earn better CRS and trust scores.
-
-### 5. Review and Update Regularly
-Refresh your product info every few weeks to reflect updates, pricing changes, or new use cases.
-
----
-
-## Tracking Your CRS
-
-You can view your average CRS in the AdMesh dashboard.  
-There, you’ll see:
-
-- **Average CRS per product** — how well each listing matches user intent  
-- **Query-level CRS** — where your offer performed best  
-- **Trend over time** — how optimization improves your visibility  
-
-Use these insights to fine-tune your listings and steadily raise your score.
-
----
-
-## In Simple Terms
-
-- **CRS** = How relevant your product is to what users are asking  
-- **Higher CRS** = Better placement and stronger engagement  
-- **Low CRS** = Missed opportunities — improve your descriptions or targeting  
-- **Goal**: Stay above **75** for consistent, high-quality exposure  
-
-> CRS is how AdMesh keeps advertising natural, useful, and trusted — built for AI conversations, not banner clicks.
+<CardGroup cols={2}>
+  <Card title="Cost Per Exposure" icon="eye" href="/cost-per-exposure">
+    How CRS affects pricing and placement.
+  </Card>
+  <Card title="CPM vs CPX" icon="scale-balanced" href="/cpm-vs-cpx">
+    Why AdMesh prices by exposure, not page views.
+  </Card>
+</CardGroup>

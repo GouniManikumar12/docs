@@ -1,0 +1,168 @@
+---
+title: "Customize"
+description: "Customize the publisher assistant in your dashboard and with optional script attributes."
+---
+
+## Dashboard controls
+
+Open [Publisher Assistant](https://useadmesh.com/dashboard/agent/publisher-assistant-setup).
+Save your changes and reload your site to verify them. If you change a value that
+is included in the install snippet, copy the updated snippet to your site too.
+
+### Branding
+
+| Control | What you can change |
+| --- | --- |
+| Assistant Name | The name used by the assistant. |
+| Show Assistant Name | Show or hide the name where the layout displays it. |
+| Show Assistant Label | Show or hide the Publisher Assistant label. |
+| Assistant Logo | Upload or remove your logo. |
+| Header Background / Header Text | Header colors. |
+| Welcome Title / Welcome Description | Welcome copy and its colors, where supported by the layout. |
+| Welcome Alignment | Left or center for layouts that render the welcome block. |
+| Suggestion Layout | Carousel or stacked suggestions. |
+| Suggestions Background / Suggestions Text | Suggestion colors. |
+| Input Placeholder | The text shown in an empty question input. |
+| Input Background / Input Text | Input colors. |
+| Send Button Background / Send Button Text | Button colors; text can be black or white. |
+| Send Button Label | Button text in layouts that display a text label. |
+| Disclaimer Text | The disclaimer below the input. |
+| Meta Text | Color for supporting text. |
+| Default Language | English, Spanish, Italian, French, Hindi, or Telugu. Changing it also updates the default widget copy. |
+
+Some compact layouts use icons or omit headers and welcome text. A saved control
+only affects elements that the selected layout renders.
+
+### Visibility and answers
+
+| Control | What you can change |
+| --- | --- |
+| Enabled / Disabled | Turn the assistant on or off. |
+| Enable Ads | Enable or disable sponsored recommendations. |
+| Countries | Allow selected countries; an empty selection allows all countries. |
+| Device Targeting | All devices, desktop, or mobile. |
+| Show Assistant on Specific Pages | Enable path-based visibility rules. |
+| Show On | Allowed paths, one per line. Leave blank to allow all paths unless excluded. Use `/articles/*` for a section. |
+| Do Not Show On | Excluded paths, one per line. Exclusions take priority over Show On. |
+| Retrieval Source | Use Content Index or Search API for publisher content. |
+| Public Information Access | Publisher-only answers or publisher plus public information. |
+| Bring your own model | Configure the provider, model ID, and credentials using the dashboard's model settings. |
+
+### Content connections
+
+| Dashboard tab | Controls |
+| --- | --- |
+| Content Indexing | Website URL, scheduled refresh, refresh interval, maximum pages per run, and indexing actions. |
+| Search API | Search endpoint, HTTP method, authentication, timeout, and request template. |
+| MCP Tools (Advanced) | Server URL, authentication, timeout, and tool usage mode. |
+
+## Script controls
+
+Add these optional `data-*` attributes to the script you copied from Deployment.
+For settings supported in both places, explicit script values override the saved
+dashboard setting. Omit an override to use the saved value or the default below.
+
+### Suggestions and sponsored creative
+
+| Field | Attribute | Values | Default |
+| --- | --- | --- | --- |
+| Suggestions | `data-suggestion-trigger` | `always` (Always visible), `input` (Show on input focus) | `always` |
+| Dropdown position | `data-suggestion-placement` | `below`, `above` | `below` |
+| Sponsored creative | `data-sponsored-creative-placement` | `none` (Suggestions only), `below-input-container` (Below input) | `none` |
+| Suggestion layout | `data-suggestion-style` | `carousel`, `stacked` | Dashboard setting; ad-slot presets can supply their own layout. |
+
+With `input`, suggestions open when the collapsed input receives focus, even when
+empty. Readers can use arrow keys and Enter to select, or Escape and outside
+clicks to dismiss. The dropdown can flip sides if there is insufficient space.
+
+**Dropdown settings apply only to the collapsed input.** The expanded assistant
+keeps its visible follow-up suggestions and does not open an input dropdown.
+Minimizing restores the configured dropdown behavior.
+
+The extra sponsored creative requires `data-suggestion-trigger="always"`, ads
+enabled, and an eligible sponsored recommendation. It appears below the input in
+a noncompact collapsed page or floating assistant. It does not appear in
+input-focus mode, compact ad slots, or the expanded assistant. `none` only turns
+off this extra card; sponsored suggestions can still appear.
+
+**Apply** is a demo button, not a script attribute.
+
+### Placement and size
+
+| Attribute | Values | Default / use |
+| --- | --- | --- |
+| `data-mode` | `inline`, `floating` | The dashboard snippet uses `inline`. |
+| `data-target-selector` | A CSS selector, such as `#admesh-publisher-assistant` | Identifies the container for inline placement. Use the selector from your snippet. |
+| `data-position` | `bottom-right`, `bottom-left`, `top-right`, `top-left` | Floating placement; otherwise uses the saved dashboard position. |
+| `data-size` | `sm`, `md`, `lg`, `xl` | `md`; actual dimensions also depend on layout and viewport. |
+| `data-width` | Positive pixel value, such as `360` | Optional width override. |
+| `data-height` | Positive pixel value, such as `420` | Optional height override. |
+| `data-surface` | `page`, `ad-slot` | Page by default; inline embeds inside an iframe use ad-slot. |
+
+To move an inline assistant, move its container in your site's HTML. The script's
+position in the document does not determine where the assistant appears.
+
+### Header and welcome text
+
+Use `true` or `false` for visibility attributes.
+
+| Attribute | What it controls | Default |
+| --- | --- | --- |
+| `data-show-header` | Header visibility, where the layout supports it. | `true`; compact presets may hide the slot header. |
+| `data-show-assistant-name` | Assistant name visibility. | Saved dashboard value. |
+| `data-show-assistant-label` | Publisher Assistant label visibility. | Saved dashboard value. |
+| `data-show-welcome-message` | Welcome message visibility, where supported. | `false`; short ad slots may omit it. |
+| `data-welcome-message` | Custom welcome text. | Saved welcome description when shown. |
+
+### Page context
+
+| Attribute | Values / use |
+| --- | --- |
+| `data-article-url` | The article URL to use for context, especially when embedding inside an ad iframe. |
+| `data-context-mode` | `auto`, `page`, or `ad-slot`. Defaults to `ad-slot` for ad-slot surfaces and `auto` otherwise. |
+
+### Ad-slot controls
+
+| Attribute | Values / use |
+| --- | --- |
+| `data-slot-type` | A preset from the table below. Setting it also selects the ad-slot surface unless a surface is explicitly provided. |
+| `data-behavior` | `expand` opens an overlay when active; `sticky` keeps the assistant inside the slot. Default: `expand`. |
+
+| Slot type | Width × height | Suggestion layout |
+| --- | --- | --- |
+| `mobile-leaderboard` | 320 × 100 | Carousel |
+| `medium-rectangle` | 300 × 250 | Carousel |
+| `leaderboard` | 728 × 90 | Carousel |
+| `half-page` | 300 × 600 | Stacked |
+| `large-rectangle` | 336 × 280 | Carousel |
+| `skyscraper` | 120 × 600 | Stacked |
+| `billboard` | 970 × 250 | Carousel |
+
+Preset dimensions take priority over `data-width` and `data-height`. On mobile,
+`leaderboard` switches to `mobile-leaderboard`; half-page, large-rectangle,
+skyscraper, and billboard switch to medium-rectangle. Leaderboard and
+mobile-leaderboard always use `expand`. Short slots omit some header, input, or
+welcome elements to fit the available space.
+
+For older snippets, `data-ad-slot="true"` and `data-ad-server="true"` are aliases
+for the ad-slot surface. `data-publisher-id` is a fallback identifier;
+`data-agent-display-id` takes priority when both are provided. Keep the identifier
+from your dashboard snippet.
+
+## Example: suggestions on input focus
+
+Keep your own `data-agent-display-id` and matching container selector when adding
+these controls:
+
+```html
+<div id="admesh-publisher-assistant"></div>
+<script
+  src="https://embed.useadmesh.com/publisher-assistant.js"
+  data-agent-display-id="YOUR_AGENT_DISPLAY_ID"
+  data-mode="inline"
+  data-target-selector="#admesh-publisher-assistant"
+  data-suggestion-trigger="input"
+  data-suggestion-placement="below"
+  async
+></script>
+```

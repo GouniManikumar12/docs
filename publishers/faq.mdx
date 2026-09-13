@@ -1,0 +1,77 @@
+---
+title: "Publisher FAQ"
+description: "Answers about installing and customizing your publisher assistant."
+---
+
+<AccordionGroup>
+  <Accordion title="How do I install the assistant?">
+    Open Publisher Assistant → Deployment in your dashboard. Copy the container
+    where the assistant should appear and paste the generated script after it,
+    before the closing body tag. Follow [Getting Started](/publishers/getting-started).
+  </Accordion>
+
+  <Accordion title="Do I need React, an SDK, or an API key in my page?">
+    No. Use the container and script supplied by your dashboard. Keep the publisher
+    identifier in that snippet; you do not need to manage API keys or session IDs
+    in your site's code.
+  </Accordion>
+
+  <Accordion title="How do I choose where it appears?">
+    Place the container in your page's HTML, such as below an article or in a sidebar.
+    Its ID must match the script's `data-target-selector`. Moving the script alone
+    does not move an inline assistant.
+  </Accordion>
+
+  <Accordion title="Can I use a CMS?">
+    Yes, if it lets you add HTML and run the script. Use a Custom HTML block for the
+    container and the site's script or footer field for the dashboard-generated script.
+  </Accordion>
+
+  <Accordion title="What can I customize?">
+    Change branding, colors, text, language, answer settings, and visibility in the
+    dashboard. Optional script attributes control suggestions, placement, size,
+    and ad-slot behavior. See [Customize](/publishers/controls).
+  </Accordion>
+
+  <Accordion title="Can I show suggestions only when the input is focused?">
+    Add `data-suggestion-trigger="input"` to your script. Use
+    `data-suggestion-placement="below"` or `"above"` to choose the preferred side.
+    The dropdown may flip sides to fit the viewport.
+  </Accordion>
+
+  <Accordion title="Do dropdown settings change the expanded assistant?">
+    No. They apply only to the collapsed input. Expanded follow-up suggestions stay
+    visible, and focusing the expanded input does not open a dropdown.
+  </Accordion>
+
+  <Accordion title="How do I show a sponsored creative below the input?">
+    Set `data-sponsored-creative-placement="below-input-container"` and
+    `data-suggestion-trigger="always"`. Ads must be enabled and an eligible sponsored
+    recommendation available. The extra card appears only in a noncompact collapsed
+    page or floating assistant, not in input-focus mode, compact ad slots, or the
+    expanded conversation.
+  </Accordion>
+
+  <Accordion title="Can I control which pages and visitors see the assistant?">
+    Use page rules, device targeting, and country settings in the dashboard.
+    Excluded paths take priority over allowed paths. The Enabled toggle turns the
+    assistant on or off; Enable Ads controls sponsored recommendations separately.
+  </Accordion>
+
+  <Accordion title="Do I need an ads.txt entry?">
+    Add the exact ads.txt line shown in Deployment to your site's `/ads.txt` file
+    before monetization.
+  </Accordion>
+
+  <Accordion title="Why is the assistant not appearing?">
+    Check Deployment readiness, the Enabled setting, and page, device, or country
+    restrictions. Confirm the container exists before the script runs, the selector
+    matches, and your site allows the script to load.
+  </Accordion>
+
+  <Accordion title="Do I need to reinstall after changing settings?">
+    Save dashboard changes and reload your page to check them. If you change a value
+    included in your installed snippet, update that snippet too; explicit script
+    overrides take priority over matching dashboard settings.
+  </Accordion>
+</AccordionGroup>

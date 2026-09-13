@@ -1,205 +1,90 @@
 ---
 title: "Bridge Format"
-description: "Integrate AdMesh into AI chat platforms to show sponsored recommendations and let users talk to brand agents"
+description: "Add sponsored recommendations and connect Talk to Agent to your chat."
 ---
 
-## Overview
+## 1. Create your account and API key
 
-AdMesh lets AI platforms do two things in the same conversation:
+[Register for AdMesh](https://useadmesh.com/auth/signin/?role=agent&type=get-started&mode=signup),
+complete onboarding, and select Bridge in your platform's ad formats.
+Create an API key in the dashboard.
 
-1. show sponsored recommendations under assistant answers
-2. let users start an in-session conversation with a brand agent
+## 2. Install the SDK
 
-From the platform's perspective, the integration is:
+```bash
+npm install admesh-ui-sdk@latest
+```
 
-- frontend SDK for recommendation rendering and delegation lifecycle
-- host-managed consent UI
-- host-managed delegated runtime after activation
+## 3. Wrap your chat with AdMeshProvider
 
-## Integration Model
-
-AdMesh owns:
-
-- recommendation selection
-- sponsored recommendation payloads
-- click and exposure tracking
-- delegation eligibility
-- delegation activation
-- operator session lifecycle endpoints
-
-The AI platform owns:
-
-- chat UI
-- consent UX
-- host-local delegated session state
-- its own backend runtime
-- model orchestration after delegation starts
-
-## Core Flow
-
-### 1. Wrap chat with `AdMeshProvider`
+Use a unique `sessionId` for each conversation and keep it unchanged across turns.
 
 ```tsx
 import { AdMeshProvider } from 'admesh-ui-sdk';
 
-<AdMeshProvider
-  apiKey={process.env.NEXT_PUBLIC_ADMESH_API_KEY!}
-  sessionId={sessionId}
-  language="en-US"
-  geo_country="US"
-  userId={userId}
-  model={chatModel}
-  messages={messages}
->
+<AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
   <YourChat />
 </AdMeshProvider>
 ```
 
-### 2. Render `AdMeshRecommendations` under assistant turns
+## 4. Connect consent and activation
+
+Implement these callbacks in your chat and pass them to recommendations below
+each assistant response. Use the original user query and its user message ID.
 
 ```tsx
 import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
-{messages.map((msg) => (
-  msg.role === 'assistant' && msg.userQuery && msg.userMessageId ? (
-    <AdMeshRecommendations
-      key={msg.messageId}
-      messageId={msg.userMessageId}
-      query={msg.userQuery}
-      onDelegationConsent={handleDelegationConsent}
-      onDelegationActivated={handleDelegationActivated}
-    />
-  ) : null
-))}
+<AdMeshRecommendations
+  messageId={userMessageId}
+  query={userQuery}
+  onDelegationConsent={handleDelegationConsent}
+  onDelegationActivated={handleDelegationActivated}
+/>
 ```
 
-### 3. User clicks `Talk to Agent`
+- `handleDelegationConsent(recommendation)`: show your consent dialog using the
+  supplied consent requirements. Return `true` only when the user agrees, or
+  `false` when they decline.
+- `handleDelegationActivated(payload)`: save the `delegation_session_id`, brand
+  details, and `mcp_endpoint` in your host's session state, then activate your
+  backend's brand runtime.
 
-The SDK:
+The SDK calls activation after consent. Your app must implement the dialog and
+runtime connection; rendering the component alone does not route brand messages.
 
-- requests consent from the host
-- calls AdMesh delegation activation
-- returns a normalized delegation payload to the host
+## 5. Route brand conversations
 
-### 4. Host activates its delegated runtime
+While the brand session is active, route subsequent turns through your backend's
+brand runtime using the activation payload. Identify the brand in your chat UI.
 
-The host receives:
+Hide recommendations on turns generated during the brand session. If an action
+requires contact or checkout details, collect them through a form with explicit
+consent before submitting them to the brand runtime.
 
-- `delegation_session_id`
-- `brand_name`
-- `brand_id`
-- `mcp_endpoint`
-- `required_consent_types`
-- `allowed_data_types`
-- `consent_requirements`
-- `supported_actions`
+## 6. Connect the stop action
 
-The host then uses that payload to activate its own delegated chat mode.
-
-### 5. User messages are routed through the brand agent
-
-While the delegated session is active:
-
-- the host backend routes the next turns through the brand runtime
-- the host model can attach the brand MCP endpoint as a tool
-- the host continues to own the final user experience
-
-### 6. Stop the session
-
-When the user stops talking to the brand:
-
-- the host calls `stopDelegationSession(...)` from `admesh-ui-sdk`
-- the host clears its own local delegated state
-
-## Consent Handling
-
-AdMesh does not force a browser-native consent prompt.
-
-The recommended model is:
-
-- SDK provides the delegation payload
-- host renders its own consent dialog
-- host decides how long consent is remembered
-
-Recommended default:
-
-- once per brand per chat session
-
-The delegation payload can include:
-
-- `session_goal`
-- `delegate_reason`
-- `eligibility_reason`
-- `allowed_data_types`
-- `required_consent_types`
-- `consent_requirements`
-
-Use these fields directly in your consent UI.
-
-## Mid-Conversation Data Collection
-
-For actions like checkout, lead capture, or booking, the right loop is:
-
-1. user asks for a high-intent action
-2. LLM calls the brand tool/runtime
-3. brand responds with a structured data request
-4. host renders a form inside the conversation
-5. user fills fields and confirms consent
-6. host submits structured data back to the delegated runtime
-7. brand flow continues
-
-Important:
-
-- do not rely on free-text collection for sensitive fields when a form is possible
-- let the host UI collect email, phone, address, and consent explicitly
-
-## Recommended Host Callbacks
-
-Use these host-side hooks with `AdMeshRecommendations`:
+Call `useAdMesh` inside a component wrapped by `AdMeshProvider`. Wire this handler
+to your chat's stop-brand-conversation button:
 
 ```tsx
-const handleDelegationConsent = async (recommendation: any) => {
-  // Render your own consent dialog here.
-  return true;
-};
+import { useAdMesh } from 'admesh-ui-sdk';
 
-const handleDelegationActivated = async (payload: any) => {
-  // Store host-local delegated state here.
-  // Register MCP or brand runtime here.
-};
-```
-
-For stopping:
-
-```tsx
 const { stopDelegationSession } = useAdMesh();
 
-await stopDelegationSession('user_stopped', {
-  source: 'your-platform',
-});
+async function handleStopBrandConversation() {
+  await stopDelegationSession('user_stopped', {
+    source: 'your-platform',
+  });
+  // Clear your host's delegated state and return to normal chat routing.
+}
 ```
 
-## Architecture Boundary
+Resume recommendations only for new user queries after the brand session stops.
 
-This boundary is important:
+## 7. Test your integration
 
-- the AI platform should use `admesh-ui-sdk` for AdMesh/operator calls
-- the AI platform may call its own backend for host-local delegation state
-
-In other words:
-
-- AdMesh API calls: through the SDK
-- host-local runtime calls: through the platform's own backend
-
-## UX Recommendations
-
-- Do not show recommendations on turns that were generated during an active delegated brand session.
-- Once the delegated session is stopped, resume recommendations only for new post-stop user queries.
-- Show clear provenance when a response came from a delegated brand agent.
-- Use a branded consent dialog instead of `window.confirm`.
-
-## Next Steps
-
-- Use [React](/ui-sdk/installation) to install the SDK
-- Use [Tail & Product Format](/platforms/tail-format) to render recommendation units
-- Use [Platform Overview](/platforms/overview) to choose your integration model
+1. Send a query that returns an eligible Bridge recommendation.
+2. Click **Talk to Agent** and decline consent; no brand session should start.
+3. Try again and accept; verify the next turn reaches the brand runtime.
+4. Stop the brand conversation and verify normal chat routing resumes.

@@ -12,13 +12,8 @@
     "tabs": [
       {
         "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "introduction"     
-                 ]
-          },
+        "pages": [
+          "introduction",
           {
             "group": "Advertisers",
             "pages": [
@@ -26,20 +21,24 @@
                    ]
           },
           {
-            "group": "Platforms",
+            "group": "AI Platform",
             "pages": [
               "platforms/overview",
-              "platforms/bridge-format",
               "platforms/tail-format",
-              "platforms/weave-ad-format"
+              {
+                "group": "Advanced",
+                "pages": [
+                  "platforms/bridge-format",
+                  "platforms/weave-ad-format"
+                ]
+              }
             ]
           },
           {
             "group": "Publishers",
             "pages": [
-              "publishers/overview",
               "publishers/getting-started",
-              "publishers/ui-sdk-integration"
+              "publishers/controls"
             ]
           },
           {
@@ -77,8 +76,9 @@
           {
             "group": "FAQ",
             "pages": [
+              "advertisers/faq",
               "platforms/faq",
-              "advertisers/faq"
+              "publishers/faq"
             ]
           }
          

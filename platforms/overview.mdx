@@ -1,221 +1,125 @@
 ---
-title: "Platform Overview"
-description: "AdMesh integration guide for conversational platforms - understand package requirements and choose your integration approach"
+title: "Getting Started"
+description: "Create your account, complete onboarding, get an API key, and test your integration."
 ---
 
-## Introduction
+## 1. Create an account
 
-AdMesh enables conversational platforms (AI assistants, search engines, chat applications) to monetize through contextually relevant product recommendations. We offer flexible integration options to fit your platform's architecture and requirements.
+[Register for AdMesh](https://useadmesh.com/auth/signin/?role=agent&type=get-started&mode=signup).
 
----
+## 2. Complete onboarding
 
-## Package Requirements
+Add your platform details and select the ad formats you want to use.
 
-### Frontend SDKs
+## 3. Create an API key
 
-Use the frontend SDK that matches your client application:
+Create an API key in the AdMesh dashboard and use it as `apiKey` in the integration below.
 
-- **`admesh-ui-sdk`** for React web applications
-- **`admesh_flutter_ui_sdk`** for native Flutter applications
+## 4. Install the frontend SDK
 
-These SDKs provide the core functionality every platform needs:
+```bash
+npm install admesh-ui-sdk@latest
+```
 
-- **Recommendation Fetching**: Retrieves contextually relevant recommendations from AdMesh
-- **Rendering**: Displays recommendations in your UI with proper formatting
-- **Tracking**: Automatically tracks exposures, clicks, and conversions
-- **Transparency**: Adds `Ad` labels to comply with advertising standards
+For Flutter, follow the [Flutter integration steps](/ui-sdk/flutter).
 
-The frontend SDK handles all of this automatically, so you don't need to manage these concerns yourself.
+## 5. Wrap your chat with AdMeshProvider
 
-**Key Features:**
-- **Provider Pattern**: 3-line integration with automatic everything
-- Zero-code integration (3 simple steps)
-- Automatic session lifecycle management
-- Built-in error handling and fallbacks
-- Support for multiple ad formats (tail, product cards, etc.)
-- Configurable theming and styling
-
----
-
-## Three Core Components
-
-The React frontend SDK provides three components for different integration needs, while the Flutter frontend SDK provides native widget equivalents for recommendation layouts, tracking, and provider-based state.
-
-### 1. **AdMeshProvider** - State Management
-Wraps your application and manages SDK initialization, session tracking, and state.
+Use your AdMesh API key and keep the same `sessionId` throughout the conversation.
 
 ```tsx
+import { AdMeshProvider } from 'admesh-ui-sdk';
+
 <AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
-  <YourApp />
+  <YourChat />
 </AdMeshProvider>
 ```
 
-**Responsibilities:**
-- ✅ Initializes the SDK
-- ✅ Manages user sessions
-- ✅ Tracks message lifecycle
-- ✅ Handles errors
+## 6. Integrate your selected format
 
----
+<Tabs>
+  <Tab title="Tail, Product & Bridge">
+    Add `AdMeshRecommendations` below each assistant response. Pass the original
+    user query and its user message ID.
 
-### 2. **AdMeshRecommendations** - Tail & Product Formats
-Displays recommendations as a separate UI component. Use this for Tail, Product, or Bridge format. Format is automatically detected from the recommendation's `preferred_format`.
+    ```tsx
+    import { AdMeshRecommendations } from 'admesh-ui-sdk';
 
-```tsx
-<AdMeshRecommendations
-  messageId={messageId}  // Required: Message ID for this recommendation
-  query={userQuery}      // Required: User's original query
-  onRecommendationsShown={(messageId) => {}}  // Optional: Callback when recommendations shown
-  onError={(error) => {}}  // Optional: Error handler
-  onPasteToInput={(content) => {}}  // Optional: For bridge format CTA button
-  followups_container_id="followups"  // Optional: Container for follow-up suggestions
-  onExecuteQuery={(query) => {}}  // Optional: Handler for follow-up queries
-  onFollowupDetected={(query, url, recId) => {}}  // Optional: When sponsored followup detected
-/>
-```
+    <AdMeshRecommendations
+      messageId={userMessageId}
+      query={userQuery}
+    />
+    ```
 
-**When to use:**
-- ✅ You want a separate recommendations panel
-- ✅ You want automatic rendering and tracking
-- ✅ You need per-message recommendations
+    Use the formats selected in your dashboard; no format prop is needed.
+    For Bridge's Talk to Agent action, connect the
+    [delegation callbacks](/platforms/bridge-format#4-connect-consent-and-activation).
 
-**Formats supported (auto-detected):**
-- **Tail** - Inline tail with product links (default)
-- **Product** - Product cards with details
-- **Bridge** - Followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search (setup prompts and documentation URLs)
+  </Tab>
 
-<Note>
-  **Format Configuration**: Format is automatically detected from the recommendation's `creative_input.preferred_format`. `allowed_formats` are automatically fetched from your platform configuration (set during onboarding). For **Vibe Coding Platforms**, bridge format is automatically selected during onboarding. You don't need to specify formats as props.
-</Note>
+  <Tab title="Weave (optional)">
+    Complete these additional steps only if you selected Weave.
 
----
+    ### 1. Install a backend SDK
 
-### 3. **WeaveAdFormatContainer** - Weave Ad Format
-Wraps your LLM response content and automatically detects AdMesh links. Use this for Weave format.
+    <CodeGroup>
+      ```bash Node.js
+      npm install @admesh/weave-node@latest
+      ```
 
-```tsx
-<WeaveAdFormatContainer
-  messageId={messageId}  // Required: Unique message ID
-  query={userQuery}      // Optional: User's query (for fallback recommendations)
-  fallbackFormat="tail"  // Optional: Fallback format if no links detected (default: "tail")
->
-  {llmResponseContent}
-</WeaveAdFormatContainer>
-```
+      ```bash Python
+      pip install admesh-weave-python
+      ```
+    </CodeGroup>
 
-**When to use:**
-- ✅ You embed AdMesh links directly in LLM responses
-- ✅ You want automatic link detection with event-driven timing
-- ✅ You want fallback recommendations if no links present
-- ✅ You want automatic tracking and transparency labels
+    ### 2. Fetch recommendations before generating the response
 
-**What it does:**
-- Detects AdMesh links in your content using event-driven detection
-- Adds `Ad` labels automatically
-- Fires exposure pixels when links detected
-- Shows "Why this ad?" tooltip on hover
-- Automatically renders fallback recommendations if no links found (format specified by `fallbackFormat`)
+    Follow the [Node.js](/weave-node/installation#quick-start) or
+    [Python](/weave-python/installation) setup. Pass the returned recommendation
+    context into your LLM and preserve AdMesh tracking links in its output.
 
----
+    ### 3. Wrap the assistant response
 
-## Integration Decision Guide
+    Use this container in place of the standalone `AdMeshRecommendations` unit
+    for the same response. Pass the assistant message ID returned by your backend.
 
-Choose your component based on your platform's needs.
+    ```tsx
+    import { WeaveAdFormatContainer } from 'admesh-ui-sdk';
 
-### AI Platform Runtime Integration
+    <WeaveAdFormatContainer
+      messageId={assistantMessageId}
+      query={userQuery}
+      fallbackFormat="tail"
+    >
+      <YourRenderedAssistantResponse />
+    </WeaveAdFormatContainer>
+    ```
 
-If your product is an AI assistant, AI search product, or chat platform, there is one extra layer beyond rendering recommendations:
+    ### 4. Connect streaming events
 
-- use `AdMeshRecommendations` to show sponsored recommendation units
-- use the SDK delegation callbacks to let users start in-session brand conversations
-- route delegated turns through your own host runtime after activation
+    Dispatch these events from your chat's streaming handlers, using the same
+    assistant message ID and provider session ID.
 
-See [Bridge Format](/platforms/bridge-format) for the full host/runtime model, consent handling, and delegated session lifecycle.
+    ```tsx
+    import {
+      dispatchStreamingStartEvent,
+      dispatchStreamingCompleteEvent,
+    } from 'admesh-ui-sdk';
 
-### Tail & Product Format
+    // When streaming starts and the assistant message ID is available:
+    dispatchStreamingStartEvent(assistantMessageId, sessionId);
 
-**Best for:** Most platforms that want quick, automatic integration
+    // When streaming finishes and the response has rendered:
+    dispatchStreamingCompleteEvent(assistantMessageId, sessionId);
+    ```
 
-**Use:** `AdMeshRecommendations` component
+    When testing, check that woven links receive an Ad label. Test a response
+    without woven links to verify fallback recommendations when an eligible ad
+    is available.
+  </Tab>
+</Tabs>
 
-**What you get:**
-- Automatic rendering of recommendations
-- Automatic tracking and transparency labels
-- Zero-code setup (3 steps)
-- Multiple format options (tail, product cards, bridge format for followup sponsored recommendations)
+## 7. Test your integration
 
-**Integration steps:**
-1. Install your frontend SDK (`admesh-ui-sdk` or `admesh_flutter_ui_sdk`)
-2. Wrap app with `AdMeshProvider`
-3. Add `AdMeshRecommendations` component
-
-See [Tail & Product Format](/platforms/tail-format) for detailed integration steps.
-
----
-
-### Weave Ad Format
-
-**Best for:** Conversational AI platforms that embed AdMesh links directly in LLM responses
-
-**Use:** `WeaveAdFormatContainer` component
-
-**What you get:**
-- Automatic link detection in LLM responses
-- Automatic exposure tracking
-- Fallback recommendations when no links present
-- Transparency labels added automatically
-- Simple component-based integration
-
-**Integration steps:**
-1. Install `admesh-ui-sdk`
-2. Wrap app with `AdMeshProvider`
-3. Wrap LLM response with `WeaveAdFormatContainer`
-4. Provide `fallbackUI` with `AdMeshRecommendations`
-
-See [Weave Ad Format](/platforms/weave-ad-format) for detailed integration steps.
-
----
-
-## Component Comparison
-
-| Aspect | AdMeshRecommendations | WeaveAdFormatContainer |
-|--------|----------------------|------------------------|
-| **Purpose** | Display recommendations | Detect & track links |
-| **Formats** | Tail, Product, Bridge (followup sponsored recommendations) | Weave Ad Format |
-| **Rendering** | Automatic UI | Wraps your content |
-| **Link Detection** | N/A | Automatic |
-| **Fallback UI** | N/A | Supported |
-| **Tracking** | Automatic | Automatic |
-| **Setup Time** | 2 minutes | 2 minutes |
-| **Best For** | Separate recommendations | Embedded in responses |
-
----
-
-## Quick Reference
-
-**Choose AdMeshRecommendations if:**
-- You want a separate recommendations panel
-- You want Tail format (inline tails)
-- You want Product format (product cards)
-- You want Bridge format (followup sponsored recommendations for Vibe Coding Platforms, AI IDEs, and AI search)
-- You want automatic rendering
-
-**Choose WeaveAdFormatContainer if:**
-- You embed AdMesh links in LLM responses
-- You want automatic link detection
-- You want fallback recommendations
-- You want automatic tracking
-
----
-
-## Next Steps
-
-1. **For Tail & Product Format:** Go to [Tail & Product Format](/platforms/tail-format)
-2. **For Weave Ad Format:** Go to [Weave Ad Format](/platforms/weave-ad-format)
-3. **For AI platform runtime integration:** Go to [Bridge Format](/platforms/bridge-format)
-4. **For Flutter frontend setup:** Go to [Flutter Frontend SDK](/ui-sdk/flutter)
-5. **Have Questions?** Check our [FAQ](/platforms/faq) or contact [support@useadmesh.com](mailto:support@useadmesh.com)
-
----
-
-> **AdMesh empowers platforms to monetize the future of conversation — seamlessly, ethically, and transparently.**
+Open your app and send a query. Verify that an eligible recommendation renders
+and that its links work.

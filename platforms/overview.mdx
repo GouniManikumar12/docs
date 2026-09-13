@@ -26,14 +26,43 @@ For Flutter, follow the [Flutter integration steps](/ui-sdk/flutter).
 ## 5. Wrap your chat with AdMeshProvider
 
 Use your AdMesh API key and keep the same `sessionId` throughout the conversation.
+Pass previous messages through the optional `messages` prop to help AdMesh
+recommend products that match the user's earlier preferences, budget, and needs.
 
 ```tsx
 import { AdMeshProvider } from 'admesh-ui-sdk';
 
-<AdMeshProvider apiKey={apiKey} sessionId={sessionId}>
+// Use previous turns from your application's chat state, oldest first.
+const previousMessages = [
+  { role: 'user', content: 'I need a laptop for coding.' },
+  { role: 'assistant', content: 'What is your budget?' },
+  { role: 'user', content: 'Under $1,500, with good battery life.' },
+];
+
+<AdMeshProvider
+  apiKey={apiKey}
+  sessionId={sessionId}
+  messages={previousMessages} // Optional: conversation history for more relevant recommendations
+>
   <YourChat />
 </AdMeshProvider>
 ```
+
+You can omit `messages` if conversation history is unavailable. Recommendations
+still work using the current `query`.
+
+Each message contains `role` and `content` strings.
+Keep this array updated from your application's chat state as the conversation
+progresses; the provider does not collect previous messages automatically.
+
+For example, when the user next asks "Which one would you recommend?", the previous
+messages give AdMesh the laptop requirements and budget behind that question.
+Continue passing the current user query separately as `query` to the recommendation
+component in the next step.
+
+`AdMeshRecommendations` and `WeaveAdFormatContainer` include this history in their
+frontend recommendation requests. For Weave recommendations fetched by your backend,
+pass conversation history to that backend integration as well.
 
 ## 6. Integrate your selected format
 
